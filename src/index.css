@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+  
+  .nodes__node {
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+  }
+  
+  .nodes__node:hover {
+    transform: scale(1.1);
+    fill: #ffcc00; /* 🟡 Change la couleur au survol */
+  }

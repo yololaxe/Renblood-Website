@@ -2,13 +2,12 @@ import { Link } from "react-router-dom";
 
 function Navbar() {
   return (
-    <nav className="bg-gray-800 p-4 shadow-lg">
-      <ul className="flex justify-around">
-        <li><Link to="/" className="text-white">Accueil</Link></li>
-        <li><Link to="/players" className="text-white">Joueurs</Link></li>
-        <li><Link to="/map" className="text-white">Carte</Link></li>
-        <li><Link to="/auth" className="text-white">Connexion</Link></li>
-      </ul>
+    <nav className="bg-gray-800 text-white p-4 flex justify-center space-x-6">
+      <Link to="/" className="hover:text-gray-400">Accueil</Link>
+      <Link to="/histoire" className="hover:text-gray-400">Histoire</Link> {/* ✅ Nouveau lien */}
+      <Link to="/players" className="hover:text-gray-400">Joueurs</Link>
+      <Link to="/map" className="hover:text-gray-400">Carte</Link>
+      <Link to="/auth" className="hover:text-gray-400">Connexion</Link>
     </nav>
   );
 }

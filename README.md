@@ -27,3 +27,17 @@ Authentification : Google OAuth (uniquement) 🔑
 
 🌟 Arbres des talents → Consultation et gestion des talents des personnages.
 ⚙️ Gérer mon compte → Accès aux paramètres du joueur et informations détaillées.
+
+⚡ Installation et utilisation
+📥 1. Cloner le projet
+
+git clone https://github.com/ton-pseudo/renblood-website.git
+cd renblood-website
+
+📦 2. Installer les dépendances
+
+npm install
+
+🏃‍♂️ 3. Lancer le projet en local
+
+npm run dev
