@@ -13,6 +13,10 @@ import Familles from "./pages/histoires/Familles";
 import Lois from "./pages/histoires/Lois";
 import Politique from "./pages/histoires/Politique";
 import Arbre from "./pages/histoires/Arbre";
+import Armee from "./pages/histoires/Armee";
+import Titres from "./pages/histoires/Titres";
+
+
 import "./index.css";
 
 function App() {
@@ -35,7 +39,10 @@ function App() {
           <Route path="/histoires/familles" element={<Familles />} />
           <Route path="/histoires/arbre/:famille" element={<Arbre />} />
           <Route path="/histoires/lois" element={<Lois />} />
+          <Route path="/histoires/armee" element={<Armee />} />
           <Route path="/histoires/politique" element={<Politique />} />
+          <Route path="/histoires/titres" element={<Titres />} />
+
         </Routes>
       </div>
     </Router>

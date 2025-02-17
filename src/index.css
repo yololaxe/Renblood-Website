@@ -26,3 +26,48 @@
     transform: scale(1.1);
     fill: #ffcc00; /* 🟡 Change la couleur au survol */
   }
+  /* Style du scroll horizontal */
+::-webkit-scrollbar {
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #222;
+}
+
+/* Effet hover sur les lois */
+.loi-container:hover {
+  transform: scale(1.05);
+  transition: transform 0.3s ease-in-out;
+}
+
+.table-container {
+  min-height: 500px; /* Ajuste selon la taille moyenne du tableau */
+  max-height: 80vh;  /* Empêche le tableau de devenir trop grand */
+  overflow-y: hidden; /* Désactive totalement la scrollbar */
+  display: flex;
+  flex-direction: column;
+}
+
+.table-content {
+  flex-grow: 1; /* Prend tout l’espace dispo */
+  overflow-y: auto; /* Active la scrollbar à l’intérieur */
+  padding-right: 15px; /* Réserve l'espace de la scrollbar */
+}
+
+.map-container {
+  position: relative;
+  width: 100%; /* La carte s'adapte à la largeur */
+  max-width: 1154px; /* Taille max pour respecter les coordonnées */
+  height: auto; /* Garde le ratio original */
+  overflow: hidden; /* Empêche le débordement */
+  margin: auto; /* Centre la carte */
+}
+
+.map-container img {
+  width: 100%; /* L'image prend toute la largeur du conteneur */
+  height: auto; /* Garde les proportions */
+}

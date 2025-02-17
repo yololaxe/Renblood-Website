@@ -9,7 +9,7 @@ function Histoire() {
       </p>
 
       {/* ✅ Section des boutons améliorés */}
-      <div className="grid grid-cols-2 gap-6 max-w-lg mx-auto">
+      <div className="grid grid-cols-3 gap-10 max-w-lg mx-auto">
         <Link
           to="/histoires/livres"
           className="relative bg-gray-800 hover:bg-gray-700 text-white p-6 rounded-xl shadow-lg text-xl font-semibold flex justify-center items-center transition-transform transform hover:scale-105 group"
@@ -57,6 +57,30 @@ function Histoire() {
           />
           <span className="relative z-10">🏛️ La Politique</span>
         </Link>
+        <Link
+          to="/histoires/armee"
+          className="relative bg-gray-800 hover:bg-gray-700 text-white p-6 rounded-xl shadow-lg text-xl font-semibold flex justify-center items-center transition-transform transform hover:scale-105 group"
+        >
+          <img
+            src="/images/armee.jpg"
+            alt="Armée"
+            className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 rounded-xl"
+          />
+          <span className="relative z-10">⚔️ L'Armée</span>
+        </Link>
+        <Link
+          to="/histoires/titres"
+          className="relative bg-gray-800 hover:bg-gray-700 text-white p-6 rounded-xl shadow-lg text-xl font-semibold flex justify-center items-center transition-transform transform hover:scale-105 group"
+        >
+          <img
+            src="/images/titre.jpg"
+            alt="Titres"
+            className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 rounded-xl"
+          />
+          <span className="relative z-10">🏅 Les Titres</span>
+        </Link>
+
+
       </div>
     </div>
   );

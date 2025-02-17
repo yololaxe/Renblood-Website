@@ -139,7 +139,7 @@ const familles = [
   },
   {
     id: 8,
-    nom: "Linster",
+    nom: "Lynster",
     comté: "Cornwall",
     ville: "Colrac",
     symbole: "Loup",
