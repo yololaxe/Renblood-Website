@@ -28,7 +28,7 @@ function Auth() {
 
   const fetchMinecraftData = async (userId) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/players/get/${userId}/`);
+      const response = await axios.get(`https://renblood-backend.onrender.com/players/get/${userId}/`);
       sessionStorage.setItem("mcData", JSON.stringify(response.data)); // Stockage local
       setMcData(response.data);
     } catch (error) {

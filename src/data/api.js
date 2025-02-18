@@ -1,14 +1,22 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://127.0.0.1:8000/players"; // L'URL de ton API
+const API_BASE_URL = "https://renblood-backend.onrender.com";
 
 // ✅ Récupérer les infos du joueur à partir de son ID Firebase
 export const getPlayerData = async (userId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/get/${userId}/`);
-    return response.data; // Retourne les infos du joueur
+    console.log(`🔄 Requête envoyée : ${API_BASE_URL}/players/get/${userId}/`);
+    const response = await axios.get(`${API_BASE_URL}/players/get/${userId}/`, { timeout: 10000 });
+    console.log("✅ Réponse reçue :", response.data);
+    return response.data;
   } catch (error) {
-    console.error("Erreur lors de la récupération des infos :", error);
+    if (error.response) {
+      console.error("❌ Erreur de l'API :", error.response.status, error.response.data);
+    } else if (error.request) {
+      console.error("❌ L'API Render ne répond pas (serveur en veille ?)");
+    } else {
+      console.error("❌ Erreur Axios :", error.message);
+    }
     return null;
   }
 };
