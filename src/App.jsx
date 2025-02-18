@@ -15,6 +15,7 @@ import Politique from "./pages/histoires/Politique";
 import Arbre from "./pages/histoires/Arbre";
 import Armee from "./pages/histoires/Armee";
 import Titres from "./pages/histoires/Titres";
+import Guildes from "./pages/histoires/Guildes";
 
 
 import "./index.css";
@@ -42,6 +43,7 @@ function App() {
           <Route path="/histoires/armee" element={<Armee />} />
           <Route path="/histoires/politique" element={<Politique />} />
           <Route path="/histoires/titres" element={<Titres />} />
+          <Route path="/histoires/guildes" element={<Guildes />} />
 
         </Routes>
       </div>

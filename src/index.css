@@ -71,3 +71,15 @@
   width: 100%; /* L'image prend toute la largeur du conteneur */
   height: auto; /* Garde les proportions */
 }
+
+.city-icon {
+  width: 5%; /* Ajuste la taille en fonction de la carte */
+  height: auto;
+  max-width: 60px; /* Empêche les icônes de devenir trop grandes */
+  max-height: 60px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.city-icon:hover {
+  transform: scale(1.25);
+}

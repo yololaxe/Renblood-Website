@@ -35,12 +35,12 @@ function Map() {
   return (
     <div className="relative flex items-center justify-center bg-gray-900 min-h-screen overflow-hidden">
       {/* Conteneur de la carte */}
-      <div className="map-container relative mx-auto">
+      <div className="map-container relative mx-auto w-full max-w-5xl px-4">
         <img
           ref={mapRef}
           src="/map/carte-renblood.png"
           alt="Carte de Renblood"
-          className="w-full max-w-5xl"
+          className="w-full"
         />
 
         {/* Placement des villes sur la carte */}
@@ -50,19 +50,32 @@ function Map() {
           const adjustedX = (ville.Coords[0] / imageWidth) * mapSize.width;
           const adjustedY = (ville.Coords[1] / imageHeight) * mapSize.height;
 
+          const getIconPath = (type) => {
+            const typeLower = type.toLowerCase().replace(/ /g, "-");
+            return `/kit/${typeLower}.png`;
+          };
+
           return (
             <motion.div
               key={index}
-              className="absolute w-4 h-4 bg-red-500 rounded-full cursor-pointer shadow-lg hover:scale-125 transition"
+              className="absolute cursor-pointer group"
               style={{
                 left: `${adjustedX}px`,
                 top: `${adjustedY}px`,
               }}
               onClick={() => handleClick(ville)}
             >
-              <span className="hidden md:block absolute -top-6 left-1/2 transform -translate-x-1/2 text-white text-sm bg-gray-800 px-2 py-1 rounded">
+              {/* Icône de la ville */}
+              <img
+                src={getIconPath(ville.type)}
+                alt={ville.type}
+                className="city-icon w-[5vw] max-w-[40px] h-auto transition-transform hover:scale-125"
+              />
+              
+              {/* Nom de la ville en dessous, responsive */}
+              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 text-white text-xs sm:text-sm bg-gray-800 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                 {ville.ville}
-              </span>
+              </div>
             </motion.div>
           );
         })}
@@ -72,7 +85,7 @@ function Map() {
       <AnimatePresence>
         {selectedVille && (
           <motion.div
-            className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4"
             onClick={() => setSelectedVille(null)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -91,7 +104,7 @@ function Map() {
               >
                 ✖
               </button>
-              <h2 className="text-2xl font-bold text-center">{selectedVille.ville}</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-center">{selectedVille.ville}</h2>
               <p className="mt-2 text-gray-300">🏰 <strong>Type :</strong> {selectedVille.type}</p>
               <p className="mt-1 text-gray-300">⚔️ <strong>Chef :</strong> {selectedVille.chef || "Non défini"}</p>
               <p className="mt-1 text-gray-300">🌍 <strong>Environnement :</strong> {selectedVille.environnement}</p>

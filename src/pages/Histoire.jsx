@@ -79,6 +79,18 @@ function Histoire() {
           />
           <span className="relative z-10">🏅 Les Titres</span>
         </Link>
+        <Link
+          to="/histoires/guildes"
+          className="relative bg-gray-800 hover:bg-gray-700 text-white p-6 rounded-xl shadow-lg text-xl font-semibold flex justify-center items-center transition-transform transform hover:scale-105 group"
+        >
+          <img
+            src="/images/guildes.jpg"
+            alt="Guildes"
+            className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 rounded-xl"
+          />
+          <span className="relative z-10">🛡️ Les Guildes</span>
+        </Link>
+
 
 
       </div>
