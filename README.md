@@ -41,3 +41,8 @@ npm install
 🏃‍♂️ 3. Lancer le projet en local
 
 npm run dev
+
+To deploy : 
+
+npm run build
+firebase deploy

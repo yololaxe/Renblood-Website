@@ -34,7 +34,7 @@ const guildesData = [
       name: "La Guilde Mystique",
       leader: "Herris CHALK",
       location: "Sylinore (Mofrage)",
-      fortune: 4.5,
+      fortune: 4.5, 
       reputation: 87,
       members: 37,
       buildings: 6,

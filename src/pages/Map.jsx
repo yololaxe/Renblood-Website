@@ -47,8 +47,9 @@ function Map() {
         {Object.values(comtes).flat().map((ville, index) => {
           if (!ville.Coords) return null; // Sécurité pour éviter les erreurs
 
-          const adjustedX = (ville.Coords[0] / imageWidth) * mapSize.width;
-          const adjustedY = (ville.Coords[1] / imageHeight) * mapSize.height;
+          const adjustedX = ((ville.Coords[0] / imageWidth) * mapSize.width) || 0;
+          const adjustedY = ((ville.Coords[1] / imageHeight) * mapSize.height) || 0;
+
 
           const getIconPath = (type) => {
             const typeLower = type.toLowerCase().replace(/ /g, "-");

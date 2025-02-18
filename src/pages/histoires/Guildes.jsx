@@ -55,7 +55,7 @@ function Guildes() {
                             <div className="flex justify-center mb-4">
                                 <img src={`/guildes/${selectedGuild.image}`} alt={selectedGuild.name} className="w-40 h-40 object-cover rounded-md shadow-lg" />
                             </div>
-                            <p className="text-lg mb-4">{selectedGuild.description}</p>
+                            <p className="text-lg mb-4 whitespace-pre-line">{selectedGuild.description}</p>
 
                             {/* 📊 Détails des statistiques */}
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-left text-lg">
