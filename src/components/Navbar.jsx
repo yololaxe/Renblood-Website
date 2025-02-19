@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { auth, listenToAuthChanges, signOut } from "../data/firebaseConfig";
 
 function Navbar() {
@@ -8,7 +7,7 @@ function Navbar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    listenToAuthChanges(setUser); // 🔄 Écoute de l'état Firebase
+    listenToAuthChanges(setUser);
   }, []);
 
   return (
@@ -18,18 +17,21 @@ function Navbar() {
         <Link to="/histoire" className="hover:text-gray-400">Histoire</Link>
         <Link to="/players" className="hover:text-gray-400">Joueurs</Link>
         <Link to="/map" className="hover:text-gray-400">Carte</Link>
+        {user && <Link to="/talents" className="hover:text-gray-400">Choisir Talent</Link>}
       </div>
 
-      {/* Avatar utilisateur ou bouton de connexion */}
+      {/* Avatar utilisateur + Déconnexion */}
       <div className="flex items-center space-x-4">
         {user ? (
           <>
-            <img 
-              src={user.photoURL || "/assets/default-avatar.png"} 
-              alt="Avatar" 
-              className="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 transition"
-              onClick={() => navigate("/account")} // ✅ Redirection vers le profil
-            />
+            <Link to="/character" className="hover:text-gray-400">👤 Mon personnage</Link>
+            <Link to="/account">
+              <img
+                src={user.photoURL || "/assets/default-avatar.png"}
+                alt="Avatar"
+                className="w-10 h-10 rounded-full border-2 border-gray-500 cursor-pointer hover:opacity-80 transition"
+              />
+            </Link>
             <button
               onClick={() => {
                 if (window.confirm("Voulez-vous vraiment vous déconnecter ?")) {
@@ -40,7 +42,6 @@ function Navbar() {
             >
               Déconnexion
             </button>
-
           </>
         ) : (
           <Link to="/auth" className="hover:text-gray-400">Connexion</Link>

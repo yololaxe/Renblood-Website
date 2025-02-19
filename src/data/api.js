@@ -1,6 +1,22 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://renblood-backend.onrender.com";
+// 🔍 Détection de l'environnement (local / production)
+export const API_BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://renblood-backend.onrender.com"
+    : "http://127.0.0.1:8000";
+
+// ✅ Vérifier si l'API est active
+export const checkApiStatus = async () => {
+  try {
+    await axios.get(`${API_BASE_URL}/ping`);
+    console.log(`🟢 API en ligne (${API_BASE_URL})`);
+    return true;
+  } catch (error) {
+    console.error(`❌ API inaccessible (${API_BASE_URL})`, error);
+    return false;
+  }
+};
 
 // ✅ Récupérer les infos du joueur à partir de son ID Firebase
 export const getPlayerData = async (userId) => {

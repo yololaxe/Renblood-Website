@@ -315,7 +315,7 @@ const politique = {
             ],
             revenu: "2 silver / mois",
             temps: "48 mois",
-            lieu: ["Royaute"]
+            lieu: ["Royauté"]
         },
         {
             titre: "Grand argentier",
@@ -331,7 +331,7 @@ const politique = {
             ],
             revenu: "2 silver / mois",
             temps: "Pour la vie",
-            lieu: ["Royaute"]
+            lieu: ["Royauté"]
         },
         {
             titre: "Coordinateur royal",
@@ -345,7 +345,7 @@ const politique = {
             ],
             revenu: "1 silver / mois",
             temps: "Pour la vie",
-            lieu: ["Royaute"]
+            lieu: ["Royauté"]
         },
         {
             titre: "Maître mystique",
@@ -358,7 +358,7 @@ const politique = {
             ],
             revenu: "1 silver / mois",
             temps: "96 mois",
-            lieu: ["Royaute"]
+            lieu: ["Royauté"]
         },
         {
             titre: "Gardien du peuple",
@@ -374,7 +374,7 @@ const politique = {
             ],
             revenu: "1 silver / mois",
             temps: "48 mois",
-            lieu: ["Royaute"]
+            lieu: ["Royauté"]
         },
         {
             titre: "Triomphant",
@@ -389,7 +389,7 @@ const politique = {
             ],
             revenu: "2 silver / mois",
             temps: "48 mois",
-            lieu: ["Royaute"]
+            lieu: ["Royauté"]
         }
 
     ]

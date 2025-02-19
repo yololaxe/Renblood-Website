@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ Importer useNavigate
 import { auth, googleProvider, listenToAuthChanges } from "../data/firebaseConfig";
 import { signInWithPopup, signOut } from "firebase/auth";
 import axios from "axios";
+import { API_BASE_URL } from "../data/api";
 
 function Auth() {
   const [user, setUser] = useState(null);
   const [mcData, setMcData] = useState(null);
+  const navigate = useNavigate(); // ✅ Initialiser la navigation
 
   useEffect(() => {
     listenToAuthChanges(async (user) => {
       setUser(user);
       if (user) {
         await fetchMinecraftData(user.uid);
+        navigate("/account"); // ✅ Redirige après connexion
       }
     });
   }, []);
@@ -21,6 +25,7 @@ function Auth() {
       const result = await signInWithPopup(auth, googleProvider);
       setUser(result.user);
       await fetchMinecraftData(result.user.uid);
+      navigate("/account"); // ✅ Redirige immédiatement après connexion
     } catch (error) {
       console.error("Erreur de connexion :", error);
     }
@@ -28,8 +33,8 @@ function Auth() {
 
   const fetchMinecraftData = async (userId) => {
     try {
-      const response = await axios.get(`https://renblood-backend.onrender.com/players/get/${userId}/`);
-      sessionStorage.setItem("mcData", JSON.stringify(response.data)); // Stockage local
+      const response = await axios.get(`${API_BASE_URL}/players/get/${userId}/`);
+      sessionStorage.setItem("mcData", JSON.stringify(response.data));
       setMcData(response.data);
     } catch (error) {
       console.error("Impossible de récupérer les données Minecraft :", error);
@@ -39,7 +44,7 @@ function Auth() {
   const logout = async () => {
     if (window.confirm("Voulez-vous vraiment vous déconnecter ?")) {
       await signOut(auth);
-      sessionStorage.removeItem("mcData"); // Suppression des données locales
+      sessionStorage.removeItem("mcData");
       setMcData(null);
     }
   };
@@ -55,7 +60,9 @@ function Auth() {
           <button onClick={logout} className="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg">Déconnexion</button>
         </div>
       ) : (
-        <button onClick={signInWithGoogle} className="px-6 py-2 bg-blue-600 text-white rounded-lg">Se connecter avec Google</button>
+        <button onClick={signInWithGoogle} className="px-6 py-2 bg-blue-600 text-white rounded-lg">
+          Se connecter avec Google
+        </button>
       )}
     </div>
   );
