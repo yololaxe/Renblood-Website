@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth, listenToAuthChanges, signOut } from "../data/firebaseConfig";
+import { useUser } from "../context/UserContext";
 
 function Navbar() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const { setUserId, setUserRank } = useUser();
 
   useEffect(() => {
     listenToAuthChanges(setUser);
@@ -33,9 +35,18 @@ function Navbar() {
               />
             </Link>
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (window.confirm("Voulez-vous vraiment vous déconnecter ?")) {
-                  signOut(auth);
+                  try {
+                    await signOut(auth);
+                    sessionStorage.clear(); // ✅ Supprime toutes les données stockées
+                    setUser(null); // ✅ Réinitialise l'état local
+                    setUserId(null); // ✅ Réinitialise l'état global
+                    setUserRank(null);
+                    navigate("/home"); // ✅ Redirige vers l'accueil
+                  } catch (error) {
+                    console.error("Erreur lors de la déconnexion :", error);
+                  }
                 }
               }}
               className="text-red-500 hover:text-red-400"

@@ -1,21 +1,28 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getPlayerJobs } from "../data/api";
+import { useUser } from "../context/UserContext"; // ✅ Import du contexte utilisateur
 
-function TalentSelection({ userId }) {
+function TalentSelection() {
+  const { userId } = useUser(); // ✅ Récupération depuis l'état global
   const [jobs, setJobs] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!userId) {
+      alert("❌ Vous devez être connecté pour accéder à cette page !");
+      navigate("/home"); // ✅ Redirige vers l'accueil
+      return;
+    }
+
     async function fetchData() {
-      if (!userId) return;
       const jobsData = await getPlayerJobs(userId);
-      console.log("🔍 Jobs récupérés :", jobsData);
       setJobs(jobsData.jobs || {});
     }
     fetchData();
-  }, [userId]);
+  }, [userId, navigate]);
 
+  if (!userId) return <p className="text-center text-gray-400 mt-10">❌ Utilisateur non connecté !</p>;
   if (!jobs) return <p className="text-center text-gray-400 mt-10">Chargement...</p>;
 
   return (

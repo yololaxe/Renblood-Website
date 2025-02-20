@@ -99,3 +99,34 @@ export const updateTalentProgression = async (userId, jobName, newProgression) =
     return null;
   }
 };
+
+// ✅ Récupérer la liste des joueurs selon leur rank
+export const getPlayers = async (rank) => {
+  try {
+    console.log(`🔄 Requête envoyée : ${API_BASE_URL}/players/getPlayers/${rank}/`);
+    const response = await axios.get(`${API_BASE_URL}/players/getPlayers/${rank}/`, { timeout: 10000 });
+    console.log("✅ Réponse reçue :", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Erreur de l'API :", error);
+    return null;
+  }
+};
+
+export async function updatePlayer(playerId, updates) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/players/update/${playerId}/`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Erreur de mise à jour");
+
+    console.log("✅ Joueur mis à jour :", data);
+    return data;
+  } catch (error) {
+    console.error("❌ Erreur lors de la mise à jour du joueur :", error);
+  }
+}

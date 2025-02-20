@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import { AnimatePresence } from "framer-motion";
 import Home from "./pages/Home";
 import Players from "./pages/Players";
+import PlayersAdmin from "./pages/PlayersAdmin";
 import Map from "./pages/Map";
 import Auth from "./pages/Auth";
 
@@ -36,12 +37,13 @@ function AnimatedRoutes() {
         <Route path="/home" element={<PageTransition><Home /></PageTransition>} />
         <Route path="/histoire" element={<PageTransition><Histoire /></PageTransition>} />
         <Route path="/players" element={<PageTransition><Players /></PageTransition>} />
+        <Route path="/players-admin" element={<PageTransition><PlayersAdmin /></PageTransition>} />
         <Route path="/map" element={<PageTransition><Map /></PageTransition>} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
         {/* <Route path="/talents" element={<PageTransition><Talents /></PageTransition>} /> */}
         <Route path="/account" element={<PageTransition><Account /></PageTransition>} />
         <Route path="/character" element={<PageTransition><Character /></PageTransition>} />
-        <Route path="/talents" element={<TalentSelection userId="0kX4gctisIcOKvHDKJmlDRLSLFu2" />} />
+        <Route path="/talents" element={<PageTransition><TalentSelection /></PageTransition>} />
         <Route path="/talents/:profession" element={<TalentTree />} />
 
         {/* Histoire : */}
@@ -61,12 +63,10 @@ function AnimatedRoutes() {
 
 function App() {
   return (
-    <Router>
-      <div className="bg-gray-900 text-gray-200 min-h-screen">
-        <Navbar />
-        <AnimatedRoutes /> {/* ✅ Intégration du composant avec transitions */}
-      </div>
-    </Router>
+    <div className="bg-gray-900 text-gray-200 min-h-screen">
+      <Navbar />
+      <AnimatedRoutes /> {/* ✅ Intégration du composant avec transitions */}
+    </div>
   );
 }
 
