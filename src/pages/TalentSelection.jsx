@@ -1,22 +1,22 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getPlayerData } from "../data/api";
+import { getPlayerJobs } from "../data/api";
 
 function TalentSelection({ userId }) {
-  const [playerData, setPlayerData] = useState(null);
+  const [jobs, setJobs] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchData() {
-      const data = await getPlayerData(userId);
-      setPlayerData(data);
+      if (!userId) return;
+      const jobsData = await getPlayerJobs(userId);
+      console.log("🔍 Jobs récupérés :", jobsData);
+      setJobs(jobsData.jobs || {});
     }
     fetchData();
   }, [userId]);
 
-  if (!playerData) return <p className="text-center text-gray-400 mt-10">Chargement...</p>;
-
-  const jobs = playerData.experiences?.jobs || {};
+  if (!jobs) return <p className="text-center text-gray-400 mt-10">Chargement...</p>;
 
   return (
     <div className="p-10 text-white text-center">
@@ -25,10 +25,11 @@ function TalentSelection({ userId }) {
         {Object.keys(jobs).map((jobKey) => {
           const job = jobs[jobKey];
           const isLocked = job.xp === -1;
+
           return (
             <button
               key={jobKey}
-              onClick={() => !isLocked && navigate(`/talents/${jobKey}`)}
+              onClick={() => !isLocked && navigate(`/talents/${jobKey}?userId=${userId}`)}
               className={`p-6 rounded-lg text-lg font-semibold transition
                 ${isLocked ? "bg-gray-600 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-500"}`}
               disabled={isLocked}
