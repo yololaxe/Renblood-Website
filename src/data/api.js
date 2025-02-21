@@ -130,3 +130,97 @@ export async function updatePlayer(playerId, updates) {
     console.error("❌ Erreur lors de la mise à jour du joueur :", error);
   }
 }
+
+
+// TRAITS ET ACTION //
+
+
+// 🔹 Récupérer tous les traits disponibles
+export const getTraits = async () => {
+  console.log("🔍 Appel API: Récupération des traits...");
+  try {
+    const response = await fetch(`${API_BASE_URL}/jobs/get/traits/`);
+    const data = await response.json();
+    console.log("✅ Traits reçus :", data);
+    return data;
+  } catch (error) {
+    console.error("❌ Erreur lors de la récupération des traits:", error);
+    return [];
+  }
+};
+
+// 🔹 Récupérer toutes les actions disponibles
+export const getActions = async () => {
+  console.log("🔍 Appel API: Récupération des actions...");
+  try {
+    const response = await fetch(`${API_BASE_URL}/jobs/get/actions/`);
+    const data = await response.json();
+    console.log("✅ Actions reçues :", data);
+    return data;
+  } catch (error) {
+    console.error("❌ Erreur lors de la récupération des actions:", error);
+    return [];
+  }
+};
+
+// 🔹 Ajouter un trait à un joueur
+export const addTraitToPlayer = async (playerId, traitId) => {
+  const response = await fetch(`${API_BASE_URL}/players/list/${playerId}/trait/add/?id=${traitId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.json();
+};
+
+// 🔹 Supprimer un trait d’un joueur
+export const removeTraitFromPlayer = async (playerId, traitId) => {
+  if (!playerId || !traitId) {
+    console.error("❌ ERREUR : playerId ou traitId est manquant !");
+    return;
+  }
+
+  console.log(`🗑️ Suppression du trait ${traitId} pour le joueur ${playerId}`);
+
+  const response = await fetch(`http://127.0.0.1:8000/players/list/${playerId}/trait/delete/?id=${traitId}`, {
+    method: "DELETE", // ⚠️ Si l'API demande POST, remplace par "POST"
+    headers: { "Content-Type": "application/json" }
+  });
+
+  if (!response.ok) {
+    console.error("❌ ERREUR API :", response.status, response.statusText);
+    return;
+  }
+
+  return response.json();
+};
+
+
+// 🔹 Ajouter une action à un joueur
+export const addActionToPlayer = async (playerId, actionId) => {
+  const response = await fetch(`${API_BASE_URL}/players/list/${playerId}/action/add/?id=${actionId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.json();
+};
+
+export const removeActionFromPlayer = async (playerId, actionId) => {
+  if (!playerId || !actionId) {
+    console.error("❌ ERREUR : playerId ou actionId est manquant !");
+    return;
+  }
+
+  console.log(`🗑️ Suppression de l'action ${actionId} pour le joueur ${playerId}`);
+
+  const response = await fetch(`http://127.0.0.1:8000/players/list/${playerId}/action/delete/?id=${actionId}`, {
+    method: "DELETE", // ⚠️ Si l'API demande POST, remplace par "POST"
+    headers: { "Content-Type": "application/json" }
+  });
+
+  if (!response.ok) {
+    console.error("❌ ERREUR API :", response.status, response.statusText);
+    return;
+  }
+
+  return response.json();
+};
