@@ -22,12 +22,20 @@ function Players() {
 
       {/* Bouton Admin si l'utilisateur est Admin */}
       {userRank === "Admin" && (
-        <button 
-          className="mb-6 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-semibold transition"
-          onClick={() => navigate("/players-admin")}
-        >
-          ⚙️ Gérer les Joueurs
-        </button>
+        <div className="mb-6 flex justify-center space-x-4">
+          <button 
+            className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-semibold transition"
+            onClick={() => navigate("/players-admin")}
+          >
+            ⚙️ Gérer les Joueurs
+          </button>
+          <button 
+            className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-semibold transition"
+            onClick={() => navigate("/create-player")}
+          >
+            ➕ Créer un Joueur
+          </button>
+        </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

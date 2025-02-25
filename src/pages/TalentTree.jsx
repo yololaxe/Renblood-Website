@@ -19,14 +19,15 @@ function TalentTree() {
         return;
       }
 
-      // 🔥 Récupère les métiers du joueur
       const jobsData = await getPlayerJobs(userId);
-      if (!jobsData || !jobsData.jobs[profession] || jobsData.jobs[profession].xp === -1) {
+      console.log("🔍 Données des métiers récupérées :", jobsData);
+
+      const playerJob = jobsData?.jobs?.jobs?.[profession]; // ✅ Correction ici
+      if (!playerJob || playerJob.xp === -1) {
         alert("⚠️ Ce métier est verrouillé !");
         return;
       }
 
-      // 🔥 Récupère les talents du métier
       const talents = await getJobDetails(profession);
       if (!talents) {
         console.error("❌ Impossible de charger les talents.");
@@ -34,10 +35,9 @@ function TalentTree() {
       }
 
       setTalentData(talents);
-      setAvailablePoints(jobsData.jobs[profession].level - jobsData.jobs[profession].progression.filter((p) => p).length);
-      initializeUnlockedTalents(jobsData.jobs[profession].progression);
+      setAvailablePoints(playerJob.level - playerJob.progression.filter((p) => p).length);
+      initializeUnlockedTalents(playerJob.progression);
     }
-
     fetchData();
   }, [userId, profession]);
 
@@ -50,48 +50,80 @@ function TalentTree() {
   };
 
   const handleUnlockTalent = async (choiceIndex, tierIndex) => {
+    const choiceKey = `choice_${choiceIndex + 1}`;
+
+    // ✅ Vérifie si le talent est déjà débloqué
+    if (unlockedTalents[choiceKey][tierIndex]) {
+      alert("⚠️ Ce talent est déjà débloqué !");
+      return;
+    }
+
     if (availablePoints <= 0) {
       alert("⚠️ Vous n'avez pas assez de points de talent !");
       return;
     }
-  
-    const choiceKey = `choice_${choiceIndex + 1}`;
+
     if (tierIndex > 0 && !unlockedTalents[choiceKey][tierIndex - 1]) {
       alert("⚠️ Vous devez débloquer le talent précédent !");
       return;
     }
-  
-    // 🟢 Confirmation avant achat
+
     const confirmPurchase = window.confirm("💡 Voulez-vous vraiment débloquer ce talent ?");
     if (!confirmPurchase) return;
-  
-    // 🟢 Mise à jour locale des talents débloqués
-    const updatedTalents = { ...unlockedTalents };
-    updatedTalents[choiceKey][tierIndex] = true;
-    setUnlockedTalents(updatedTalents);
+
+    // ✅ Mise à jour de l'état et exécution de l'API dans un callback
+    setUnlockedTalents((prev) => {
+      const updatedTalents = { ...prev };
+      updatedTalents[choiceKey][tierIndex] = true;
+
+      // ✅ Construire newProgression avec les nouvelles valeurs mises à jour
+      const newProgression = [
+        ...updatedTalents.choice_1,
+        ...updatedTalents.choice_2,
+        ...updatedTalents.choice_3,
+        false, // Assure que le 10ème élément est bien la maîtrise
+      ];
+
+      console.log("✅ Nouvelle progression envoyée :", newProgression);
+
+      // ✅ Appelle l'API après la mise à jour de l'état
+      updateTalentProgression(userId, profession, newProgression);
+
+      return updatedTalents;
+    });
+
     setAvailablePoints((prev) => prev - 1);
-  
-    // 🟢 Convertit la structure des talents en une seule liste pour l'API
-    const newProgression = [
-      ...updatedTalents.choice_1,
-      ...updatedTalents.choice_2,
-      ...updatedTalents.choice_3,
-      false, // Assure que le 10ème élément est bien la maîtrise
-    ];
-  
-    await updateTalentProgression(userId, profession, newProgression);
   };
-  
-  
+
+
+
+
+
 
   const unlockLevel10 = () => {
     const allUnlocked = Object.values(unlockedTalents).every((tier) => tier.every((talent) => talent));
+
     if (!allUnlocked) {
       alert("⚠️ Vous devez débloquer tous les talents pour accéder au niveau 10 !");
       return;
     }
-    alert(`🎉 Félicitations ! Vous avez débloqué : ${talentData.level_10_skill.options.join(", ")}`);
+
+    if (availablePoints <= 0) {
+      alert("⚠️ Vous devez avoir au moins 1 point de talent disponible pour débloquer le niveau 10 !");
+      return;
+    }
+
+    if (!talentData?.mastery) {
+      console.error("❌ Erreur : Le talent de niveau 10 est introuvable.");
+      alert("❌ Erreur : Impossible de débloquer ce talent.");
+      return;
+    }
+
+    alert(`🎉 Félicitations ! Vous avez débloqué : ${talentData.mastery.join(", ")}`);
+    setAvailablePoints((prev) => prev - 1);
   };
+
+
 
   if (!talentData) return <p className="text-center text-gray-400 mt-10">Chargement...</p>;
 
@@ -104,37 +136,49 @@ function TalentTree() {
       <div className="grid grid-cols-3 gap-4 justify-center">
         {Object.entries(talentData.skills).map(([choice, skills], choiceIndex) => (
           <div key={choice} className="flex flex-col items-center space-y-3">
-            {skills.map((skill, tierIndex) => (
-              <div key={skill.id} className="flex flex-col items-center">
-                <button
-                  onClick={() => handleUnlockTalent(choiceIndex, tierIndex)} // 🔥 Appel ici
-                  className={`w-20 h-20 rounded-full border-4 text-sm text-white flex items-center justify-center
-              ${unlockedTalents[choice][tierIndex] ? "bg-green-500 border-green-400" : "bg-gray-600 border-gray-500"}
-              hover:scale-105 transition`}
-                >
-                  {skill.name}
-                </button>
-                {/* ⬇️ Flèche */}
-                {tierIndex < skills.length - 1 && (
-                  <div className="text-white text-2xl mt-[-8px]">⬇️</div>
-                )}
-              </div>
-            ))}
+            {skills.map((skill, tierIndex) => {
+              const choiceKey = `choice_${choiceIndex + 1}`;
+              const isUnlocked = unlockedTalents[choiceKey][tierIndex];
+              const isBlocked = availablePoints <= 0 || (tierIndex > 0 && !unlockedTalents[choiceKey][tierIndex - 1]);
+
+              return (
+                <div key={skill.id} className="flex flex-col items-center">
+                  <button
+                    onClick={() => !unlockedTalents[choiceKey][tierIndex] && handleUnlockTalent(choiceIndex, tierIndex)}
+                    className={`w-20 h-20 rounded-full border-4 text-sm flex items-center justify-center
+    ${unlockedTalents[choiceKey][tierIndex] ? "bg-green-500 border-green-400 cursor-not-allowed" :
+                        availablePoints <= 0 ? "bg-gray-800 border-gray-700 cursor-not-allowed" : "bg-gray-600 border-gray-500"}
+    hover:scale-105 transition`}
+                    disabled={unlockedTalents[choiceKey][tierIndex] || availablePoints <= 0}
+                  >
+
+                    {skill.name}
+                  </button>
+                  {tierIndex < skills.length - 1 && <div className="text-white text-2xl mt-[-8px]">⬇️</div>}
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>
 
 
-      {/* 🎯 Talent de niveau 10 */}
+
       <div className="mt-8 flex flex-col items-center">
         <div className="text-white text-2xl mt-[-8px]">⬇️</div>
         <button
           onClick={unlockLevel10}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-lg font-semibold transition"
+          className={`px-6 py-3 rounded-lg text-lg font-semibold transition
+      ${availablePoints <= 0 || !Object.values(unlockedTalents).every((tier) => tier.every((talent) => talent))
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-500"
+            }`}
+          disabled={availablePoints <= 0 || !Object.values(unlockedTalents).every((tier) => tier.every((talent) => talent))}
         >
           🔥 Débloquer Talent Niveau 10
         </button>
       </div>
+
     </div>
   );
 }

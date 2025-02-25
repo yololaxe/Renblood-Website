@@ -3,11 +3,14 @@ import { AnimatePresence } from "framer-motion";
 import Home from "./pages/Home";
 import Players from "./pages/Players";
 import PlayersAdmin from "./pages/PlayersAdmin";
+import PlayerJobs from "./pages/PlayerJobs";
+import CreatePlayer from "./pages/CreatePlayer";
 import Map from "./pages/Map";
 import Auth from "./pages/Auth";
 
 import TalentSelection from "./pages/TalentSelection";
 import TalentTree from "./pages/TalentTree";
+import TalentTree2 from "./pages/TalentTree2";
 
 import Account from "./pages/Account";
 import Histoire from "./pages/Histoire";
@@ -38,13 +41,17 @@ function AnimatedRoutes() {
         <Route path="/histoire" element={<PageTransition><Histoire /></PageTransition>} />
         <Route path="/players" element={<PageTransition><Players /></PageTransition>} />
         <Route path="/players-admin" element={<PageTransition><PlayersAdmin /></PageTransition>} />
+        <Route path="/player-jobs/:playerId" element={<PlayerJobs />} />
+        <Route path="/create-player" element={<CreatePlayer />} />
         <Route path="/map" element={<PageTransition><Map /></PageTransition>} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
         {/* <Route path="/talents" element={<PageTransition><Talents /></PageTransition>} /> */}
         <Route path="/account" element={<PageTransition><Account /></PageTransition>} />
         <Route path="/character" element={<PageTransition><Character /></PageTransition>} />
+
         <Route path="/talents" element={<PageTransition><TalentSelection /></PageTransition>} />
         <Route path="/talents/:profession" element={<TalentTree />} />
+        <Route path="/talent2/:profession" element={<TalentTree2 />} />
 
         {/* Histoire : */}
         <Route path="/histoires/livres" element={<PageTransition><Livres /></PageTransition>} />

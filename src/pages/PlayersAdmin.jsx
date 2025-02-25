@@ -51,110 +51,110 @@ function PlayersAdmin() {
       console.error("❌ ERREUR : playerId ou traitId est manquant !");
       return;
     }
-  
+
     console.log(`➕ Ajout du trait ${traitId} pour le joueur ${playerId}`);
-  
+
     addTraitToPlayer(playerId, traitId)
       .then(() => {
         console.log(`✅ Trait ${traitId} ajouté pour ${playerId} !`);
-  
+
         setPlayers((prevPlayers) => {
           const updatedPlayers = prevPlayers.map((player) =>
             player.id === playerId
               ? { ...player, traits: [...player.traits, availableTraits.find((t) => t.trait_id === traitId)] }
               : player
           );
-  
+
           return [...updatedPlayers]; // 🔥 Force la mise à jour
         });
       })
       .catch((error) => console.error("❌ ERREUR lors de l'ajout du trait :", error));
   };
-  
+
 
   const handleRemoveTrait = (playerId, traitId) => {
     if (!playerId || !traitId) {
       console.error("❌ ERREUR : playerId ou traitId est manquant !");
       return;
     }
-  
+
     console.log(`🗑️ Suppression du trait ${traitId} pour le joueur ${playerId}`);
-  
+
     removeTraitFromPlayer(playerId, traitId)
       .then(() => {
         console.log(`✅ Trait ${traitId} supprimé pour ${playerId} !`);
-  
+
         setPlayers((prevPlayers) => {
           const updatedPlayers = prevPlayers.map((player) =>
             player.id === playerId
               ? { ...player, traits: player.traits.filter((t) => t.trait_id !== traitId) }
               : player
           );
-  
+
           return [...updatedPlayers]; // 🔥 Nouvelle référence mémoire
         });
-  
+
         setUpdateTrigger((prev) => prev + 1); // 🔥 Force le re-rendu
       })
       .catch((error) => console.error("❌ ERREUR lors de la suppression du trait :", error));
-  };  
-  
+  };
+
 
   const handleAddAction = (playerId, actionId) => {
     if (!playerId || !actionId) {
       console.error("❌ ERREUR : playerId ou actionId est manquant !");
       return;
     }
-  
+
     console.log(`➕ Ajout de l'action ${actionId} pour le joueur ${playerId}`);
-  
+
     addActionToPlayer(playerId, actionId)
       .then(() => {
         console.log(`✅ Action ${actionId} ajoutée pour ${playerId} !`);
-  
+
         setPlayers((prevPlayers) => {
           const updatedPlayers = prevPlayers.map((player) =>
             player.id === playerId
               ? { ...player, actions: [...player.actions, availableActions.find((a) => a.action_id === actionId)] }
               : player
           );
-  
+
           return [...updatedPlayers]; // 🔥 Force la mise à jour
         });
       })
       .catch((error) => console.error("❌ ERREUR lors de l'ajout de l'action :", error));
-  };  
+  };
 
   const handleRemoveAction = (playerId, actionId) => {
     if (!playerId || !actionId) {
       console.error("❌ ERREUR : playerId ou actionId est manquant !");
       return;
     }
-  
+
     console.log(`🗑️ Suppression de l'action ${actionId} pour le joueur ${playerId}`);
-  
+
     removeActionFromPlayer(playerId, actionId)
       .then(() => {
         console.log(`✅ Action ${actionId} supprimée pour ${playerId} !`);
-  
+
         setPlayers((prevPlayers) => {
           const updatedPlayers = prevPlayers.map((player) =>
             player.id === playerId
               ? { ...player, actions: player.actions.filter((a) => a.action_id !== actionId) }
               : player
           );
-  
+
           return [...updatedPlayers]; // 🔥 Force la mise à jour
         });
       })
       .catch((error) => console.error("❌ ERREUR lors de la suppression de l'action :", error));
   };
-  
+
   useEffect(() => {
     console.log("🔄 Mise à jour forcée de l'affichage des joueurs !");
   }, [updateTrigger]); // 🔥 Réagit à `updateTrigger` au lieu de `players`
-  
-  
+
+
   useEffect(() => {
     async function fetchPlayers() {
       if (userRank !== "Admin") {
@@ -262,6 +262,20 @@ function PlayersAdmin() {
                     </button>
                   </div>
                   {/* 🔹 Contenu de la carte */}
+                  <div className="flex justify-end mb-6">
+                    <button
+                      onClick={() => {
+                        if (!selectedPlayer) {
+                          alert("❌ Aucun joueur sélectionné !");
+                          return;
+                        }
+                        window.location.href = `/player-jobs/${selectedPlayer}`;
+                      }}
+                      className="px-6 py-2 bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg text-lg font-semibold transition flex items-center space-x-2"
+                    >
+                      🏆 Gérer les métiers du joueur
+                    </button>
+                  </div>
                   <div className="mt-4 w-full">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                       {/* 🔹 Prénom */}
@@ -320,9 +334,19 @@ function PlayersAdmin() {
                             value={editedData[player.id]?.rank || "player"}
                             onChange={(e) => handleChange(player.id, "rank", e.target.value)}
                           >
-                            <option value="admin">Admin</option>
-                            <option value="moderator">Moderator</option>
-                            <option value="player">Player</option>
+                            <option value="Esclave">Esclave</option>
+                            <option value="Etranger">Etranger</option>
+                            <option value="Villageois">Villageois</option>
+                            <option value="Citoyen">Citoyen</option>
+                            <option value="Citoyen Libre">Citoyen Libre</option>
+                            <option value="Patricien">Patricien</option>
+                            <option value="Noble">Noble</option>
+                            <option value="Seigneur">Seigneur</option>
+                            <option value="Vicompte">Vicompte</option>
+                            <option value="Compte">Compte</option>
+                            <option value="Marquis">Marquis</option>
+                            <option value="Moderateur">Moderateur</option>
+                            <option value="Admin">Admin</option>
                           </select>
                         ) : (
                           <span className="mr-2">{player.rank || "Player"}</span>
@@ -359,6 +383,15 @@ function PlayersAdmin() {
                             <option value="Ardorium">Ardorium</option>
                             <option value="Sylvaria">Sylvaria</option>
                             <option value="Inquisora">Inquisora</option>
+                            <option value="Solanaré">Solanaré</option>
+                            <option value="Aurelios">Aurelios</option>
+                            <option value="Explorien">Explorien</option>
+                            <option value="Ignotembris">Ignotembris</option>
+                            <option value="Ombrelume">Ombrelume</option>
+                            <option value="Scénarche">Scénarche</option>
+                            <option value="Glacilune">Glacilune</option>
+                            <option value="Nevrosante">Nevrosante</option>
+                            <option value="Érudihiver">Érudihiver</option>
                           </select>
                         ) : (
                           <span className="mr-2">{player.divin || "Aucun"}</span>
@@ -658,7 +691,7 @@ function PlayersAdmin() {
                               ) : (
                                 player?.actions && player.actions.length > 0 ? (
                                   player.actions.map((item, index) => {
-                                    
+
                                     if (!item) return null; // ⚠️ Vérifie que item existe
                                     return (
                                       <div key={item.id ?? `action-${index}`} className="flex justify-between items-center bg-gray-800 p-2 rounded-md shadow">

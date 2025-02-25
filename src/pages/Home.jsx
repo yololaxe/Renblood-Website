@@ -22,6 +22,7 @@ function Home() {
         <h1 className="text-4xl md:text-6xl font-bold">Bienvenue sur Renblood</h1>
         <p className="text-lg text-gray-300 mt-2">Un monde Semi-RP où votre aventure commence.</p>
         <motion.button
+        onClick={() => window.location.href = "https://discord.gg/uwNy5tM8jU"}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           className="mt-6 px-8 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-blue-500 transition"
@@ -118,6 +119,7 @@ function Home() {
       >
         <h2 className="text-3xl font-bold mb-4">🚀 Rejoignez-nous dès maintenant !</h2>
         <motion.button
+        onClick={() => window.location.href = "https://discord.gg/uwNy5tM8jU"}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           className="px-8 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-green-500 transition"

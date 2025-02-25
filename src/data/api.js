@@ -42,22 +42,17 @@ export const clearPlayerData = () => {
   localStorage.removeItem("playerData");
 };
 
-export const getPlayerJobs = async (userId) => {
-  if (!userId) {
-    console.error("❌ Impossible de récupérer les métiers : userId est undefined !");
-    return null;
-  }
-
+export async function getPlayerJobs(userId) {
   try {
-    console.log(`🔄 Requête envoyée : ${API_BASE_URL}/players/get/${userId}/jobs/`);
-    const response = await axios.get(`${API_BASE_URL}/players/get/${userId}/jobs/`, { timeout: 10000 });
-    console.log("✅ Métiers récupérés :", response.data.jobs);
-    return response.data.jobs;
+    const response = await axios.get(`${API_BASE_URL}/players/get/${userId}/jobs`);
+    console.log("Données des métiers récupérées :", response.data);
+    return response.data;
   } catch (error) {
     console.error("❌ Erreur lors de la récupération des jobs :", error);
-    return null;
+    return { jobs: {} };
   }
-};
+}
+
 // ✅ Récupérer l'arbre des talents d'un métier
 // ✅ Récupérer l'arbre des talents d'un métier
 export const getJobDetails = async (jobId) => {
@@ -77,10 +72,11 @@ export const getJobDetails = async (jobId) => {
 export const updateTalentProgression = async (userId, jobName, newProgression) => {
   try {
     // 🔥 Vérifie que la liste fait bien 10 éléments
-    if (!Array.isArray(newProgression) || newProgression.length !== 10) {
-      console.error("❌ Erreur : La progression doit être une liste de 10 booléens.");
+    if (!Array.isArray(newProgression) || (newProgression.length !== 10 && newProgression.length !== 15)) {
+      console.error("❌ Erreur : La progression doit être une liste de 10 ou 15 booléens.");
       return;
     }
+    
 
     const url = `${API_BASE_URL}/players/update/${userId}/jobs/${jobName}/progression/`;
 
@@ -120,7 +116,7 @@ export async function updatePlayer(playerId, updates) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
     });
-    
+
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Erreur de mise à jour");
 
@@ -181,18 +177,20 @@ export const removeTraitFromPlayer = async (playerId, traitId) => {
 
   console.log(`🗑️ Suppression du trait ${traitId} pour le joueur ${playerId}`);
 
-  const response = await fetch(`http://127.0.0.1:8000/players/list/${playerId}/trait/delete/?id=${traitId}`, {
-    method: "DELETE", // ⚠️ Si l'API demande POST, remplace par "POST"
-    headers: { "Content-Type": "application/json" }
-  });
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/players/list/${playerId}/trait/delete/`, {
+      params: { id: traitId },
+      headers: { "Content-Type": "application/json" },
+    });
 
-  if (!response.ok) {
-    console.error("❌ ERREUR API :", response.status, response.statusText);
-    return;
+    console.log("✅ Trait supprimé avec succès !");
+    return response.data;
+  } catch (error) {
+    console.error("❌ ERREUR API :", error.response?.status, error.response?.statusText || error.message);
+    return null;
   }
-
-  return response.json();
 };
+
 
 
 // 🔹 Ajouter une action à un joueur
@@ -207,20 +205,78 @@ export const addActionToPlayer = async (playerId, actionId) => {
 export const removeActionFromPlayer = async (playerId, actionId) => {
   if (!playerId || !actionId) {
     console.error("❌ ERREUR : playerId ou actionId est manquant !");
-    return;
+    return null;
   }
 
   console.log(`🗑️ Suppression de l'action ${actionId} pour le joueur ${playerId}`);
 
-  const response = await fetch(`http://127.0.0.1:8000/players/list/${playerId}/action/delete/?id=${actionId}`, {
-    method: "DELETE", // ⚠️ Si l'API demande POST, remplace par "POST"
-    headers: { "Content-Type": "application/json" }
-  });
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/players/list/${playerId}/action/delete/`, {
+      params: { id: actionId }, // ✅ Utilisation de params pour l'ID
+      headers: { "Content-Type": "application/json" },
+    });
 
-  if (!response.ok) {
-    console.error("❌ ERREUR API :", response.status, response.statusText);
-    return;
+    console.log("✅ Action supprimée :", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Erreur lors de la suppression de l'action :", error.response?.data || error.message);
+    return null;
   }
+};
 
-  return response.json();
+
+export async function updatePlayerJobs(playerId, jobName, field, value) {
+  try {
+    const url = `${API_BASE_URL}/players/update/${playerId}/jobs/${jobName}/${field}/`; // ✅ Vérification de l'URL
+
+    console.log(`🔄 Envoi de la requête PUT à : ${url} avec new_value =`, value);
+
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ new_value: value }), // ✅ Respecte la structure attendue par Django
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(`❌ Erreur lors de la mise à jour du métier :`, errorData);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log(`✅ Mise à jour réussie :`, data);
+    return data;
+  } catch (error) {
+    console.error("❌ Erreur de connexion à l'API :", error);
+    return null;
+  }
+}
+
+export const createPlayer = async (playerData) => {
+  try {
+    const url = `${API_BASE_URL}/players/create/`;
+
+    console.log(`🔄 Envoi de la requête POST à : ${url}`);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(playerData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(`❌ Erreur lors de la création du joueur :`, errorData);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log(`✅ Joueur créé avec succès :`, data);
+    return data;
+  } catch (error) {
+    console.error("❌ Erreur de connexion à l'API :", error);
+    return null;
+  }
 };
