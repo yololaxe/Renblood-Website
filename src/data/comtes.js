@@ -1,33 +1,254 @@
 const comtes = {
-    "Eldia": [
-        {"ville": "Fyvelune", "type": "Marquisat", "chef": "Banefort", "environnement": "Montagne / Port", "guilde": "Guilde des Commerçant & Artisans", "Coords": [800, 900]},
-        {"ville": "Saint Troufion de Paumé", "type": "Grande-Ville", "chef": "Rok", "environnement": "Montagne / Plaine / Agriculture", "guilde": "Plus grande forge du Royaume", "Coords": [550, 1200]},
-        {"ville": "Valentine", "type": "Ville", "chef": "Inconnu", "environnement": "Forêt", "guilde": "Inconnu", "Coords": [900, 1020]},
-        {"ville": "Altkirrch", "type": "Ville", "chef": "Bertorah", "environnement": "Plaine / Élevage", "guilde": "Inconnu", "Coords": [500, 1320]},
-        {"ville": "Evonia", "type": "Village", "chef": "Baramouton", "environnement": "Plaine / Port", "guilde": "Inconnu", "Coords": [615, 1380]},
-        {"ville": "Creed", "type": "Village", "chef": "Inconnu", "environnement": "Plaine / Port / Pirate", "guilde": "Inconnu", "Coords": [100, 1330]},
+    "Mofrage": [
+        {
+            "ville": "Triomphe", "type": "Capitale", "chef": "Herbert ROLLINGFORD", "environnement": "Forêt noir, montagne, océan", "caracteristique": "Pôle de toute les décision, comptoir de commerce, royauté", "guilde": "Guilde de la Table", "Coords": [330, 910], "habitant": 320000, "soldat": 2400, "intercomunalite": "Aucune",
+            "conseil": {
+                "Roi": "",
+                "Consul": ["", ""],
+                "Grand Argentier": "",
+                "Chef des armées": "",
+                "Coordinateur Royale": "",
+                "Gardien du peuple": "",
+                "Maitre de bail": ["", ""],
+                "Triomphant": "",
+                "Maître Mystique": ""
+            }
+        },
+        {
+            "ville": "Isvanore", "type": "Grande-Ville", "chef": "Enguerrand FERAN", "environnement": "Grande ville sur l'ile de Feran (Ville sur l'eau), ocean", "caracteristique": "Port, Universités, Biliothèques, Banques", "guilde": "Guilde de la lettre", "Coords": [640, 820], "habitant": 60000, "soldat": 420, "intercomunalite": "Triomphe",
+            "conseil": {
+                "Maire de grande ville": "",
+                "Magistrat": "",
+                "Colonel": "",
+                "Geôlier": "",
+                "Procureur": "",
+                "Représentant de la guilde": "",
+                "Directeur de chantier": ""
+            }
+        },
+        {
+            "ville": "Lone", "type": "Ville", "chef": "Daé FERAN", "environnement": "Plaine, Culture, Ferme, Forêt, Montagne", "caracteristique": "Spécialisé dans la culture / Route terrestre marchande", "guilde": "Aucune", "Coords": [430, 550], "habitant": 11000, "soldat": 72, "intercomunalite": "Isvanore",
+            "conseil": {
+                "Maire d'une ville": "",
+                "Préfet": "",
+                "Capitaine": "",
+                "Directeur de chantier": "",
+                "Représentant de la guilde": "",
+                "Représentant": ""
+            }
+        },
+        {
+            "ville": "Sylinore", "type": "Cite-libre", "chef": "Glynvalur CHALK", "environnement": "Forêt mystique, mine mystique", "caracteristique": "Magie, Esprit, Forge, Lieux sacré", "guilde": "Guilde Mystique", "Coords": [630, 500], "habitant": 170, "soldat": 122, "intercomunalite": "Isvanore",
+            "conseil": {
+                "Maire d'une cité": "",
+                "Préfet": "",
+                "Capitaine": "",
+                "Représentant": ""
+            }
+        },
+        {
+            "ville": "Ages", "type": "Village", "chef": "James ROLLINGFORD", "environnement": "Plaine, île, océan", "caracteristique": "Grands eleveurs / Portuaire", "guilde": "Aucune", "Coords": [40, 840], "habitant": 78, "soldat": 6, "intercomunalite": "Lone",
+            "conseil": {
+                "Maire": "",
+                "Médiateur": "",
+                "Régisseur": ""
+            }
+        },
+        {
+            "ville": "Zeubillage", "type": "Village", "chef": "Carl SAND", "environnement": "Plaine, Plage, Forêt", "caracteristique": "Chemin portuaire", "guilde": "Aucune", "Coords": [470, 500], "habitant": 28, "soldat": 1, "intercomunalite": "Lone",
+            "conseil": {
+                "Maire": "",
+                "Médiateur": "",
+                "Régisseur": ""
+            }
+        },
+        {
+            "ville": "Bransby Horses", "type": "Ranch", "chef": "Arthur II WYNE", "environnement": "Plaine", "caracteristique": "Chevaux, Créatures magiques & mystique", "guilde": "Guilde des créatures", "Coords": [260, 600], "habitant": 48, "soldat": 6, "intercomunalite": "Lone",
+            "conseil": {
+                "Dirigeant": "",
+                "Trésorier": "",
+                "Gestionnaire": "",
+                "Préfet": "",
+                "Représentant royal": ""
+            }
+        },
     ],
-    "Cornwall": [
-        {"ville": "Freezing Farm", "type": "Marquisat", "chef": "Stanislas LYNSTER", "environnement": "Plaine / Bétail / Port", "guilde": "Guilde maritime", "Coords": [500, 200]},
-        {"ville": "Kilkou", "type": "Village", "chef": "Inconnu", "environnement": "Océan / Port / Pêche", "guilde": "Inconnu", "Coords": [70, 220]},
-        {"ville": "The Verdict", "type": "Grande-Ville", "chef": "Inconnu", "environnement": "No man's land / Forgeron", "guilde": "Ville détruite / Cyclopes", "Coords": [310, 90]},
-        {"ville": "Moria", "type": "Mine", "chef": "Goodbrook", "environnement": "Mine / Forgeron / Nain", "guilde": "Guilde des mineurs", "Coords": [680, 120]},
+    "Eldia": [
+        {
+            "ville": "Fyvelune", "type": "Marquisat", "chef": "Eudes BANEFORT", "environnement": "Montagne, ocean", "caracteristique": "Port, Palais", "guilde": "Guilde des Commerçant & Artisans", "Coords": [800, 900], "habitant": 74000, "soldat": 1920, "intercomunalite": "Aucune",
+            "conseil": {
+                "Marquis": "",
+                "Magistrat": ["", ""],
+                "Maréchal": "",
+                "Maître des finances": "",
+                "Maître de guilde": "",
+                "Maître du donjon": "",
+                "Maître de bail": ["", ""],
+            }
+        },
+        {
+            "ville": "Saint Troufion de Paumé", "type": "Grande-Ville", "chef": "Alice ROK", "environnement": "Montagne, Plaine, Forêt", "caracteristique": "Plus grande forge du royaume", "guilde": "", "Coords": [550, 1200], "habitant": 19000, "soldat": 160, "intercomunalite": "Fyvelune",
+            "conseil": {
+                "Maire de grande ville": "",
+                "Magistrat": "",
+                "Colonel": "",
+                "Geôlier": "",
+                "Procureur": "",
+                "Représentant de la guilde": "",
+                "Directeur de chantier": ""
+            }
+        },
+        {
+            "ville": "Valentine", "type": "Ville", "chef": "Henri LEMIEUX", "environnement": "Forêt", "caracteristique": "Marchandage, Chevaux, Bûcheron", "guilde": "Aucune", "Coords": [900, 1020], "habitant": 4500, "soldat": 110, "intercomunalite": "Fyvelune",
+            "conseil": {
+                "Maire d'une ville": "",
+                "Préfet": "",
+                "Capitaine": "",
+                "Directeur de chantier": "",
+                "Représentant de la guilde": "",
+                "Représentant": ""
+            }
+        },
+        {
+            "ville": "Saint Aquillon", "type": "Ville", "chef": "Francois BAROIN", "environnement": "Desert, plaine", "caracteristique": "Temple, Frontières", "guilde": "Aucune", "Coords": [400, 1220], "habitant": 1100, "soldat": 12, "intercomunalite": "Fyvelune",
+            "conseil": {
+                "Maire d'une ville": "",
+                "Préfet": "",
+                "Capitaine": "",
+                "Directeur de chantier": "",
+                "Représentant de la guilde": "",
+                "Représentant": ""
+            }
+        },
+        {
+            "ville": "Evonia", "type": "Cite-libre", "chef": "Florian BARAMOUTON", "environnement": "Plaine, Ocean", "caracteristique": "Port", "guilde": "Aucune", "Coords": [615, 1380], "habitant": 120, "soldat": 8, "intercomunalite": "Saint Troufion de Paumé",
+            "conseil": {
+                "Maire d'une cité": "",
+                "Préfet": "",
+                "Capitaine": "",
+                "Représentant": ""
+            }
+        },
+        {
+            "ville": "Creed", "type": "Village", "chef": "Jacky CHAN", "environnement": "Plaine, Ocean", "caracteristique": "Port, Pirate, Volcan, Forge", "guilde": "Aucune", "Coords": [100, 1330], "habitant": 21, "soldat": 2, "intercomunalite": "Saint Troufion de Paumé",
+            "conseil": {
+                "Maire": "",
+                "Médiateur": "",
+                "Régisseur": ""
+            }
+        },
+        {
+            "ville": "Altkirrch", "type": "Village détruit", "chef": "Ilias BERTORAH", "environnement": "Forêt, Elevage, Culture", "caracteristique": "Détruit", "guilde": "Aucune", "Coords": [500, 1320], "habitant": 13, "soldat": 1, "intercomunalite": "Saint Troufion de Paumé",
+            "conseil": {
+                "Maire": "",
+                "Médiateur": "",
+                "Régisseur": ""
+            }
+        },
     ],
     "Palam": [
-        {"ville": "Circos", "type": "Marquisat", "chef": "Arthur I WYNE", "environnement": "Désert / Dragon", "guilde": "Guilde des explorateurs", "Coords": [810, 480]},
-        {"ville": "Rozdru", "type": "Grande-Ville", "chef": "Roxton", "environnement": "Désert / Pirate", "guilde": "Inconnu", "Coords": [860, 760]},
-        {"ville": "Mytiya", "type": "Grande-Ville", "chef": "Inconnu", "environnement": "Jungle / Chocolat / Fruits", "guilde": "Inconnu", "Coords": [800, 250]},
-        {"ville": "Aasari", "type": "Village", "chef": "Inconnu", "environnement": "Plaine / Culture", "guilde": "Inconnu", "Coords": [870, 580]},
-        {"ville": "Lead Peaks", "type": "Ville", "chef": "Inconnu", "environnement": "Désert / Port / Pêche", "guilde": "Inconnu", "Coords": [1080, 380]},
+        {
+            "ville": "Circos", "type": "Marquisat", "chef": "Arthur I WYNE", "environnement": "Désert", "caracteristique": "Dragon", "guilde": "Guilde des explorateurs", "Coords": [810, 480], "habitant": 66000, "soldat": 3100, "intercomunalite": "Aucune",
+            "conseil": {
+                "Marquis": "",
+                "Magistrat": ["", ""],
+                "Maréchal": "",
+                "Maître des finances": "",
+                "Maître de guilde": "",
+                "Maître du donjon": "",
+                "Maître de bail": ["", ""],
+            }
+        },
+        {
+            "ville": "Rozdru", "type": "Grande-Ville", "chef": "Joras ROXTON", "environnement": "Montagne, Ocean", "caracteristique": "Port, Pirate, Navale", "guilde": "Aucune", "Coords": [860, 760], "habitant": 11000, "soldat": 108, "intercomunalite": "Circos",
+            "conseil": {
+                "Maire de grande ville": "",
+                "Magistrat": "",
+                "Colonel": "",
+                "Geôlier": "",
+                "Procureur": "",
+                "Représentant de la guilde": "",
+                "Directeur de chantier": ""
+            }
+        },
+        {
+            "ville": "Lead Peaks", "type": "Ville", "chef": "Garis SAND", "environnement": "Desert, Ocean", "caracteristique": "Port, Pêche", "guilde": "Aucune", "Coords": [1080, 380], "habitant": 1050, "soldat": 45, "intercomunalite": "Circos",
+            "conseil": {
+                "Maire d'une ville": "",
+                "Préfet": "",
+                "Capitaine": "",
+                "Directeur de chantier": "",
+                "Représentant de la guilde": "",
+                "Représentant": ""
+            }
+        },
+        {
+            "ville": "Mytiya", "type": "Cite-libre", "chef": "Tarcos VALLOT", "environnement": "Jungle, Volcan", "caracteristique": "Chocolat, Fruit, Culture, Temple", "guilde": "Aucune", "Coords": [800, 250], "habitant": 670, "soldat": 20, "intercomunalite": "Circos",
+            "conseil": {
+                "Maire d'une cité": "",
+                "Préfet": "",
+                "Capitaine": "",
+                "Représentant": ""
+            }
+        },
+        {
+            "ville": "Aasari", "type": "Cite-libre", "chef": "Bella OUSTRAUD", "environnement": "Plaine, Montagne", "caracteristique": "Culture", "guilde": "Aucune", "Coords": [870, 580], "habitant": 160, "soldat": 3, "intercomunalite": "Rozdru",
+            "conseil": {
+                "Maire d'une cité": "",
+                "Préfet": "",
+                "Capitaine": "",
+                "Représentant": ""
+            }
+        },
     ],
-    "Mofrage": [
-        {"ville": "Triomphe", "type": "Capitale", "chef": "HERBERT ROLLINGFORD", "environnement": "Pôle de décision / Commerce / Université", "guilde": "Guilde de la Table", "Coords": [330, 910]},
-        {"ville": "Isvanore", "type": "Grande-Ville", "chef": "Feran", "environnement": "Forteresse imprenable", "guilde": "Guilde de la lettre", "Coords": [640, 820]},
-        {"ville": "Lone", "type": "Grande-Ville", "chef": "Inconnu", "environnement": "Plaine / Culture / Fermes", "guilde": "Inconnu", "Coords": [430, 550]},
-        {"ville": "Sylinore", "type": "Ville", "chef": "Chalk", "environnement": "Elfes / Magie / Esprit / Forge", "guilde": "Guilde Mystique", "Coords": [630, 500]},
-        {"ville": "Ages", "type": "Village", "chef": "James ROLLINGFORD", "environnement": "Plaine / Éleveur / Fromage", "guilde": "Inconnu", "Coords": [40, 840]},
-        {"ville": "Bransby Horses", "type": "Ranch", "chef": "Dirigeant", "environnement": "Ranch / Chevaux / Créature magique", "guilde": "Guilde des créatures", "Coords": [260, 600]},
+    "Cornwall": [
+        {
+            "ville": "Freezing Farm", "type": "Marquisat", "chef": "Stanislas LYNSTER", "environnement": "Plaine, Ocean, Montagne", "caracteristique": "Bétail, Culture, Port, Alcool", "guilde": "Guilde maritime", "Coords": [500, 200], "habitant": 110000, "soldat": 1900, "intercomunalite": "Aucune",
+            "conseil": {
+                "Marquis": "",
+                "Magistrat": ["", ""],
+                "Maréchal": "",
+                "Maître des finances": "",
+                "Maître de guilde": "",
+                "Maître du donjon": "",
+                "Maître de bail": ["", ""],
+            }
+        },
+        {
+            "ville": "Kilkou", "type": "Ville", "chef": "Arbra ISLAN", "environnement": "Île, Océan", "caracteristique": "Port, Pêche, Alcool", "guilde": "Aucune", "Coords": [70, 220], "habitant": 1700, "soldat": 48, "intercomunalite": "Freezing Farm",
+            "conseil": {
+                "Maire d'une ville": "",
+                "Préfet": "",
+                "Capitaine": "",
+                "Directeur de chantier": "",
+                "Représentant de la guilde": "",
+                "Représentant": ""
+            }
+        },
+        {
+            "ville": "The Verdict", "type": "Grande-Ville", "chef": "Aucun", "environnement": "Plaine corrompu", "caracteristique": "Détruite, Forgeron, No mans land, Cyclopes", "guilde": "", "Coords": [310, 90], "habitant": 0, "soldat": 0, "intercomunalite": "Aucune",
+            "conseil": {
+                "Maire de grande ville": "",
+                "Magistrat": "",
+                "Colonel": "",
+                "Geôlier": "",
+                "Procureur": "",
+                "Représentant de la guilde": "",
+                "Directeur de chantier": ""
+            }
+        },
+        {
+            "ville": "Moria", "type": "Mine", "chef": "Dori GOODBROOK", "environnement": "Mine, Montagne", "caracteristique": "Nain, Mineur, Forge", "guilde": "Guilde des mineurs", "Coords": [680, 120], "habitant": 790, "soldat": 180, "intercomunalite": "Freezing Farm",
+            "conseil": {
+                "Dirigeant": "",
+                "Trésorier": "",
+                "Gestionnaire": "",
+                "Préfet": "",
+                "Représentant royal": ""
+            }
+        },
     ]
+
 };
 
 export default comtes;

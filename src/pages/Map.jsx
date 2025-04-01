@@ -7,12 +7,11 @@ function Map() {
   const [selectedVille, setSelectedVille] = useState(null);
   const mapRef = useRef(null);
   const [mapSize, setMapSize] = useState({ width: 1154, height: 1608 });
-  const [imageLoaded, setImageLoaded] = useState(false); // Ajout d'un état pour savoir si l'image est chargée
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  const imageWidth = 1154; // Largeur originale de la carte
-  const imageHeight = 1608; // Hauteur originale de la carte
+  const imageWidth = 1154;
+  const imageHeight = 1608;
 
-  // Fonction pour mettre à jour la taille de la carte
   const updateSize = () => {
     if (mapRef.current) {
       setMapSize({
@@ -22,21 +21,35 @@ function Map() {
     }
   };
 
-  // Mise à jour des dimensions de la carte après chargement de l'image
   useEffect(() => {
     window.addEventListener("resize", updateSize);
-    if (imageLoaded) updateSize(); // Mise à jour dès que l'image est chargée
+    if (imageLoaded) updateSize();
 
     return () => window.removeEventListener("resize", updateSize);
-  }, [imageLoaded]); // Exécuter l'effet uniquement après le chargement
+  }, [imageLoaded]);
 
   const handleClick = (ville) => {
     setSelectedVille(ville);
   };
 
+  const renderConseil = (conseil) => {
+    if (!conseil) return null;
+    return (
+      <div className="mt-4">
+        <h3 className="text-lg font-semibold text-center border-b border-gray-600 pb-1 mb-2">🧩 Conseil municipal</h3>
+        <ul className="text-sm text-gray-300 space-y-1">
+          {Object.entries(conseil).map(([role, value], index) => (
+            <li key={index}>
+              <strong>{role} :</strong> {Array.isArray(value) ? value.filter(v => v).join(", ") || "-" : value || "-"}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
   return (
     <div className="relative flex items-center justify-center bg-gray-900 min-h-screen overflow-hidden">
-      {/* Conteneur de la carte */}
       <div className="map-container relative mx-auto w-full max-w-5xl px-4">
         <img
           ref={mapRef}
@@ -44,13 +57,12 @@ function Map() {
           alt="Carte de Renblood"
           className="w-full"
           onLoad={() => {
-            setImageLoaded(true); // Indique que l'image est chargée
-            updateSize(); // Met à jour les dimensions
+            setImageLoaded(true);
+            updateSize();
           }}
         />
 
-        {/* Placement des villes sur la carte */}
-        {imageLoaded && // S'assurer que l'image est bien chargée avant de placer les villes
+        {imageLoaded &&
           Object.values(comtes).flat().map((ville, index) => {
             if (!ville.Coords) return null;
 
@@ -66,10 +78,7 @@ function Map() {
               <motion.div
                 key={index}
                 className="absolute cursor-pointer group"
-                style={{
-                  left: `${adjustedX}px`,
-                  top: `${adjustedY}px`,
-                }}
+                style={{ left: `${adjustedX}px`, top: `${adjustedY}px` }}
                 onClick={() => handleClick(ville)}
               >
                 <img
@@ -77,7 +86,6 @@ function Map() {
                   alt={ville.type}
                   className="city-icon w-[5vw] max-w-[40px] h-auto transition-transform hover:scale-125"
                 />
-                
                 <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 text-white text-xs sm:text-sm bg-gray-800 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                   {ville.ville}
                 </div>
@@ -86,7 +94,6 @@ function Map() {
           })}
       </div>
 
-      {/* Fenêtre d'information sur la ville */}
       <AnimatePresence>
         {selectedVille && (
           <motion.div
@@ -113,7 +120,13 @@ function Map() {
               <p className="mt-2 text-gray-300">🏰 <strong>Type :</strong> {selectedVille.type}</p>
               <p className="mt-1 text-gray-300">⚔️ <strong>Chef :</strong> {selectedVille.chef || "Non défini"}</p>
               <p className="mt-1 text-gray-300">🌍 <strong>Environnement :</strong> {selectedVille.environnement}</p>
+              <p className="mt-1 text-gray-300">📊 <strong>Habitants :</strong> {selectedVille.habitant}</p>
+              <p className="mt-1 text-gray-300">🛡️ <strong>Soldats :</strong> {selectedVille.soldat}</p>
               {selectedVille.guilde && <p className="mt-1 text-gray-300">🏛️ <strong>Guilde :</strong> {selectedVille.guilde}</p>}
+              <p className="mt-1 text-gray-300">🤝 <strong>Intercommunalité :</strong> {selectedVille.intercomunalite}</p>
+              <p className="mt-1 text-gray-300">⭐ <strong>Caractéristique :</strong> {selectedVille.caracteristique}</p>
+
+              {renderConseil(selectedVille.conseil)}
             </motion.div>
           </motion.div>
         )}
