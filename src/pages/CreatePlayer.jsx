@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createPlayer } from "../data/api"; // Fonction API pour créer un joueur
+import { createPlayer } from "../services/api"; // Fonction API pour créer un joueur
 
 function CreatePlayer() {
     const navigate = useNavigate();

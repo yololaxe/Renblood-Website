@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getPlayerJobs, getJobDetails } from "../data/api";
+import { getPlayerJobs, getJobDetails } from "../services/api";
 import { useUser } from "../context/UserContext"; // ✅ Import du contexte utilisateur
 
 function TalentSelection() {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getPlayerJobs, updatePlayerJobs } from "../data/api";
+import { getPlayerJobs, updatePlayerJobs } from "../services/api";
 
 function PlayerJobs() {
     const { playerId } = useParams();

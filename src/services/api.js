@@ -1,10 +1,12 @@
 import axios from "axios";
 
 // 🔍 Détection de l'environnement (local / production)
-export const API_BASE_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://renblood-backend.onrender.com"
-    : "http://127.0.0.1:8000";
+// export const API_BASE_URL =
+//   process.env.NODE_ENV === "production"
+//     ? "https://renblood-backend.onrender.com"
+//     : "http://127.0.0.1:8000";
+
+export const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // ✅ Vérifier si l'API est active
 export const checkApiStatus = async () => {
@@ -36,6 +38,20 @@ export const getPlayerData = async (userId) => {
     return null;
   }
 };
+
+export const me = async (firebaseUid) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/players/me/${firebaseUid}/`, {
+      timeout: 15000
+    });
+    return response.data;
+  } catch (error) {
+    console.error("❌ Erreur dans me() :", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+
 
 // ✅ Supprimer les infos locales lors de la déconnexion
 export const clearPlayerData = () => {
@@ -76,7 +92,7 @@ export const updateTalentProgression = async (userId, jobName, newProgression) =
       console.error("❌ Erreur : La progression doit être une liste de 10 ou 15 booléens.");
       return;
     }
-    
+
 
     const url = `${API_BASE_URL}/players/update/${userId}/jobs/${jobName}/progression/`;
 

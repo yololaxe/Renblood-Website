@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { auth, listenToAuthChanges } from "../data/firebaseConfig";
-import { API_BASE_URL } from "../data/api";
+import { API_BASE_URL } from "../services/api";
 import axios from "axios";
 
 function Account() {
@@ -19,7 +19,7 @@ function Account() {
   // ✅ Fonction pour récupérer les infos du joueur
   const fetchMinecraftData = async (userId) => {
     try {
-      console.log(`🔄 Vérification des mises à jour : ${API_BASE_URL}/players/get/${userId}/`);
+      // console.log(`🔄 Vérification des mises à jour : ${API_BASE_URL}/players/get/${userId}/`);
       const response = await axios.get(`${API_BASE_URL}/players/get/${userId}/`);
       sessionStorage.setItem("mcData", JSON.stringify(response.data));
       setPlayerData(response.data);

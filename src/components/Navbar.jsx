@@ -40,6 +40,7 @@ function Navbar() {
                   try {
                     await signOut(auth);
                     sessionStorage.clear(); // ✅ Supprime toutes les données stockées
+                    localStorage.removeItem("access_token"); // ✅ Déconnexion complète
                     setUser(null); // ✅ Réinitialise l'état local
                     setUserId(null); // ✅ Réinitialise l'état global
                     setUserRank(null);

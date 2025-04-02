@@ -55,7 +55,7 @@ const comtes = {
             }
         },
         {
-            "ville": "Zeubillage", "type": "Village", "chef": "Carl SAND", "environnement": "Plaine, Plage, Forêt", "caracteristique": "Chemin portuaire", "guilde": "Aucune", "Coords": [470, 500], "habitant": 28, "soldat": 1, "intercomunalite": "Lone",
+            "ville": "Zeubillage", "type": "Village", "chef": "Carl SAND", "environnement": "Plaine, Plage, Forêt", "caracteristique": "Chemin portuaire", "guilde": "Aucune", "Coords": [520, 600], "habitant": 28, "soldat": 1, "intercomunalite": "Lone",
             "conseil": {
                 "Maire": "",
                 "Médiateur": "",
@@ -110,7 +110,7 @@ const comtes = {
             }
         },
         {
-            "ville": "Saint Aquillon", "type": "Ville", "chef": "Francois BAROIN", "environnement": "Desert, plaine", "caracteristique": "Temple, Frontières", "guilde": "Aucune", "Coords": [400, 1220], "habitant": 1100, "soldat": 12, "intercomunalite": "Fyvelune",
+            "ville": "Saint Aquillon", "type": "Ville", "chef": "Francois BAROIN", "environnement": "Desert, plaine", "caracteristique": "Temple, Frontières", "guilde": "Aucune", "Coords": [900, 1270], "habitant": 1100, "soldat": 12, "intercomunalite": "Fyvelune",
             "conseil": {
                 "Maire d'une ville": "",
                 "Préfet": "",
@@ -138,7 +138,7 @@ const comtes = {
             }
         },
         {
-            "ville": "Altkirrch", "type": "Village détruit", "chef": "Ilias BERTORAH", "environnement": "Forêt, Elevage, Culture", "caracteristique": "Détruit", "guilde": "Aucune", "Coords": [500, 1320], "habitant": 13, "soldat": 1, "intercomunalite": "Saint Troufion de Paumé",
+            "ville": "Altkirrch", "type": "Village", "chef": "Ilias BERTORAH", "environnement": "Forêt, Elevage, Culture", "caracteristique": "Détruit", "guilde": "Aucune", "Coords": [500, 1320], "habitant": 13, "soldat": 1, "intercomunalite": "Saint Troufion de Paumé",
             "conseil": {
                 "Maire": "",
                 "Médiateur": "",

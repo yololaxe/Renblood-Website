@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { getPlayers } from "../data/api";
+import { getPlayers } from "../services/api";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext"; // ✅ Import du contexte
+import { useUser } from "../context/UserContext";
+import { MoneyDisplay } from "../components/MoneyDisplay";
 
 function Players() {
   const [players, setPlayers] = useState([]);
-  const { userRank } = useUser(); // ✅ Récupérer userRank depuis le contexte
+  const { userRank } = useUser();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,13 +43,17 @@ function Players() {
         {players.map((player) => (
           <div key={player.id} className="bg-gray-800 p-6 rounded-xl shadow-lg text-left">
             <h2 className="text-2xl font-bold text-blue-400">{player.pseudo_minecraft}</h2>
-            <p className="text-gray-400 italic">{player.description || "Aucune description"}</p>
+            <p className="mt-2">
+              <strong>👤 Nom :</strong> {player.name} {player.surname}
+            </p>
+            <p className="text-gray-400 italic mt-2">
+              {player.description || "Aucune description"}
+            </p>
 
-            <div className="mt-4">
+            <div className="mt-4 space-y-2">
               <p><strong>🎖️ Rang :</strong> {player.rank}</p>
-              <p><strong>💰 Argent :</strong> {player.money} Gold</p>
-              <p><strong>🛠️ Compétence :</strong> {player.skill}</p>
-              <p><strong>✨ Divin :</strong> {player.divin ? "Oui" : "Non"}</p>
+              <p><strong>💰 Argent :</strong> <MoneyDisplay value={player.money}  /> ({player.money})</p>
+              <p><strong>✨ Divin :</strong> {player.divin}</p>
             </div>
           </div>
         ))}

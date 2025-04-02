@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { getPlayerJobs, getJobDetails, updateTalentProgression } from "../data/api";
+import { getPlayerJobs, getJobDetails, updateTalentProgression } from "../services/api";
 
 function TalentTree2() {
   const { profession } = useParams();

@@ -9,7 +9,7 @@ import {
   removeTraitFromPlayer,
   addActionToPlayer,
   removeActionFromPlayer,
-} from "../data/api"; // Import des appels API depuis API.js
+} from "../services/api"; // Import des appels API depuis API.js
 
 
 function PlayersAdmin() {

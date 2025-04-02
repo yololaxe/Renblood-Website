@@ -83,3 +83,7 @@
 .city-icon:hover {
   transform: scale(1.25);
 }
+
+html, body {
+  overflow-x: hidden;
+}

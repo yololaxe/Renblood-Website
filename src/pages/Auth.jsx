@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { auth, googleProvider, listenToAuthChanges } from "../data/firebaseConfig";
 import { signInWithPopup, signOut } from "firebase/auth";
 import axios from "axios";
-import { API_BASE_URL } from "../data/api";
+import { API_BASE_URL } from "../services/api";
 import { useUser } from "../context/UserContext"; // ✅ Import du contexte
+import { getIdToken } from "firebase/auth"; // ✅ à importer
+import { setAccessToken } from "../utils/sessionUtils"; // ✅ à importer aussi
 
 function Auth() {
   const [user, setUser] = useState(null);
@@ -20,21 +22,31 @@ function Auth() {
       }
     });
   }, []);
+
+
   const signInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      setUser(result.user);
-      await fetchMinecraftData(result.user.uid);
+      const user = result.user;
+      setUser(user);
+
+      // ✅ Récupère le token Firebase
+      const token = await getIdToken(user);
+      setAccessToken(token); // ✅ Stocke dans localStorage
+
+      // 🔄 Appelle ensuite ton backend pour récupérer les infos Minecraft
+      await fetchMinecraftData(user.uid);
       navigate("/account");
     } catch (error) {
       console.error("Erreur de connexion :", error);
     }
   };
 
+
   const fetchMinecraftData = async (userId) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/players/get/${userId}/`);
-      
+
       // ✅ Stocke dans `sessionStorage`
       sessionStorage.setItem("userId", response.data.id);
       sessionStorage.setItem("userRank", response.data.rank);
@@ -61,7 +73,7 @@ function Auth() {
       }
     }
   };
-  
+
 
   return (
     <div className="p-10 text-center">

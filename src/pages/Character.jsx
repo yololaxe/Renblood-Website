@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, listenToAuthChanges } from "../data/firebaseConfig";
-import { getPlayerData } from "../data/api";
+import { getPlayerData } from "../services/api";
+import { MoneyDisplay } from "../components/MoneyDisplay";
 
 function Character() {
   const [user, setUser] = useState(null);
@@ -25,14 +26,14 @@ function Character() {
         navigate("/auth");
       }
     });
-  
+
     return () => {
       if (typeof unsubscribe === "function") {
         unsubscribe();
       }
     };
   }, [navigate]);
-  
+
 
   if (!user || !playerData) {
     return <p className="text-center text-gray-400 mt-10">Chargement des données...</p>;
@@ -44,7 +45,7 @@ function Character() {
     rank = "Non défini",
     description = "Aucune description",
     money = 0,
-    divin = false,
+    divin = "Aucun",
     traits = [],
     actions = [],
     experiences = {},
@@ -62,7 +63,8 @@ function Character() {
     rethoric = 0,
     negotiation = 0,
     influence = 0,
-    skill = 0
+    skill = 0,
+    place = 0
   } = playerData;
 
   const jobs = experiences?.jobs || {};
@@ -80,7 +82,7 @@ function Character() {
         <p className="text-gray-400 text-center italic">{description}</p>
 
         <div className="flex justify-between items-center mt-4 text-lg">
-          <p><strong>💰 Argent :</strong> {money} Gold</p>
+        <p><strong>💰 Argent :</strong> <MoneyDisplay value={money} /></p>
           <p><strong>✨ Divin :</strong> {divin ? "Oui" : "Non"}</p>
         </div>
 
@@ -127,6 +129,14 @@ function Character() {
           <p><strong>⛏️ Célérité :</strong> {haste}</p>
           <p><strong>🔥 Régénération :</strong> {regeneration}</p>
           <p><strong>🔮 Mana :</strong> {mana}</p>
+          <p><strong>🏃 Esquive :</strong> {dodge}</p>
+          <p><strong>👤 Discrétion :</strong> {discretion}</p>
+          <p><strong>🗣️ Charisme :</strong> {charisma}</p>
+          <p><strong>📢 Rhétorique :</strong> {rethoric}</p>
+          <p><strong>🤝 Négociation :</strong> {negotiation}</p>
+          <p><strong>👑 Influence :</strong> {influence}</p>
+          <p><strong>⚙️ Compétence :</strong> {skill}</p>
+          <p><strong>📦 Emplacements :</strong> {place}</p>
         </div>
 
         <h3 className="text-xl font-bold mt-6 text-center">📜 Expériences</h3>
@@ -135,8 +145,9 @@ function Character() {
             const job = jobs[jobKey] || {};
             return (
               <p key={jobKey}>
-                <strong>{jobKey.replace("_", " ")} :</strong> {job.xp ?? 0} XP (Lvl {job.level ?? 0})
-                {Array.isArray(job.progression) ? ` - Progression: ${job.progression.length}` : ""}
+                <strong>{jobKey.replace("_", " ")} :</strong> (Lvl {job.level ?? 0})
+                <br />
+                <strong></strong> {job.xp === -1 ? "Non débloqué" : `${job.xp ?? 0} XP`}
               </p>
             );
           })
