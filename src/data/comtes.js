@@ -87,7 +87,7 @@ const comtes = {
             }
         },
         {
-            "ville": "Saint Troufion de Paumé", "type": "Grande-Ville", "chef": "Alice ROK", "environnement": "Montagne, Plaine, Forêt", "caracteristique": "Plus grande forge du royaume", "guilde": "", "Coords": [550, 1200], "habitant": 19000, "soldat": 160, "intercomunalite": "Fyvelune",
+            "ville": "Saint Troufion de Paumé", "type": "Grande-Ville", "chef": "Iris ROK", "environnement": "Montagne, Plaine, Forêt", "caracteristique": "Plus grande forge du royaume", "guilde": "", "Coords": [550, 1200], "habitant": 19000, "soldat": 160, "intercomunalite": "Fyvelune",
             "conseil": {
                 "Maire de grande ville": "",
                 "Magistrat": "",
