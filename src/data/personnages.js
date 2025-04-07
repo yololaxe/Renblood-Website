@@ -7,7 +7,7 @@ const personnages = {
     "reputation": -1,
     "description": "Fondateur de la grande ville de Wild Range, Jonh se battit dans la grande guerre des dragons en tant que commandant des armées humaines. Ceci lui value une place de maitre auprès du nouveau Roi Bob Roxton.",
     "born": -1,
-    "death": -1
+    "death": -2
   },
   "Stannis ROLLINGFORD ✞": {
     "titre": "Roi du royaume de Renblood, Seigneur de Wild Range, Seigneur des 4 Terres, Gardien des Mondes",
@@ -39,7 +39,7 @@ const personnages = {
     "born": 298,
     "death": -1
   },
-  "HERBERT ROLLINGFORD": {
+  "Herbert ROLLINGFORD": {
     "titre": "Roi du royaume de Renblood, Seigneur de Wild Range, Seigneur des 4 Terres, Gardien des Mondes",
     "metier": "Roi",
     "conjoint": "Dolores Wyne",
@@ -176,7 +176,7 @@ const personnages = {
     "born": 291,
     "death": -1
   },
-  "Bob Roxton ✞": {
+  "Bob ROXTON ✞": {
     "titre": "Roi du Royaume de Renblood, Seigneur de Rozdru, Seigneur des mers, Gardien des Mondes",
     "metier": "Capitaine navale",
     "conjoint": "Louisa Paltain",
@@ -186,7 +186,7 @@ const personnages = {
     "born": 190,
     "death": 251
   },
-  "Lassiou Roxton ✞": {
+  "Lassiou ROXTON ✞": {
     "titre": "Roi du Royaume de Renblood, Seigneur de Rozdru, Seigneur des mers, Gardien des Mondes",
     "metier": "Capitaine navale",
     "conjoint": "Louize Ouloh",
@@ -196,7 +196,7 @@ const personnages = {
     "born": 222,
     "death": 278
   },
-  "Antina Roxton ✞": {
+  "Antina ROXTON ✞": {
     "titre": "Princesse du Royaume de Renblood, La \"Putain\", La \"Bannie\"",
     "metier": "Diplomate",
     "conjoint": "Entropri Rok",
@@ -206,7 +206,7 @@ const personnages = {
     "born": 230,
     "death": 298
   },
-  "Isandre Roxton ✞": {
+  "Isandre ROXTON ✞": {
     "titre": "Roi du Royaume de Renblood, Seigneur de Rozdru, Seigneur des mers, Gardien des Mondes",
     "metier": "Capitaine navale",
     "conjoint": "Daé Feran",
@@ -216,7 +216,7 @@ const personnages = {
     "born": 260,
     "death": 296
   },
-  "Anna Roxton": {
+  "Anna ROXTON": {
     "titre": "Princesse",
     "metier": "Aucun",
     "conjoint": "Leny II LYNSTER ✞",
@@ -226,7 +226,7 @@ const personnages = {
     "born": 270,
     "death": -1
   },
-  "Araceli Roxton": {
+  "Araceli ROXTON": {
     "titre": "Dame de Palam",
     "metier": "Conseillère du Seigneur",
     "conjoint": "Arthur I WYNE \t",
@@ -236,7 +236,7 @@ const personnages = {
     "born": 290,
     "death": -1
   },
-  "Joras Roxton": {
+  "Joras ROXTON": {
     "titre": "Seigneur de Rozdru",
     "metier": "Capitaine naval",
     "conjoint": "Louiza Juifou",
@@ -246,7 +246,7 @@ const personnages = {
     "born": 292,
     "death": -1
   },
-  "Conrad Roxton": {
+  "Conrad ROXTON": {
     "titre": "Seigneur de Paume",
     "metier": "Diplomate",
     "conjoint": "Ebony Wyne",
@@ -256,7 +256,7 @@ const personnages = {
     "born": 300,
     "death": -1
   },
-  "Sévrin Roxton": {
+  "Sévrin ROXTON": {
     "titre": "Héritier des Roxton",
     "metier": "Apprenti",
     "conjoint": "Aucun",
@@ -266,7 +266,7 @@ const personnages = {
     "born": 322,
     "death": -1
   },
-  "Edmon Roxton": {
+  "Edmon ROXTON": {
     "titre": "Seigneur en devenir",
     "metier": "Aucun",
     "conjoint": "Aucun",
@@ -676,7 +676,7 @@ const personnages = {
     "born": -1,
     "death": -1
   },
-  "Gaudfroy Feran ✞": {
+  "Gaudfroy FERAN ✞": {
     "titre": "Seigneur fondateur d'Isvanore, Père de Feran",
     "metier": "Constructeur, Seigneur et Stratège",
     "conjoint": "Aliénor Paltain ✞",
@@ -686,7 +686,7 @@ const personnages = {
     "born": -1,
     "death": -1
   },
-  "Thibault Feran ✞": {
+  "Thibault FERAN ✞": {
     "titre": "Grand érudit d'Isvanore, Gardien du Savoir",
     "metier": "Érudit, bibliothécaire royal, conseiller",
     "conjoint": "Blanche ROK ✞",
@@ -696,7 +696,7 @@ const personnages = {
     "born": 251,
     "death": 325
   },
-  "Harno Feran ✞": {
+  "Harno FERAN ✞": {
     "titre": "Seigneur d'Isvanore",
     "metier": "Aucun",
     "conjoint": "Aucun",
@@ -706,7 +706,7 @@ const personnages = {
     "born": 254,
     "death": 265
   },
-  "Daé Feran": {
+  "Daé FERAN": {
     "titre": "Reine consort de Renblood, Dame d'Isvanore, Gardienne du Souvenir, Maire de Lone",
     "metier": "Diplomate et Mairesse",
     "conjoint": "Isandre ROXTON ✞",
@@ -726,7 +726,7 @@ const personnages = {
     "born": 286,
     "death": -1
   },
-  "Michelle Feran": {
+  "Michelle FERAN": {
     "titre": "Dame de Cornwall, Noble d'Isvanore",
     "metier": "Ambassadrice familiale, Noble",
     "conjoint": "Stanislas LYNSTER",
@@ -736,7 +736,7 @@ const personnages = {
     "born": 287,
     "death": -1
   },
-  "Connie Feran": {
+  "Connie FERAN": {
     "titre": "Maîtresse de la guilde de la Lettre",
     "metier": "Maîtresse de guilde",
     "conjoint": "Ethan WYNE",
@@ -746,7 +746,7 @@ const personnages = {
     "born": 312,
     "death": -1
   },
-  "Lio Feran": {
+  "Lio FERAN": {
     "titre": "Héritier d'Isvanore",
     "metier": "Noble héritier",
     "conjoint": "Mystia ROK",
@@ -756,7 +756,7 @@ const personnages = {
     "born": 316,
     "death": -1
   },
-  "Anna Feran": {
+  "Anna FERAN": {
     "titre": "Lettrée d'Isvanore, Apprentie érudite",
     "metier": "Apprentie érudite",
     "conjoint": "Aucun",
@@ -766,7 +766,7 @@ const personnages = {
     "born": 323,
     "death": -1
   },
-  "Silvain Feran": {
+  "Silvain FERAN": {
     "titre": "Nole",
     "metier": "Aucun",
     "conjoint": "Adeline ROLLINGFORD (Promise)",
@@ -776,7 +776,7 @@ const personnages = {
     "born": 322,
     "death": -1
   },
-  "Loa feran": {
+  "Loa FERAN": {
     "titre": "Dame d'Isvanore",
     "metier": "Aucun",
     "conjoint": "Aucun",

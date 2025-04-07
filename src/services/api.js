@@ -20,6 +20,9 @@ export const checkApiStatus = async () => {
   }
 };
 
+
+//////////////////////////PLAYERS///////////////////////
+
 // ✅ Récupérer les infos du joueur à partir de son ID Firebase
 export const getPlayerData = async (userId) => {
   try {
@@ -68,21 +71,6 @@ export async function getPlayerJobs(userId) {
     return { jobs: {} };
   }
 }
-
-// ✅ Récupérer l'arbre des talents d'un métier
-// ✅ Récupérer l'arbre des talents d'un métier
-export const getJobDetails = async (jobId) => {
-  try {
-    console.log(`🔄 Requête envoyée : ${API_BASE_URL}/jobs/${jobId}/`);
-    const response = await axios.get(`${API_BASE_URL}/jobs/${jobId}/`);
-    console.log("✅ Réponse reçue :", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("❌ Erreur de l'API :", error);
-    return null;
-  }
-};
-
 
 // ✅ Fonction pour mettre à jour la progression d'un joueur dans un métier
 export const updateTalentProgression = async (userId, jobName, newProgression) => {
@@ -142,38 +130,6 @@ export async function updatePlayer(playerId, updates) {
     console.error("❌ Erreur lors de la mise à jour du joueur :", error);
   }
 }
-
-
-// TRAITS ET ACTION //
-
-
-// 🔹 Récupérer tous les traits disponibles
-export const getTraits = async () => {
-  console.log("🔍 Appel API: Récupération des traits...");
-  try {
-    const response = await fetch(`${API_BASE_URL}/jobs/get/traits/`);
-    const data = await response.json();
-    console.log("✅ Traits reçus :", data);
-    return data;
-  } catch (error) {
-    console.error("❌ Erreur lors de la récupération des traits:", error);
-    return [];
-  }
-};
-
-// 🔹 Récupérer toutes les actions disponibles
-export const getActions = async () => {
-  console.log("🔍 Appel API: Récupération des actions...");
-  try {
-    const response = await fetch(`${API_BASE_URL}/jobs/get/actions/`);
-    const data = await response.json();
-    console.log("✅ Actions reçues :", data);
-    return data;
-  } catch (error) {
-    console.error("❌ Erreur lors de la récupération des actions:", error);
-    return [];
-  }
-};
 
 // 🔹 Ajouter un trait à un joueur
 export const addTraitToPlayer = async (playerId, traitId) => {
@@ -294,5 +250,75 @@ export const createPlayer = async (playerData) => {
   } catch (error) {
     console.error("❌ Erreur de connexion à l'API :", error);
     return null;
+  }
+};
+
+
+/////////////////////////////////JOBS////////////////////////////////////////////
+// ✅ Récupérer l'arbre des talents d'un métier
+export const getJobDetails = async (jobId) => {
+  try {
+    console.log(`🔄 Requête envoyée : ${API_BASE_URL}/stats/jobs/${jobId}/`);
+    const response = await axios.get(`${API_BASE_URL}/stats/jobs/${jobId}/`);
+    console.log("✅ Réponse reçue :", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Erreur de l'API :", error);
+    return null;
+  }
+};
+
+////////////////// TRAITS ET ACTION //////////////////
+
+// 🔹 Récupérer tous les traits disponibles
+export const getTraits = async () => {
+  console.log("🔍 Appel API: Récupération des traits...");
+  try {
+    const response = await fetch(`${API_BASE_URL}/stats/trait/get`);
+    const data = await response.json();
+    console.log("✅ Traits reçus :", data);
+    return data;
+  } catch (error) {
+    console.error("❌ Erreur lors de la récupération des traits:", error);
+    return [];
+  }
+};
+
+// 🔹 Récupérer toutes les actions disponibles
+export const getActions = async () => {
+  console.log("🔍 Appel API: Récupération des actions...");
+  try {
+    const response = await fetch(`${API_BASE_URL}/stats/action/get`);
+    const data = await response.json();
+    console.log("✅ Actions reçues :", data);
+    return data;
+  } catch (error) {
+    console.error("❌ Erreur lors de la récupération des actions:", error);
+    return [];
+  }
+};
+
+/////////////////////////// GLOBALS /////////////////////////
+// 🔹 Récupérer tous les globals disponibles
+
+// 📅 Récupérer l'année et la saison actuelles
+export const getCurrentGlobal = async () => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/stats/globals/`);
+    return res.data[0]; // On suppose qu’il n’y a qu’un seul document
+  } catch (error) {
+    console.error("Erreur lors de la récupération du global :", error);
+    throw error;
+  }
+};
+
+// ⏭️ Passer à la prochaine saison
+export const advanceToNextSeason = async () => {
+  try {
+    const res = await axios.post(`${API_BASE_URL}/stats/globals/next-season/`);
+    return res.data;
+  } catch (error) {
+    console.error("Erreur lors de l'avance de saison :", error);
+    throw error;
   }
 };

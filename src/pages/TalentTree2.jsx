@@ -55,6 +55,7 @@ function TalentTree2() {
   };
 
   const updateProgression = (newUnlockedTalents, newUnlockedInterChoices) => {
+    
     const newProgression = [
       ...newUnlockedTalents.choice_1,
       ...newUnlockedTalents.choice_2,
