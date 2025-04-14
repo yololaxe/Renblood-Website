@@ -23,6 +23,7 @@ import Titres from "../pages/histoires/Titres.jsx";
 import Guildes from "../pages/histoires/Guildes.jsx";
 import Unauthorized from "../pages/Unauthorized.jsx";
 import Arbre from "../pages/histoires/Arbre.jsx";
+import DicePage from "../pages/dice/DicePage.jsx";
 
 const routes = [
   { path: "/", element: <Home /> },
@@ -52,6 +53,8 @@ const routes = [
   { path: "/histoires/politique", element: <Politique />},
   { path: "/histoires/titres", element: <Titres />},
   { path: "/histoires/guildes", element: <Guildes />},
+
+  { path: "/dice", element: <DicePage />},
 ];
 
 export default routes;

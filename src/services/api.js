@@ -322,3 +322,19 @@ export const advanceToNextSeason = async () => {
     throw error;
   }
 };
+
+////////////////////DICE///////////////////////
+export const rollDice = async (token) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/jobs/dice/roll/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return await res.json();
+  } catch (error) {
+    console.error("❌ Erreur lors du lancer de dé :", error);
+    return null;
+  }
+};

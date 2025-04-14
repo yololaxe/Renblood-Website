@@ -145,7 +145,7 @@ function Character() {
             const job = jobs[jobKey] || {};
             return (
               <p key={jobKey}>
-                <strong>{jobKey.replace("_", " ")} :</strong> (Lvl {job.level ?? 0})
+                <strong>{jobKey.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())} :</strong> (Lvl {job.level ?? 0})
                 <br />
                 <strong></strong> {job.xp === -1 ? "Non débloqué" : `${job.xp ?? 0} XP`}
               </p>
