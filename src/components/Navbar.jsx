@@ -13,21 +13,27 @@ function Navbar() {
   }, []);
 
   return (
-    <nav className="bg-gray-800 text-white p-4 flex justify-between items-center">
-      <div className="flex space-x-6">
-        <Link to="/" className="hover:text-gray-400">Accueil</Link>
-        <Link to="/histoire" className="hover:text-gray-400">Histoire</Link>
-        <Link to="/players" className="hover:text-gray-400">Joueurs</Link>
-        <Link to="/map" className="hover:text-gray-400">Carte</Link>
-        {user && <Link to="/talents" className="hover:text-gray-400">Choisir Talent</Link>}
+    <nav className="relative bg-gray-800 text-white p-4 flex justify-between items-center">
+      {/* 🎲 Emoji centré */}
+      <div className="absolute left-1/2 transform -translate-x-1/2 text-2xl">
+        <Link to="/dice">🎲</Link>
       </div>
 
-      {/* Avatar utilisateur + Déconnexion */}
+      {/* Menu gauche */}
+      <div className="flex space-x-6">
+        <Link to="/" className="hover:text-gray-400">Accueil</Link>
+        <Link to="/histoire" className="hover:text-gray-400">Information</Link>
+        <Link to="/players" className="hover:text-gray-400">Joueurs</Link>
+        <Link to="/map" className="hover:text-gray-400">Map</Link>
+        {user && <Link to="/talents" className="hover:text-gray-400">Arbre des talents</Link>}
+      </div>
+
+      {/* Menu droite */}
       <div className="flex items-center space-x-4">
         {user ? (
           <>
-            <Link to="/character" className="hover:text-gray-400">👤 Mon personnage</Link>
-            <Link to="/account">
+            {/* <Link to="/character" className="hover:text-gray-400">Mon personnage</Link> */}
+            <Link to="/character">
               <img
                 src={user.photoURL || "/assets/default-avatar.png"}
                 alt="Avatar"
@@ -39,12 +45,12 @@ function Navbar() {
                 if (window.confirm("Voulez-vous vraiment vous déconnecter ?")) {
                   try {
                     await signOut(auth);
-                    sessionStorage.clear(); // ✅ Supprime toutes les données stockées
-                    localStorage.removeItem("access_token"); // ✅ Déconnexion complète
-                    setUser(null); // ✅ Réinitialise l'état local
-                    setUserId(null); // ✅ Réinitialise l'état global
+                    sessionStorage.clear();
+                    localStorage.removeItem("access_token");
+                    setUser(null);
+                    setUserId(null);
                     setUserRank(null);
-                    navigate("/home"); // ✅ Redirige vers l'accueil
+                    navigate("/home");
                   } catch (error) {
                     console.error("Erreur lors de la déconnexion :", error);
                   }
