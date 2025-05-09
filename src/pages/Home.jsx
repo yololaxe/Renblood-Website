@@ -73,7 +73,7 @@ function Home() {
           animate={{ opacity: 1 }}
           transition={{ duration: 1.5 }}
         >
-          <img src="/accueil/logo.png" alt="Renblood" className="w-48 mb-4 drop-shadow-lg" />
+          <img src="/accueil/logo.png" alt="Renblood" className="w-48 mb-4 drop-shadow-lg" loading="lazy" />
           <h1 className="text-4xl md:text-6xl font-bold">Bienvenue sur Renblood</h1>
           <p className="text-lg text-gray-300 mt-2">Un monde Semi-RP où votre aventure commence.</p>
           <motion.button
@@ -95,7 +95,7 @@ function Home() {
         transition={{ duration: 1 }}
       >
         <h2 className="text-3xl font-bold mb-6">🗺️ Le Royaume de Renblood</h2>
-        <img src="/accueil/carte-renblood.png" alt="Carte" className="w-full max-w-3xl mx-auto rounded-lg shadow-md" />
+        <img src="/accueil/carte-renblood.png" alt="Carte" className="w-full max-w-3xl mx-auto rounded-lg shadow-md" loading="lazy"/>
         <p className="text-lg text-gray-300 mt-4 max-w-2xl mx-auto">
           Un vaste monde rempli de mystères, de royaumes et de dangers. Découvrez ses grandes villes et aventurez-vous à travers ses terres.
         </p>
@@ -116,7 +116,7 @@ function Home() {
               className="relative group cursor-pointer overflow-hidden rounded-lg shadow-lg"
               whileHover={{ scale: 1.05 }}
             >
-              <img src={`/accueil/${image}`} alt={`Ville ${index + 1}`} className="w-full h-56 object-cover" />
+              <img src={`/accueil/${image}`} alt={`Ville ${index + 1}`} className="w-full h-56 object-cover" loading="lazy"/>
               <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
                 <p className="text-xl font-bold">🏰 Ville {index + 1}</p>
               </div>
@@ -139,7 +139,7 @@ function Home() {
               key={index}
               className="relative bg-gray-800 p-4 rounded-lg shadow-lg hover:scale-105 transition cursor-pointer"
             >
-              <img src={`/accueil/${job}`} alt={`Métier ${index + 1}`} className="w-48 h-48 object-cover rounded-md" />
+              <img src={`/accueil/${job}`} alt={`Métier ${index + 1}`} className="w-48 h-48 object-cover rounded-md" loading="lazy"/>
             </motion.div>
           ))}
         </div>
@@ -160,7 +160,7 @@ function Home() {
               className="overflow-hidden rounded-lg shadow-lg"
               whileHover={{ scale: 1.05 }}
             >
-              <img src={`/accueil/${screen}`} alt={`Screenshot ${index + 1}`} className="w-full h-40 object-cover" />
+              <img src={`/accueil/${screen}`} alt={`Screenshot ${index + 1}`} className="w-full h-40 object-cover" loading="lazy"/>
             </motion.div>
           ))}
         </div>
