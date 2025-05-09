@@ -5,6 +5,7 @@ import routes from "./routes/routes.jsx";
 import PrivateRoutes from "./routes/PrivateRoutes";
 import PublicRoutes from "./routes/PublicRoutes";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import PageTransition from "./components/PageTransition";
 import "./index.css";
 
@@ -48,12 +49,15 @@ const AnimatedRoutes = () => {
 
 const App = () => {
     return (
-      <div className="bg-gray-900 text-gray-200 min-h-screen">
-        <Navbar />
-        <AnimatedRoutes />
-      </div>
+        <div className="flex flex-col min-h-screen bg-gray-900 text-gray-200">
+            <Navbar />
+            <div className="flex-grow">
+                <AnimatedRoutes />
+            </div>
+            <Footer />
+        </div>
     );
-  };
+};
   
   export default App;
   

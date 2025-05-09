@@ -87,3 +87,17 @@
 html, body {
   overflow-x: hidden;
 }
+
+.backdrop-blur-sm {
+  backdrop-filter: blur(3px); /* Flou plus léger */
+}
+
+.full-screen-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -1;
+}
