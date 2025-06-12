@@ -1,340 +1,244 @@
-import axios from "axios";
-
-// 🔍 Détection de l'environnement (local / production)
-// export const API_BASE_URL =
-//   process.env.NODE_ENV === "production"
-//     ? "https://renblood-backend.onrender.com"
-//     : "http://127.0.0.1:8000";
-
+// src/services/api.js
+import axiosInstance from "./axiosInstance";
 export const API_BASE_URL = import.meta.env.VITE_API_URL;
-
 // ✅ Vérifier si l'API est active
 export const checkApiStatus = async () => {
   try {
-    await axios.get(`${API_BASE_URL}/ping`);
-    console.log(`🟢 API en ligne (${API_BASE_URL})`);
+    await axiosInstance.get("/ping");
+    console.log(`🟢 API en ligne`);
     return true;
   } catch (error) {
-    console.error(`❌ API inaccessible (${API_BASE_URL})`, error);
+    console.error(`❌ API inaccessible`, error);
     return false;
   }
 };
 
-
-//////////////////////////PLAYERS///////////////////////
+////////////////////////// PLAYERS ///////////////////////
 
 // ✅ Récupérer les infos du joueur à partir de son ID Firebase
 export const getPlayerData = async (userId) => {
   try {
-    console.log(`🔄 Requête envoyée : ${API_BASE_URL}/players/get/${userId}/`);
-    const response = await axios.get(`${API_BASE_URL}/players/get/${userId}/`, { timeout: 10000 });
-    console.log("✅ Réponse reçue :", response.data);
-    return response.data;
+    console.log(`🔄 GET /players/get/${userId}/`);
+    const { data } = await axiosInstance.get(`/players/get/${userId}/`);
+    console.log("✅ Réponse reçue :", data);
+    return data;
   } catch (error) {
-    if (error.response) {
-      console.error("❌ Erreur de l'API :", error.response.status, error.response.data);
-    } else if (error.request) {
-      console.error("❌ L'API Render ne répond pas (serveur en veille ?)");
-    } else {
-      console.error("❌ Erreur Axios :", error.message);
-    }
+    console.error("❌ getPlayerData :", error.response?.data || error.message);
     return null;
   }
 };
 
 export const me = async (firebaseUid) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/players/me/${firebaseUid}/`, {
-      timeout: 15000
-    });
-    return response.data;
+    const { data } = await axiosInstance.get(`/players/me/${firebaseUid}/`);
+    return data;
   } catch (error) {
-    console.error("❌ Erreur dans me() :", error.response?.data || error.message);
+    console.error("❌ me() :", error.response?.data || error.message);
     throw error;
   }
 };
 
-
-
-// ✅ Supprimer les infos locales lors de la déconnexion
 export const clearPlayerData = () => {
   localStorage.removeItem("playerData");
 };
 
-export async function getPlayerJobs(userId) {
+export const getPlayerJobs = async (userId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/players/get/${userId}/jobs`);
-    console.log("Données des métiers récupérées :", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("❌ Erreur lors de la récupération des jobs :", error);
-    return { jobs: {} };
-  }
-}
-
-// ✅ Fonction pour mettre à jour la progression d'un joueur dans un métier
-export const updateTalentProgression = async (userId, jobName, newProgression) => {
-  try {
-    // 🔥 Vérifie que la liste fait bien 10 éléments
-    if (!Array.isArray(newProgression) || (newProgression.length !== 10 && newProgression.length !== 15)) {
-      console.error("❌ Erreur : La progression doit être une liste de 10 ou 15 booléens.");
-      return;
-    }
-
-
-    const url = `${API_BASE_URL}/players/update/${userId}/jobs/${jobName}/progression/`;
-
-    console.log(`🔄 Envoi de la requête PUT à : ${url}`);
-
-    const response = await axios.put(
-      url,
-      { new_value: newProgression }, // 🔥 Envoi dans le body (JSON)
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-    console.log("✅ Mise à jour réussie :", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("❌ Erreur lors de la mise à jour de la progression :", error.response?.data || error.message);
-    return null;
-  }
-};
-
-// ✅ Récupérer la liste des joueurs selon leur rank
-export const getPlayers = async (rank) => {
-  try {
-    console.log(`🔄 Requête envoyée : ${API_BASE_URL}/players/getPlayers/${rank}/`);
-    const response = await axios.get(`${API_BASE_URL}/players/getPlayers/${rank}/`, { timeout: 10000 });
-    console.log("✅ Réponse reçue :", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("❌ Erreur de l'API :", error);
-    return null;
-  }
-};
-
-export async function updatePlayer(playerId, updates) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/players/update/${playerId}/`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updates),
-    });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Erreur de mise à jour");
-
-    console.log("✅ Joueur mis à jour :", data);
+    console.log(`🔄 GET /players/get/${userId}/jobs`);
+    const { data } = await axiosInstance.get(`/players/get/${userId}/jobs`);
+    console.log("✅ Jobs récupérés :", data);
     return data;
   } catch (error) {
-    console.error("❌ Erreur lors de la mise à jour du joueur :", error);
+    console.error("❌ getPlayerJobs :", error);
+    return { jobs: {} };
   }
-}
-
-// 🔹 Ajouter un trait à un joueur
-export const addTraitToPlayer = async (playerId, traitId) => {
-  const response = await fetch(`${API_BASE_URL}/players/list/${playerId}/trait/add/?id=${traitId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-  });
-  return response.json();
 };
 
-// 🔹 Supprimer un trait d’un joueur
-export const removeTraitFromPlayer = async (playerId, traitId) => {
-  if (!playerId || !traitId) {
-    console.error("❌ ERREUR : playerId ou traitId est manquant !");
-    return;
-  }
-
-  console.log(`🗑️ Suppression du trait ${traitId} pour le joueur ${playerId}`);
-
+export const updateTalentProgression = async (userId, jobName, newProgression) => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/players/list/${playerId}/trait/delete/`, {
-      params: { id: traitId },
-      headers: { "Content-Type": "application/json" },
-    });
-
-    console.log("✅ Trait supprimé avec succès !");
-    return response.data;
+    if (!Array.isArray(newProgression) || (newProgression.length !== 10 && newProgression.length !== 15)) {
+      console.error("❌ progression must be 10 or 15 booleans");
+      return null;
+    }
+    console.log(`🔄 PUT /players/update/${userId}/jobs/${jobName}/progression/`, newProgression);
+    const { data } = await axiosInstance.put(
+      `/players/update/${userId}/jobs/${jobName}/progression/`,
+      { new_value: newProgression }
+    );
+    console.log("✅ Progression mise à jour :", data);
+    return data;
   } catch (error) {
-    console.error("❌ ERREUR API :", error.response?.status, error.response?.statusText || error.message);
+    console.error("❌ updateTalentProgression :", error.response?.data || error.message);
     return null;
   }
 };
 
+export const getPlayers = async (rank) => {
+  try {
+    console.log(`🔄 GET /players/getPlayers/${rank}/`);
+    const { data } = await axiosInstance.get(`/players/getPlayers/${rank}/`);
+    console.log("✅ getPlayers :", data);
+    return data;
+  } catch (error) {
+    console.error("❌ getPlayers :", error);
+    return null;
+  }
+};
 
+export const updatePlayer = async (playerId, updates) => {
+  try {
+    console.log(`🔄 PUT /players/update/${playerId}/`, updates);
+    const { data } = await axiosInstance.put(`/players/update/${playerId}/`, updates);
+    console.log("✅ updatePlayer :", data);
+    return data;
+  } catch (error) {
+    console.error("❌ updatePlayer :", error.response?.data || error.message);
+    return null;
+  }
+};
 
-// 🔹 Ajouter une action à un joueur
+export const addTraitToPlayer = async (playerId, traitId) => {
+  try {
+    console.log(`🔄 PUT /players/list/${playerId}/trait/add/?id=${traitId}`);
+    const { data } = await axiosInstance.put(`/players/list/${playerId}/trait/add/`, null, { params: { id: traitId } });
+    return data;
+  } catch (error) {
+    console.error("❌ addTraitToPlayer :", error.response?.data || error.message);
+    return null;
+  }
+};
+
+export const removeTraitFromPlayer = async (playerId, traitId) => {
+  try {
+    console.log(`🔄 DELETE /players/list/${playerId}/trait/delete/?id=${traitId}`);
+    const { data } = await axiosInstance.delete(`/players/list/${playerId}/trait/delete/`, { params: { id: traitId } });
+    return data;
+  } catch (error) {
+    console.error("❌ removeTraitFromPlayer :", error.response?.data || error.message);
+    return null;
+  }
+};
+
 export const addActionToPlayer = async (playerId, actionId) => {
-  const response = await fetch(`${API_BASE_URL}/players/list/${playerId}/action/add/?id=${actionId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-  });
-  return response.json();
+  try {
+    console.log(`🔄 PUT /players/list/${playerId}/action/add/?id=${actionId}`);
+    const { data } = await axiosInstance.put(`/players/list/${playerId}/action/add/`, null, { params: { id: actionId } });
+    return data;
+  } catch (error) {
+    console.error("❌ addActionToPlayer :", error.response?.data || error.message);
+    return null;
+  }
 };
 
 export const removeActionFromPlayer = async (playerId, actionId) => {
-  if (!playerId || !actionId) {
-    console.error("❌ ERREUR : playerId ou actionId est manquant !");
-    return null;
-  }
-
-  console.log(`🗑️ Suppression de l'action ${actionId} pour le joueur ${playerId}`);
-
   try {
-    const response = await axios.delete(`${API_BASE_URL}/players/list/${playerId}/action/delete/`, {
-      params: { id: actionId }, // ✅ Utilisation de params pour l'ID
-      headers: { "Content-Type": "application/json" },
-    });
-
-    console.log("✅ Action supprimée :", response.data);
-    return response.data;
+    console.log(`🔄 DELETE /players/list/${playerId}/action/delete/?id=${actionId}`);
+    const { data } = await axiosInstance.delete(`/players/list/${playerId}/action/delete/`, { params: { id: actionId } });
+    return data;
   } catch (error) {
-    console.error("❌ Erreur lors de la suppression de l'action :", error.response?.data || error.message);
+    console.error("❌ removeActionFromPlayer :", error.response?.data || error.message);
     return null;
   }
 };
 
-
-export async function updatePlayerJobs(playerId, jobName, field, value) {
+export const updatePlayerJobs = async (playerId, jobName, field, value) => {
   try {
-    const url = `${API_BASE_URL}/players/update/${playerId}/jobs/${jobName}/${field}/`; // ✅ Vérification de l'URL
-
-    console.log(`🔄 Envoi de la requête PUT à : ${url} avec new_value =`, value);
-
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ new_value: value }), // ✅ Respecte la structure attendue par Django
+    console.log(`🔄 PUT /players/update/${playerId}/jobs/${jobName}/${field}/`, value);
+    const { data } = await axiosInstance.put(`/players/update/${playerId}/jobs/${jobName}/${field}/`, {
+      new_value: value
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error(`❌ Erreur lors de la mise à jour du métier :`, errorData);
-      return null;
-    }
-
-    const data = await response.json();
-    console.log(`✅ Mise à jour réussie :`, data);
     return data;
   } catch (error) {
-    console.error("❌ Erreur de connexion à l'API :", error);
+    console.error("❌ updatePlayerJobs :", error.response?.data || error.message);
     return null;
   }
-}
+};
 
 export const createPlayer = async (playerData) => {
   try {
-    const url = `${API_BASE_URL}/players/create/`;
-
-    console.log(`🔄 Envoi de la requête POST à : ${url}`);
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(playerData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error(`❌ Erreur lors de la création du joueur :`, errorData);
-      return null;
-    }
-
-    const data = await response.json();
-    console.log(`✅ Joueur créé avec succès :`, data);
+    console.log(`🔄 POST /players/create/`, playerData);
+    const { data } = await axiosInstance.post(`/players/create/`, playerData);
     return data;
   } catch (error) {
-    console.error("❌ Erreur de connexion à l'API :", error);
+    console.error("❌ createPlayer :", error.response?.data || error.message);
     return null;
   }
 };
 
+////////////////////////// JOBS ////////////////////////////
 
-/////////////////////////////////JOBS////////////////////////////////////////////
-// ✅ Récupérer l'arbre des talents d'un métier
 export const getJobDetails = async (jobId) => {
   try {
-    console.log(`🔄 Requête envoyée : ${API_BASE_URL}/stats/jobs/${jobId}/`);
-    const response = await axios.get(`${API_BASE_URL}/stats/jobs/${jobId}/`);
-    console.log("✅ Réponse reçue :", response.data);
-    return response.data;
+    console.log(`🔄 GET /stats/jobs/${jobId}/`);
+    const { data } = await axiosInstance.get(`/stats/jobs/${jobId}/`);
+    return data;
   } catch (error) {
-    console.error("❌ Erreur de l'API :", error);
+    console.error("❌ getJobDetails :", error.response?.data || error.message);
     return null;
   }
 };
 
-////////////////// TRAITS ET ACTION //////////////////
+//////////////////// TRAITS & ACTIONS //////////////////////
 
-// 🔹 Récupérer tous les traits disponibles
 export const getTraits = async () => {
-  console.log("🔍 Appel API: Récupération des traits...");
   try {
-    const response = await fetch(`${API_BASE_URL}/stats/trait/get`);
-    const data = await response.json();
-    console.log("✅ Traits reçus :", data);
+    console.log(`🔄 GET /stats/trait/get`);
+    const { data } = await axiosInstance.get(`/stats/trait/get`);
     return data;
   } catch (error) {
-    console.error("❌ Erreur lors de la récupération des traits:", error);
+    console.error("❌ getTraits :", error.response?.data || error.message);
     return [];
   }
 };
 
-// 🔹 Récupérer toutes les actions disponibles
 export const getActions = async () => {
-  console.log("🔍 Appel API: Récupération des actions...");
   try {
-    const response = await fetch(`${API_BASE_URL}/stats/action/get`);
-    const data = await response.json();
-    console.log("✅ Actions reçues :", data);
+    console.log(`🔄 GET /stats/action/get`);
+    const { data } = await axiosInstance.get(`/stats/action/get`);
     return data;
   } catch (error) {
-    console.error("❌ Erreur lors de la récupération des actions:", error);
+    console.error("❌ getActions :", error.response?.data || error.message);
     return [];
   }
 };
 
 /////////////////////////// GLOBALS /////////////////////////
-// 🔹 Récupérer tous les globals disponibles
 
-// 📅 Récupérer l'année et la saison actuelles
 export const getCurrentGlobal = async () => {
   try {
-    const res = await axios.get(`${API_BASE_URL}/stats/globals/`);
-    return res.data[0]; // On suppose qu’il n’y a qu’un seul document
+    console.log(`🔄 GET /stats/globals/`);
+    const { data } = await axiosInstance.get(`/stats/globals/`);
+    return data[0];
   } catch (error) {
-    console.error("Erreur lors de la récupération du global :", error);
+    console.error("❌ getCurrentGlobal :", error.response?.data || error.message);
     throw error;
   }
 };
 
-// ⏭️ Passer à la prochaine saison
 export const advanceToNextSeason = async () => {
   try {
-    const res = await axios.post(`${API_BASE_URL}/stats/globals/next-season/`);
-    return res.data;
+    console.log(`🔄 POST /stats/globals/next-season/`);
+    const { data } = await axiosInstance.post(`/stats/globals/next-season/`);
+    return data;
   } catch (error) {
-    console.error("Erreur lors de l'avance de saison :", error);
+    console.error("❌ advanceToNextSeason :", error.response?.data || error.message);
     throw error;
   }
 };
 
-////////////////////DICE///////////////////////
+/////////////////////////// DICE ////////////////////////////
+
 export const rollDice = async (token) => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/jobs/dice/roll/`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return await res.json();
+    console.log(`🔄 POST /api/jobs/dice/roll/`);
+    const { data } = await axiosInstance.post(
+      `/api/jobs/dice/roll/`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return data;
   } catch (error) {
-    console.error("❌ Erreur lors du lancer de dé :", error);
+    console.error("❌ rollDice :", error.response?.data || error.message);
     return null;
   }
 };

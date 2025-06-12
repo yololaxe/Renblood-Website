@@ -36,6 +36,7 @@ function Home() {
       iv_load_policy: 3,
       cc_load_policy: 0,
       quality: "hd1080",
+      vq: "hd1080", 
     },
   };
 
@@ -49,11 +50,15 @@ function Home() {
             videoId="jLFNzAMJ5DE" // Remplace par l'ID de ta vidéo YouTube
             opts={videoOptions}
             className="full-screen-video"
-            onReady={(event) => event.target.mute()}
+            onReady={(event) => {
+              event.target.mute();
+              event.target.setPlaybackQuality('hd1080');
+            }}
+            
           />
           {/* Filtre flou léger */}
           <div className="absolute inset-0 bg-black opacity-10"></div>
-          <div className="absolute inset-0 backdrop-blur-sm"></div>
+          <div className="absolute inset-0 backdrop-blur-xs"></div>
         </div>
 
         {/* Icône de son */}

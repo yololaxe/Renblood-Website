@@ -126,17 +126,18 @@ function Character() {
           <p><strong>⚡ Vitesse :</strong> {speed}</p>
           <p><strong>🎯 Portée :</strong> {reach}</p>
           <p><strong>🛡️ Résistance :</strong> {resistance}</p>
+          <p><strong>💖 Régénération :</strong> {regeneration}</p>
           <p><strong>⛏️ Célérité :</strong> {haste}</p>
-          <p><strong>🔥 Régénération :</strong> {regeneration}</p>
+          <p><strong>📦 Inventaire :</strong> {place}</p>
           <p><strong>🔮 Mana :</strong> {mana}</p>
           <p><strong>🏃 Esquive :</strong> {dodge}</p>
-          <p><strong>👤 Discrétion :</strong> {discretion}</p>
+          <p><strong>🕵️ Discrétion :</strong> {discretion}</p>
           <p><strong>🗣️ Charisme :</strong> {charisma}</p>
           <p><strong>📢 Rhétorique :</strong> {rethoric}</p>
           <p><strong>🤝 Négociation :</strong> {negotiation}</p>
           <p><strong>👑 Influence :</strong> {influence}</p>
-          <p><strong>⚙️ Compétence :</strong> {skill}</p>
-          <p><strong>📦 Emplacements :</strong> {place}</p>
+          <p><strong>🎓 Compétence :</strong> {skill}</p>
+
         </div>
 
         <h3 className="text-xl font-bold mt-6 text-center">📜 Expériences</h3>
