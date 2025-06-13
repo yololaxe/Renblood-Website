@@ -1,187 +1,223 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { getPlayerJobs, getJobDetails, updateTalentProgression } from "../services/api";
+import {
+  getPlayerJobs,
+  getJobDetails,
+  updateTalentProgression,
+} from "../services/api";
+import items from "../data/node";
+import Tooltip from "../components/Tooltip";
 
 function TalentTree() {
   const { profession } = useParams();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const userId = queryParams.get("userId");
+  const userId = new URLSearchParams(useLocation().search).get("userId");
 
   const [talentData, setTalentData] = useState(null);
   const [unlockedTalents, setUnlockedTalents] = useState({});
   const [availablePoints, setAvailablePoints] = useState(0);
+  const [unlockedMastery, setUnlockedMastery] = useState(false);
+
+  // id → meta
+  const itemMap = useMemo(
+    () =>
+      items.reduce((m, it) => {
+        m[it.id] = it;
+        return m;
+      }, {}),
+    []
+  );
 
   useEffect(() => {
-    async function fetchData() {
-      if (!userId) {
-        console.error("❌ Aucune userId fournie !");
-        return;
-      }
-
+    async function init() {
+      if (!userId) return console.error("Aucune userId fournie");
       const jobsData = await getPlayerJobs(userId);
-      console.log("🔍 Données des métiers récupérées :", jobsData);
-
-      const playerJob = jobsData?.jobs?.jobs?.[profession]; // ✅ Correction ici
+      const playerJob = jobsData?.jobs?.jobs?.[profession];
       if (!playerJob || playerJob.xp === -1) {
-        alert("⚠️ Ce métier est verrouillé !");
+        alert("Ce métier est verrouillé !");
         return;
       }
-
       const talents = await getJobDetails(profession);
-      if (!talents) {
-        console.error("❌ Impossible de charger les talents.");
-        return;
-      }
-
       setTalentData(talents);
-      setAvailablePoints(playerJob.level - playerJob.progression.filter((p) => p).length);
-      initializeUnlockedTalents(playerJob.progression);
+
+      const prog = playerJob.progression;
+      setAvailablePoints(
+        Math.max(0, playerJob.level - prog.filter(Boolean).length)
+      );
+      setUnlockedTalents({
+        choice_1: prog.slice(0, 3),
+        choice_2: prog.slice(3, 6),
+        choice_3: prog.slice(6, 9),
+      });
+      // 10th slot is mastery
+      setUnlockedMastery(prog[9] || false);
     }
-    fetchData();
+    init();
   }, [userId, profession]);
 
-  const initializeUnlockedTalents = (progression) => {
-    setUnlockedTalents({
-      choice_1: [progression[0], progression[1], progression[2]],
-      choice_2: [progression[3], progression[4], progression[5]],
-      choice_3: [progression[6], progression[7], progression[8]],
-    });
+  // Retire suffixe "_N"
+  const strip = (code) => {
+    const m = code.match(/^(.+)_([0-9]+)$/);
+    return m ? { base: m[1], lvl: m[2] } : { base: code, lvl: null };
   };
 
-  const handleUnlockTalent = async (choiceIndex, tierIndex) => {
-    const choiceKey = `choice_${choiceIndex + 1}`;
+  // Construit le texte affiché
+  const displayName = (code) => {
+    const { base, lvl } = strip(code);
+    const name = itemMap[base]?.fr_name || base;
+    return lvl ? `${name}${lvl}` : name;
+  };
 
-    // ✅ Vérifie si le talent est déjà débloqué
-    if (unlockedTalents[choiceKey][tierIndex]) {
-      alert("⚠️ Ce talent est déjà débloqué !");
+  // Met à jour progression (+ mastery)
+  const updateProg = (tal, mastery) => {
+    const prog = [
+      ...tal.choice_1,
+      ...tal.choice_2,
+      ...tal.choice_3,
+      mastery,
+    ];
+    updateTalentProgression(userId, profession, prog);
+  };
+
+  const handleUnlock = (ci, ti) => {
+    const key = `choice_${ci + 1}`;
+    if (unlockedTalents[key][ti] || availablePoints < 1) return;
+    if (ti > 0 && !unlockedTalents[key][ti - 1]) {
+      alert("Débloquez d'abord le précédent");
       return;
     }
+    if (!window.confirm("Confirmez ?")) return;
 
-    if (availablePoints <= 0) {
-      alert("⚠️ Vous n'avez pas assez de points de talent !");
-      return;
-    }
-
-    if (tierIndex > 0 && !unlockedTalents[choiceKey][tierIndex - 1]) {
-      alert("⚠️ Vous devez débloquer le talent précédent !");
-      return;
-    }
-
-    const confirmPurchase = window.confirm("💡 Voulez-vous vraiment débloquer ce talent ?");
-    if (!confirmPurchase) return;
-
-    // ✅ Mise à jour de l'état et exécution de l'API dans un callback
     setUnlockedTalents((prev) => {
-      const updatedTalents = { ...prev };
-      updatedTalents[choiceKey][tierIndex] = true;
-
-      // ✅ Construire newProgression avec les nouvelles valeurs mises à jour
-      const newProgression = [
-        ...updatedTalents.choice_1,
-        ...updatedTalents.choice_2,
-        ...updatedTalents.choice_3,
-        false, // Assure que le 10ème élément est bien la maîtrise
-      ];
-
-      console.log("✅ Nouvelle progression envoyée :", newProgression);
-
-      // ✅ Appelle l'API après la mise à jour de l'état
-      updateTalentProgression(userId, profession, newProgression);
-
-      return updatedTalents;
+      const nxt = { ...prev };
+      nxt[key][ti] = true;
+      updateProg(nxt, unlockedMastery);
+      return nxt;
     });
-
-    setAvailablePoints((prev) => prev - 1);
+    setAvailablePoints((p) => p - 1);
   };
 
+  const canMastery =
+    talentData?.mastery?.length &&
+    Object.values(unlockedTalents).flat().every(Boolean) &&
+    !unlockedMastery &&
+    availablePoints > 0;
 
-
-
-
-
-  const unlockLevel10 = () => {
-    const allUnlocked = Object.values(unlockedTalents).every((tier) => tier.every((talent) => talent));
-
-    if (!allUnlocked) {
-      alert("⚠️ Vous devez débloquer tous les talents pour accéder au niveau 10 !");
-      return;
-    }
-
-    if (availablePoints <= 0) {
-      alert("⚠️ Vous devez avoir au moins 1 point de talent disponible pour débloquer le niveau 10 !");
-      return;
-    }
-
-    if (!talentData?.mastery) {
-      console.error("❌ Erreur : Le talent de niveau 10 est introuvable.");
-      alert("❌ Erreur : Impossible de débloquer ce talent.");
-      return;
-    }
-
-    alert(`🎉 Félicitations ! Vous avez débloqué : ${talentData.mastery.join(", ")}`);
-    setAvailablePoints((prev) => prev - 1);
+  const handleMastery = () => {
+    if (!canMastery) return;
+    const code = talentData.mastery[0];
+    alert(`🎖️ Maîtrise débloquée : ${displayName(code)}`);
+    setUnlockedMastery(true);
+    updateProg(unlockedTalents, true);
+    setAvailablePoints((p) => p - 1);
   };
 
-
-
-  if (!talentData) return <p className="text-center text-gray-400 mt-10">Chargement...</p>;
+  if (!talentData) {
+    return (
+      <p className="text-center text-gray-400 mt-20 text-lg">Chargement...</p>
+    );
+  }
 
   return (
-    <div className="p-6 text-white text-center">
-      <h1 className="text-3xl font-bold mb-4">🌳 Arbre des Talents - {talentData.name}</h1>
-      <p className="text-lg mb-6">Points de talent disponibles : {availablePoints}</p>
+    <div className="max-w-4xl mx-auto p-8 text-white">
+      <h1 className="text-4xl font-extrabold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-blue-400">
+        🌳 Arbre des Talents – {talentData.name}
+      </h1>
+      <p className="text-center mb-8 text-lg">
+        Points disponibles :{" "}
+        <span className="font-bold text-green-300">{availablePoints}</span>
+      </p>
 
-      {/* 🌿 Affichage des talents en GRILLE */}
-      <div className="grid grid-cols-3 gap-4 justify-center">
-        {Object.entries(talentData.skills).map(([choice, skills], choiceIndex) => (
-          <div key={choice} className="flex flex-col items-center space-y-3">
-            {skills.map((skill, tierIndex) => {
-              const choiceKey = `choice_${choiceIndex + 1}`;
-              const isUnlocked = unlockedTalents[choiceKey][tierIndex];
-              const isBlocked = availablePoints <= 0 || (tierIndex > 0 && !unlockedTalents[choiceKey][tierIndex - 1]);
+      <div className="grid grid-cols-3 gap-12">
+        {Object.entries(talentData.skills).map(([choice, skills], ci) => {
+          const key = `choice_${ci + 1}`;
+          return (
+            <div key={choice} className="space-y-6">
+              {skills.map((skill, ti) => {
+                const code = skill.name;
+                const { base } = strip(code);
+                const meta = itemMap[base] || {};
+                const unlocked = unlockedTalents[key][ti];
+                const blocked =
+                  ti > 0 && !unlockedTalents[key][ti - 1]
+                    ? true
+                    : availablePoints < 1;
 
-              return (
-                <div key={skill.id} className="flex flex-col items-center">
-                  <button
-                    onClick={() => !unlockedTalents[choiceKey][tierIndex] && handleUnlockTalent(choiceIndex, tierIndex)}
-                    className={`w-20 h-20 rounded-full border-4 text-sm flex items-center justify-center
-    ${unlockedTalents[choiceKey][tierIndex] ? "bg-green-500 border-green-400 cursor-not-allowed" :
-                        availablePoints <= 0 ? "bg-gray-800 border-gray-700 cursor-not-allowed" : "bg-gray-600 border-gray-500"}
-    hover:scale-105 transition`}
-                    disabled={unlockedTalents[choiceKey][tierIndex] || availablePoints <= 0}
+                return (
+                  <div
+                    key={skill.id}
+                    className="flex flex-col items-center"
                   >
-
-                    {skill.name}
-                  </button>
-                  {tierIndex < skills.length - 1 && <div className="text-white text-2xl mt-[-8px]">⬇️</div>}
-                </div>
-              );
-            })}
-          </div>
-        ))}
+                    <Tooltip text={meta.fr_description || ""}>
+                      <button
+                        onClick={() => handleUnlock(ci, ti)}
+                        disabled={unlocked || blocked}
+                        className={`w-24 h-24 rounded-full flex items-center justify-center p-2 text-center text-sm font-medium transition-shadow ${
+                          unlocked
+                            ? "bg-green-600 shadow-lg"
+                            : blocked
+                            ? "bg-gray-700 cursor-not-allowed"
+                            : "bg-gray-600 hover:bg-gray-500 shadow-md"
+                        }`}
+                      >
+                        {displayName(code)}
+                      </button>
+                    </Tooltip>
+                    {ti < skills.length - 1 && (
+                      <svg
+                        className="w-6 h-6 text-gray-400 mt-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
 
+      {/* Talent final de maîtrise en rectangle doré */}
+      <div className="mt-12 flex justify-center">
+        {talentData.mastery.map((code) => {
+          const { base } = strip(code);
+          const meta = itemMap[base] || {};
+          const tooltip = meta.fr_description || "";
+          const available = canMastery;
+          const unlocked = unlockedMastery;
 
+          const btnClass = unlocked
+            ? "bg-green-600 shadow-lg"
+            : available
+            ? "bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 shadow-md"
+            : "bg-gray-700 cursor-not-allowed";
 
-      <div className="mt-8 flex flex-col items-center">
-        <div className="text-white text-2xl mt-[-8px]">⬇️</div>
-        <button
-          onClick={unlockLevel10}
-          className={`px-6 py-3 rounded-lg text-lg font-semibold transition
-      ${availablePoints <= 0 || !Object.values(unlockedTalents).every((tier) => tier.every((talent) => talent))
-              ? "bg-gray-500 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-500"
-            }`}
-          disabled={availablePoints <= 0 || !Object.values(unlockedTalents).every((tier) => tier.every((talent) => talent))}
-        >
-          🔥 Débloquer Talent Niveau 10
-        </button>
+          return (
+            <Tooltip key={code} text={tooltip}>
+              <button
+                onClick={handleMastery}
+                disabled={!available}
+                className={`
+                  px-8 py-4 rounded-lg text-xl font-bold text-white transition
+                  ${btnClass}
+                `}
+              >
+                {displayName(code)}
+              </button>
+            </Tooltip>
+          );
+        })}
       </div>
-
     </div>
   );
 }
-
 
 export default TalentTree;
