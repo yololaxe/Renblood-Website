@@ -1,6 +1,8 @@
 // src/services/api.js
 import axiosInstance from "./axiosInstance";
+
 export const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 // ✅ Vérifier si l'API est active
 export const checkApiStatus = async () => {
   try {
@@ -28,20 +30,6 @@ export const getPlayerData = async (userId) => {
   }
 };
 
-export const me = async (firebaseUid) => {
-  try {
-    const { data } = await axiosInstance.get(`/players/me/${firebaseUid}/`);
-    return data;
-  } catch (error) {
-    console.error("❌ me() :", error.response?.data || error.message);
-    throw error;
-  }
-};
-
-export const clearPlayerData = () => {
-  localStorage.removeItem("playerData");
-};
-
 export const getPlayerJobs = async (userId) => {
   try {
     console.log(`🔄 GET /players/get/${userId}/jobs`);
@@ -54,25 +42,6 @@ export const getPlayerJobs = async (userId) => {
   }
 };
 
-export const updateTalentProgression = async (userId, jobName, newProgression) => {
-  try {
-    if (!Array.isArray(newProgression) || (newProgression.length !== 10 && newProgression.length !== 15)) {
-      console.error("❌ progression must be 10 or 15 booleans");
-      return null;
-    }
-    console.log(`🔄 PUT /players/update/${userId}/jobs/${jobName}/progression/`, newProgression);
-    const { data } = await axiosInstance.put(
-      `/players/update/${userId}/jobs/${jobName}/progression/`,
-      { new_value: newProgression }
-    );
-    console.log("✅ Progression mise à jour :", data);
-    return data;
-  } catch (error) {
-    console.error("❌ updateTalentProgression :", error.response?.data || error.message);
-    return null;
-  }
-};
-
 export const getPlayers = async (rank) => {
   try {
     console.log(`🔄 GET /players/getPlayers/${rank}/`);
@@ -81,6 +50,27 @@ export const getPlayers = async (rank) => {
     return data;
   } catch (error) {
     console.error("❌ getPlayers :", error);
+    return null;
+  }
+};
+
+export const me = async (firebaseUid) => {
+  try {
+    const { data } = await axiosInstance.get(`/players/me/${firebaseUid}/`);
+    return data;
+  } catch (error) {
+    console.error("❌ me() :", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const createPlayer = async (playerData) => {
+  try {
+    console.log(`🔄 POST /players/create/`, playerData);
+    const { data } = await axiosInstance.post(`/players/create/`, playerData);
+    return data;
+  } catch (error) {
+    console.error("❌ createPlayer :", error.response?.data || error.message);
     return null;
   }
 };
@@ -100,7 +90,11 @@ export const updatePlayer = async (playerId, updates) => {
 export const addTraitToPlayer = async (playerId, traitId) => {
   try {
     console.log(`🔄 PUT /players/list/${playerId}/trait/add/?id=${traitId}`);
-    const { data } = await axiosInstance.put(`/players/list/${playerId}/trait/add/`, null, { params: { id: traitId } });
+    const { data } = await axiosInstance.put(
+      `/players/list/${playerId}/trait/add/`,
+      null,
+      { params: { id: traitId } }
+    );
     return data;
   } catch (error) {
     console.error("❌ addTraitToPlayer :", error.response?.data || error.message);
@@ -111,7 +105,10 @@ export const addTraitToPlayer = async (playerId, traitId) => {
 export const removeTraitFromPlayer = async (playerId, traitId) => {
   try {
     console.log(`🔄 DELETE /players/list/${playerId}/trait/delete/?id=${traitId}`);
-    const { data } = await axiosInstance.delete(`/players/list/${playerId}/trait/delete/`, { params: { id: traitId } });
+    const { data } = await axiosInstance.delete(
+      `/players/list/${playerId}/trait/delete/`,
+      { params: { id: traitId } }
+    );
     return data;
   } catch (error) {
     console.error("❌ removeTraitFromPlayer :", error.response?.data || error.message);
@@ -122,7 +119,11 @@ export const removeTraitFromPlayer = async (playerId, traitId) => {
 export const addActionToPlayer = async (playerId, actionId) => {
   try {
     console.log(`🔄 PUT /players/list/${playerId}/action/add/?id=${actionId}`);
-    const { data } = await axiosInstance.put(`/players/list/${playerId}/action/add/`, null, { params: { id: actionId } });
+    const { data } = await axiosInstance.put(
+      `/players/list/${playerId}/action/add/`,
+      null,
+      { params: { id: actionId } }
+    );
     return data;
   } catch (error) {
     console.error("❌ addActionToPlayer :", error.response?.data || error.message);
@@ -133,47 +134,13 @@ export const addActionToPlayer = async (playerId, actionId) => {
 export const removeActionFromPlayer = async (playerId, actionId) => {
   try {
     console.log(`🔄 DELETE /players/list/${playerId}/action/delete/?id=${actionId}`);
-    const { data } = await axiosInstance.delete(`/players/list/${playerId}/action/delete/`, { params: { id: actionId } });
+    const { data } = await axiosInstance.delete(
+      `/players/list/${playerId}/action/delete/`,
+      { params: { id: actionId } }
+    );
     return data;
   } catch (error) {
     console.error("❌ removeActionFromPlayer :", error.response?.data || error.message);
-    return null;
-  }
-};
-
-export const updatePlayerJobs = async (playerId, jobName, field, value) => {
-  try {
-    console.log(`🔄 PUT /players/update/${playerId}/jobs/${jobName}/${field}/`, value);
-    const { data } = await axiosInstance.put(`/players/update/${playerId}/jobs/${jobName}/${field}/`, {
-      new_value: value
-    });
-    return data;
-  } catch (error) {
-    console.error("❌ updatePlayerJobs :", error.response?.data || error.message);
-    return null;
-  }
-};
-
-export const createPlayer = async (playerData) => {
-  try {
-    console.log(`🔄 POST /players/create/`, playerData);
-    const { data } = await axiosInstance.post(`/players/create/`, playerData);
-    return data;
-  } catch (error) {
-    console.error("❌ createPlayer :", error.response?.data || error.message);
-    return null;
-  }
-};
-
-////////////////////////// JOBS ////////////////////////////
-
-export const getJobDetails = async (jobId) => {
-  try {
-    console.log(`🔄 GET /stats/jobs/${jobId}/`);
-    const { data } = await axiosInstance.get(`/stats/jobs/${jobId}/`);
-    return data;
-  } catch (error) {
-    console.error("❌ getJobDetails :", error.response?.data || error.message);
     return null;
   }
 };
@@ -199,6 +166,19 @@ export const getActions = async () => {
   } catch (error) {
     console.error("❌ getActions :", error.response?.data || error.message);
     return [];
+  }
+};
+
+////////////////////////// JOBS ////////////////////////////
+
+export const getJobDetails = async (jobId) => {
+  try {
+    console.log(`🔄 GET /stats/jobs/${jobId}/`);
+    const { data } = await axiosInstance.get(`/stats/jobs/${jobId}/`);
+    return data;
+  } catch (error) {
+    console.error("❌ getJobDetails :", error.response?.data || error.message);
+    return null;
   }
 };
 
@@ -239,6 +219,41 @@ export const rollDice = async (token) => {
     return data;
   } catch (error) {
     console.error("❌ rollDice :", error.response?.data || error.message);
+    return null;
+  }
+};
+
+////////////////////////// UPDATES /////////////////////////
+
+export const updateTalentProgression = async (userId, jobName, newProgression) => {
+  try {
+    if (!Array.isArray(newProgression) || (newProgression.length !== 10 && newProgression.length !== 15)) {
+      console.error("❌ progression must be 10 or 15 booleans");
+      return null;
+    }
+    console.log(`🔄 PUT /players/update/${userId}/jobs/${jobName}/progression/`, newProgression);
+    const { data } = await axiosInstance.put(
+      `/players/update/${userId}/jobs/${jobName}/progression/`,
+      { new_value: newProgression }
+    );
+    console.log("✅ Progression mise à jour :", data);
+    return data;
+  } catch (error) {
+    console.error("❌ updateTalentProgression :", error.response?.data || error.message);
+    return null;
+  }
+};
+
+export const updatePlayerJobs = async (playerId, jobName, field, value) => {
+  try {
+    console.log(`🔄 PUT /players/update/${playerId}/jobs/${jobName}/${field}/`, value);
+    const { data } = await axiosInstance.put(
+      `/players/update/${playerId}/jobs/${jobName}/${field}/`,
+      { new_value: value }
+    );
+    return data;
+  } catch (error) {
+    console.error("❌ updatePlayerJobs :", error.response?.data || error.message);
     return null;
   }
 };

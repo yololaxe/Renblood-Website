@@ -84,6 +84,7 @@ function Map() {
                 <img
                   src={getIconPath(ville.type)}
                   alt={ville.type}
+                  loading="lazy"
                   className="city-icon w-[5vw] max-w-[40px] h-auto transition-transform hover:scale-125"
                 />
                 <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 text-white text-xs sm:text-sm bg-gray-800 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">

@@ -10,7 +10,6 @@ import Auth from "../pages/Auth.jsx";
 import TalentSelection from "../pages/TalentSelection.jsx";
 import TalentTree from "../pages/TalentTree.jsx";
 import TalentTree2 from "../pages/TalentTree2.jsx";
-import Account from "../pages/Account.jsx";
 import Histoire from "../pages/Histoire.jsx";
 import Character from "../pages/Character.jsx";
 import Livres from "../pages/histoires/Livre.jsx";
@@ -39,7 +38,6 @@ const routes = [
   { path: "/create-player", element: <CreatePlayer />, private: true, requiredRole: "Admin" },
   { path: "/map", element: <Map />},
 
-  { path: "/account", element: <Account />},
   { path: "/character", element: <Character />},
   { path: "/talents", element: <TalentSelection />, private: true, requiredRole: "Esclave"},
   { path: "/talents/:profession", element: <TalentTree />, private: true, requiredRole: "Esclave"},

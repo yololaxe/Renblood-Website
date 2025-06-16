@@ -1,79 +1,68 @@
+// src/pages/Auth.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, googleProvider, listenToAuthChanges } from "../data/firebaseConfig";
-import { signInWithPopup, signOut } from "firebase/auth";
+import { signInWithPopup, signOut, getIdToken } from "firebase/auth";
 import axios from "axios";
 import { API_BASE_URL } from "../services/api";
-import { useUser } from "../context/UserContext"; // ✅ Import du contexte
-import { getIdToken } from "firebase/auth"; // ✅ à importer
-import { setAccessToken } from "../utils/sessionUtils"; // ✅ à importer aussi
+import { useUser } from "../context/UserContext";
+import { setAccessToken } from "../utils/sessionUtils";
 
 function Auth() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const { setUserId, setUserRank } = useUser(); // ✅ Récupère les setters du contexte
+  const { setUserId, setUserRank } = useUser();
 
+  // À la connexion Firebase (initiale ou reload), on récupère les données Minecraft
   useEffect(() => {
-    listenToAuthChanges(async (user) => {
-      setUser(user);
-      if (user) {
-        await fetchMinecraftData(user.uid);
-        navigate("/account");
+    return listenToAuthChanges(async firebaseUser => {
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        // Récupère et stocke Firebase ID token
+        const token = await getIdToken(firebaseUser);
+        setAccessToken(token);
+        // Récupère les données Minecraft backend
+        await fetchMinecraftData(firebaseUser.uid);
       }
     });
   }, []);
 
-
   const signInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      setUser(user);
-
-      // ✅ Récupère le token Firebase
-      const token = await getIdToken(user);
-      setAccessToken(token); // ✅ Stocke dans localStorage
-
-      // 🔄 Appelle ensuite ton backend pour récupérer les infos Minecraft
-      await fetchMinecraftData(user.uid);
-      navigate("/account");
+      // L'effet `listenToAuthChanges` se chargera du reste (token + fetch)
+      navigate("/character");
     } catch (error) {
       console.error("Erreur de connexion :", error);
     }
   };
 
-
   const fetchMinecraftData = async (userId) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/players/get/${userId}/`);
-
-      // ✅ Stocke dans `sessionStorage`
-      sessionStorage.setItem("userId", response.data.id);
-      sessionStorage.setItem("userRank", response.data.rank);
-
-      // ✅ Met à jour le contexte global
-      setUserId(response.data.id);
-      setUserRank(response.data.rank);
+      const { id, rank } = response.data;
+      sessionStorage.setItem("userId", id);
+      sessionStorage.setItem("userRank", rank);
+      setUserId(id);
+      setUserRank(rank);
     } catch (error) {
       console.error("Impossible de récupérer les données Minecraft :", error);
     }
   };
 
   const logout = async () => {
-    if (window.confirm("Voulez-vous vraiment vous déconnecter ?")) {
-      try {
-        await signOut(auth); // Déconnexion Firebase
-        sessionStorage.clear(); // ✅ Supprime toutes les données stockées
-        setUser(null); // ✅ Réinitialise l'état local
-        setUserId(null); // ✅ Réinitialise l'état global
-        setUserRank(null);
-        navigate("/home"); // ✅ Redirige vers l'accueil
-      } catch (error) {
-        console.error("Erreur lors de la déconnexion :", error);
-      }
+    if (!window.confirm("Voulez-vous vraiment vous déconnecter ?")) return;
+    try {
+      await signOut(auth);
+      sessionStorage.clear();
+      setUser(null);
+      setUserId(null);
+      setUserRank(null);
+      navigate("/home");
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion :", error);
     }
   };
-
 
   return (
     <div className="p-10 text-center">
@@ -82,7 +71,9 @@ function Auth() {
         <div>
           <img src={user.photoURL} alt="Avatar" className="w-16 h-16 rounded-full mx-auto mb-2" />
           <p className="text-lg text-gray-200">Connecté en tant que {user.displayName}</p>
-          <button onClick={logout} className="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg">Déconnexion</button>
+          <button onClick={logout} className="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg">
+            Déconnexion
+          </button>
         </div>
       ) : (
         <button onClick={signInWithGoogle} className="px-6 py-2 bg-blue-600 text-white rounded-lg">
