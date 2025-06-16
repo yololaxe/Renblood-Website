@@ -15,6 +15,7 @@ function Histoire() {
           className="relative bg-gray-800 hover:bg-gray-700 text-white p-6 rounded-xl shadow-lg text-xl font-semibold flex justify-center items-center transition-transform transform hover:scale-105 group"
         >
           <img
+            loading="lazy"
             src="/images/livres.jpg"
             alt="Livres"
             className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 rounded-xl"
@@ -29,6 +30,7 @@ function Histoire() {
           <img
             src="/images/familles.jpg"
             alt="Familles"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 rounded-xl"
           />
           <span className="relative z-10">🏰 Les Familles</span>
@@ -41,6 +43,7 @@ function Histoire() {
           <img
             src="/images/lois.jpg"
             alt="Lois"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 rounded-xl"
           />
           <span className="relative z-10">⚖️ Les Lois</span>
@@ -53,6 +56,7 @@ function Histoire() {
           <img
             src="/images/politique.jpg"
             alt="Politique"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 rounded-xl"
           />
           <span className="relative z-10">🏛️ La Politique</span>
@@ -64,6 +68,7 @@ function Histoire() {
           <img
             src="/images/armee.jpg"
             alt="Armée"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 rounded-xl"
           />
           <span className="relative z-10">⚔️ L'Armée</span>
@@ -75,6 +80,7 @@ function Histoire() {
           <img
             src="/images/titre.jpg"
             alt="Titres"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 rounded-xl"
           />
           <span className="relative z-10">🏅 Les Titres</span>
@@ -86,13 +92,23 @@ function Histoire() {
           <img
             src="/images/guildes.jpg"
             alt="Guildes"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 rounded-xl"
           />
           <span className="relative z-10">🛡️ Les Guildes</span>
         </Link>
-
-
-
+        <Link
+          to="/histoires/metiers"
+          className="relative bg-gray-800 hover:bg-gray-700 text-white p-6 rounded-xl shadow-lg text-xl font-semibold flex justify-center items-center transition-transform transform hover:scale-105 group"
+        >
+          <img
+            src="/images/metiers.jpg"
+            alt="Métiers"
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 rounded-xl"
+          />
+          <span className="relative z-10">💼 Les Métiers</span>
+        </Link>
       </div>
     </div>
   );

@@ -1,7 +1,16 @@
+// src/components/Navbar.jsx
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { auth, listenToAuthChanges, signOut } from "../data/firebaseConfig";
 import { useUser } from "../context/UserContext";
+
+const navItems = [
+  { to: "/",       label: "Accueil" },
+  { to: "/histoire", label: "Information" },
+  { to: "/players",  label: "Joueurs" },
+  { to: "/map",      label: "Map" },
+  { to: "/talents",  label: "Arbre des talents", requiresAuth: true },
+];
 
 function Navbar() {
   const [user, setUser] = useState(null);
@@ -12,6 +21,26 @@ function Navbar() {
     listenToAuthChanges(setUser);
   }, []);
 
+  const handleSignOut = async () => {
+    if (!window.confirm("Voulez-vous vraiment vous déconnecter ?")) return;
+    try {
+      await signOut(auth);
+      sessionStorage.clear();
+      localStorage.removeItem("access_token");
+      setUser(null);
+      setUserId(null);
+      setUserRank(null);
+      navigate("/home");
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion :", error);
+    }
+  };
+
+  const linkClass = ({ isActive }) =>
+    isActive
+      ? "pointer-events-none text-blue-400 font-semibold"
+      : "hover:text-gray-400 text-white transition";
+
   return (
     <nav className="relative bg-gray-800 text-white p-4 flex justify-between items-center">
       {/* 🎲 Emoji centré */}
@@ -21,18 +50,25 @@ function Navbar() {
 
       {/* Menu gauche */}
       <div className="flex space-x-6">
-        <Link to="/" className="hover:text-gray-400">Accueil</Link>
-        <Link to="/histoire" className="hover:text-gray-400">Information</Link>
-        <Link to="/players" className="hover:text-gray-400">Joueurs</Link>
-        <Link to="/map" className="hover:text-gray-400">Map</Link>
-        {user && <Link to="/talents" className="hover:text-gray-400">Arbre des talents</Link>}
+        {navItems.map(({ to, label, requiresAuth }) => {
+          if (requiresAuth && !user) return null;
+          return (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === "/"}             // exact match pour la racine
+              className={linkClass}
+            >
+              {label}
+            </NavLink>
+          );
+        })}
       </div>
 
       {/* Menu droite */}
       <div className="flex items-center space-x-4">
         {user ? (
           <>
-            {/* <Link to="/character" className="hover:text-gray-400">Mon personnage</Link> */}
             <Link to="/character">
               <img
                 src={user.photoURL || "/assets/default-avatar.png"}
@@ -41,28 +77,16 @@ function Navbar() {
               />
             </Link>
             <button
-              onClick={async () => {
-                if (window.confirm("Voulez-vous vraiment vous déconnecter ?")) {
-                  try {
-                    await signOut(auth);
-                    sessionStorage.clear();
-                    localStorage.removeItem("access_token");
-                    setUser(null);
-                    setUserId(null);
-                    setUserRank(null);
-                    navigate("/home");
-                  } catch (error) {
-                    console.error("Erreur lors de la déconnexion :", error);
-                  }
-                }
-              }}
-              className="text-red-500 hover:text-red-400"
+              onClick={handleSignOut}
+              className="text-red-500 hover:text-red-400 transition"
             >
               Déconnexion
             </button>
           </>
         ) : (
-          <Link to="/auth" className="hover:text-gray-400">Connexion</Link>
+          <NavLink to="/auth" className={linkClass}>
+            Connexion
+          </NavLink>
         )}
       </div>
     </nav>

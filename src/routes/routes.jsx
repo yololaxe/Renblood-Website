@@ -24,6 +24,7 @@ import Guildes from "../pages/histoires/Guildes.jsx";
 import Unauthorized from "../pages/Unauthorized.jsx";
 import Arbre from "../pages/histoires/Arbre.jsx";
 import DicePage from "../pages/dice/DicePage.jsx";
+import Metiers from "../pages/histoires/Metiers.jsx";
 
 const routes = [
   { path: "/", element: <Home /> },
@@ -53,6 +54,7 @@ const routes = [
   { path: "/histoires/politique", element: <Politique />},
   { path: "/histoires/titres", element: <Titres />},
   { path: "/histoires/guildes", element: <Guildes />},
+  { path: "/histoires/metiers", element: <Metiers />},
 
   { path: "/dice", element: <DicePage />},
 ];
