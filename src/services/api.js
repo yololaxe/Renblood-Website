@@ -145,6 +145,74 @@ export const removeActionFromPlayer = async (playerId, actionId) => {
   }
 };
 
+
+
+export const createDefaultPlayer = async (firebaseUser) => {
+  const defaultPlayer = {
+    id: firebaseUser.uid,
+    id_minecraft: firebaseUser.uid,
+    pseudo_minecraft: firebaseUser.displayName || "Inconnu",
+    name: firebaseUser.displayName?.split(" ")[0] || "",
+    surname: firebaseUser.displayName?.split(" ")[1] || "",
+    total_lvl: 0,
+    description: "",
+    rank: "NonPlayer",
+    money: 0,
+    divin: false,
+    experiences: {
+      jobs: Object.fromEntries([
+        "lumberjack", "naval_architect", "artisan", "carpenter", "miner", "blacksmith", "glassmaker", "mason",
+        "farmer", "breeder", "fisherman", "innkeeper", "guard", "merchant", "transporter", "explorer",
+        "bestiary", "banker", "politician", "builder"
+      ].map(job => [job, {
+        xp: -1,
+        level: 0,
+        progression: Array(job === "bestiary" || job === "banker" || job === "politician" || job === "builder" ? 15 : 10).fill(false),
+        inter_choice: [],
+        choose_lvl_10: ""
+      }]))
+    }
+  };
+
+  try {
+    await createPlayer(defaultPlayer);
+    console.log("✅ Joueur par défaut créé !");
+  } catch (err) {
+    console.error("❌ Erreur lors de la création du joueur par défaut :", err);
+  }
+};
+
+/**
+ * Met à jour le level du métier `jobName` pour le joueur `playerId`
+ * @param {string} playerId
+ * @param {string} jobName
+ * @returns {Promise<{job: string, xp: number, new_level: number}>}
+ */
+export const updateJobLevel = async (playerId, jobName) => {
+  try {
+    console.log(`🔄 POST /players/stats/${playerId}/update_job_level/${jobName}/`);
+    const { data } = await axiosInstance.post(
+      `/players/stats/${playerId}/update_job_level/${jobName}/`
+    );
+    console.log('✅ updateJobLevel:', data);
+    return data;
+  } catch (error) {
+    console.error(
+      '❌ updateJobLevel:',
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const getPlayerFullProfile = async (playerId) => {
+  const { data } = await axiosInstance.get(
+    `/players/stats/${playerId}/full_profile/`
+  );
+  return data;
+};
+
+
 //////////////////// TRAITS & ACTIONS //////////////////////
 
 export const getTraits = async () => {
@@ -257,3 +325,42 @@ export const updatePlayerJobs = async (playerId, jobName, field, value) => {
     return null;
   }
 };
+
+////////////////////////////// STATS UPDATE ////////////////////////////////
+/**
+ * Initialise tous les bonus "talent_tree" pour un joueur en récupérant
+ * les choix de jobs débloqués et en les ajoutant à real_charact.
+ *
+ * @param {string} playerId - L’ID Firebase du joueur.
+ * @returns {Promise<Object|null>} - Le real_charact mis à jour ou null en cas d’erreur.
+ */
+export const initializeStatsBonus = async (playerId) => {
+  try {
+    console.log(`🔄 POST /players/stats/${playerId}/initialize_stats_bonus/`);
+    const { data } = await axiosInstance.post(
+      `/players/stats/${playerId}/initialize_stats_bonus/`
+    );
+    console.log("✅ real_charact initialisé :", data);
+    return data.real_charact;
+  } catch (error) {
+    console.error(
+      "❌ initializeStatsBonus :",
+      error.response?.data || error.message
+    );
+    return null;
+  }
+};
+
+
+////////////////////////////// NODES ////////////////////////////////////
+export const getAllNodes = async () => {
+  try {
+    const res = await axiosInstance.get(`stats/nodes/`);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Erreur lors de la récupération des nodes :", err);
+    return [];
+  }
+};
+
+

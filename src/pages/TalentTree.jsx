@@ -1,14 +1,16 @@
+// src/pages/TalentTree.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import {
   getPlayerJobs,
   getJobDetails,
   updateTalentProgression,
+  getAllNodes,
+  updateJobLevel,         // ← import
 } from "../services/api";
-import items from "../data/node";
 import Tooltip from "../components/Tooltip";
 
-function TalentTree() {
+export default function TalentTree() {
   const { profession } = useParams();
   const userId = new URLSearchParams(useLocation().search).get("userId");
 
@@ -16,29 +18,40 @@ function TalentTree() {
   const [unlockedTalents, setUnlockedTalents] = useState({});
   const [availablePoints, setAvailablePoints] = useState(0);
   const [unlockedMastery, setUnlockedMastery] = useState(false);
-
-  // id → meta
-  const itemMap = useMemo(
-    () =>
-      items.reduce((m, it) => {
-        m[it.id] = it;
-        return m;
-      }, {}),
-    []
-  );
+  const [itemMap, setItemMap] = useState({});
 
   useEffect(() => {
     async function init() {
       if (!userId) return console.error("Aucune userId fournie");
+
+      // 1️⃣ On recalcule d'abord le level du métier sur le serveur
+      try {
+        await updateJobLevel(userId, profession);
+      } catch (e) {
+        console.warn("Impossible de mettre à jour le level du métier", e);
+      }
+
+      // 2️⃣ Charge la liste des nodes pour les tooltips
+      const nodeList = await getAllNodes();
+      const map = nodeList.reduce((acc, it) => {
+        acc[it.id] = it;
+        return acc;
+      }, {});
+      setItemMap(map);
+
+      // 3️⃣ Récupère la progression et le level à jour
       const jobsData = await getPlayerJobs(userId);
       const playerJob = jobsData?.jobs?.jobs?.[profession];
       if (!playerJob || playerJob.xp === -1) {
         alert("Ce métier est verrouillé !");
         return;
       }
+
+      // 4️⃣ Charge l'arbre de talents
       const talents = await getJobDetails(profession);
       setTalentData(talents);
 
+      // 5️⃣ Initialise l'état local
       const prog = playerJob.progression;
       setAvailablePoints(
         Math.max(0, playerJob.level - prog.filter(Boolean).length)
@@ -48,26 +61,23 @@ function TalentTree() {
         choice_2: prog.slice(3, 6),
         choice_3: prog.slice(6, 9),
       });
-      // 10th slot is mastery
       setUnlockedMastery(prog[9] || false);
     }
+
     init();
   }, [userId, profession]);
 
-  // Retire suffixe "_N"
   const strip = (code) => {
     const m = code.match(/^(.+)_([0-9]+)$/);
     return m ? { base: m[1], lvl: m[2] } : { base: code, lvl: null };
   };
 
-  // Construit le texte affiché
   const displayName = (code) => {
     const { base, lvl } = strip(code);
     const name = itemMap[base]?.fr_name || base;
     return lvl ? `${name}${lvl}` : name;
   };
 
-  // Met à jour progression (+ mastery)
   const updateProg = (tal, mastery) => {
     const prog = [
       ...tal.choice_1,
@@ -143,10 +153,7 @@ function TalentTree() {
                     : availablePoints < 1;
 
                 return (
-                  <div
-                    key={skill.id}
-                    className="flex flex-col items-center"
-                  >
+                  <div key={skill.id} className="flex flex-col items-center">
                     <Tooltip text={meta.fr_description || ""}>
                       <button
                         onClick={() => handleUnlock(ci, ti)}
@@ -185,12 +192,10 @@ function TalentTree() {
         })}
       </div>
 
-      {/* Talent final de maîtrise en rectangle doré */}
       <div className="mt-12 flex justify-center">
         {talentData.mastery.map((code) => {
           const { base } = strip(code);
           const meta = itemMap[base] || {};
-          const tooltip = meta.fr_description || "";
           const available = canMastery;
           const unlocked = unlockedMastery;
 
@@ -201,14 +206,11 @@ function TalentTree() {
             : "bg-gray-700 cursor-not-allowed";
 
           return (
-            <Tooltip key={code} text={tooltip}>
+            <Tooltip key={code} text={meta.fr_description || ""}>
               <button
                 onClick={handleMastery}
                 disabled={!available}
-                className={`
-                  px-8 py-4 rounded-lg text-xl font-bold text-white transition
-                  ${btnClass}
-                `}
+                className={`px-8 py-4 rounded-lg text-xl font-bold text-white transition ${btnClass}`}
               >
                 {displayName(code)}
               </button>
@@ -219,5 +221,3 @@ function TalentTree() {
     </div>
   );
 }
-
-export default TalentTree;

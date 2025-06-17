@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { auth, googleProvider, listenToAuthChanges } from "../data/firebaseConfig";
 import { signInWithPopup, signOut, getIdToken } from "firebase/auth";
 import axios from "axios";
-import { API_BASE_URL } from "../services/api";
+import { API_BASE_URL, createDefaultPlayer, initializeStatsBonus} from "../services/api";
 import { useUser } from "../context/UserContext";
 import { setAccessToken } from "../utils/sessionUtils";
 
@@ -45,10 +45,20 @@ function Auth() {
       sessionStorage.setItem("userRank", rank);
       setUserId(id);
       setUserRank(rank);
+      await initializeStatsBonus(id); // ✅ ici
     } catch (error) {
-      console.error("Impossible de récupérer les données Minecraft :", error);
+      if (error.response && error.response.status === 404) {
+        // Si le joueur n'existe pas, on le crée
+        console.log("🔍 Aucun joueur trouvé, création du profil...");
+        await createDefaultPlayer(user);
+        await initializeStatsBonus(user.uid); // ✅ ici
+        await fetchMinecraftData(user.uid);
+      } else {
+        console.error("Impossible de récupérer les données Minecraft :", error);
+      }
     }
   };
+
 
   const logout = async () => {
     if (!window.confirm("Voulez-vous vraiment vous déconnecter ?")) return;

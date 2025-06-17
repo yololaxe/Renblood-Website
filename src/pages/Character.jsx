@@ -1,162 +1,202 @@
+// src/pages/Character.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth, listenToAuthChanges } from "../data/firebaseConfig";
-import { getPlayerData } from "../services/api";
+import { listenToAuthChanges } from "../data/firebaseConfig";
+import { getPlayerFullProfile } from "../services/api";
 import { MoneyDisplay } from "../components/MoneyDisplay";
+import ToolTip from "../components/Tooltip";
 
-function Character() {
-  const [user, setUser] = useState(null);
-  const [playerData, setPlayerData] = useState(null);
+const CHARACTERISTICS = [
+  { key: "life", icon: "❤️", label: "Vie" },
+  { key: "strength", icon: "💪", label: "Force" },
+  { key: "speed", icon: "⚡", label: "Vitesse" },
+  { key: "reach", icon: "🎯", label: "Portée" },
+  { key: "resistance", icon: "🛡️", label: "Résistance" },
+  { key: "regeneration", icon: "💖", label: "Régénération" },
+  { key: "haste", icon: "⛏️", label: "Célérité" },
+  { key: "place", icon: "📦", label: "Inventaire" },
+  { key: "mana", icon: "🔮", label: "Mana" },
+  { key: "dodge", icon: "🏃", label: "Esquive" },
+  { key: "discretion", icon: "🕵️", label: "Discrétion" },
+  { key: "charisma", icon: "😎", label: "Charisme" },
+  { key: "rethoric", icon: "📢", label: "Rhétorique" },
+  { key: "negotiation", icon: "🤝", label: "Négociation" },
+  { key: "influence", icon: "👑", label: "Influence" },
+  { key: "skill", icon: "🎓", label: "Compétence" },
+];
+
+export default function Character() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [player, setPlayer] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = listenToAuthChanges(async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        try {
-          const data = await getPlayerData(firebaseUser.uid);
-          if (data) {
-            sessionStorage.setItem("mcData", JSON.stringify(data));
-            setPlayerData(data);
-          }
-        } catch (error) {
-          console.error("Erreur lors de la récupération des données :", error);
-        }
-      } else {
-        navigate("/auth");
+    const unsub = listenToAuthChanges(async (user) => {
+      if (!user) return navigate("/auth");
+      const cache = sessionStorage.getItem("mcFullProfile");
+      if (cache) {
+        setPlayer(JSON.parse(cache));
+        setLoading(false);
+        return;
+      }
+      try {
+        const data = await getPlayerFullProfile(user.uid);
+        sessionStorage.setItem("mcFullProfile", JSON.stringify(data));
+        setPlayer(data);
+      } catch {
+        setError("Impossible de charger les données.");
+      } finally {
+        setLoading(false);
       }
     });
-
-    return () => {
-      if (typeof unsubscribe === "function") {
-        unsubscribe();
-      }
-    };
+    return () => unsub && unsub();
   }, [navigate]);
 
-
-  if (!user || !playerData) {
-    return <p className="text-center text-gray-400 mt-10">Chargement des données...</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="w-32 h-32 bg-gray-800 animate-pulse rounded-2xl" />
+      </div>
+    );
+  }
+  if (error) {
+    return <p className="text-red-400 text-center mt-10">{error}</p>;
   }
 
-  // Protection contre les valeurs nulles
   const {
-    pseudo_minecraft = "Inconnu",
-    rank = "Non défini",
-    description = "Aucune description",
-    money = 0,
-    divin = "Aucun",
+    pseudo_minecraft,
+    rank,
+    description,
+    first_name,
+    last_name,
+    money,
+    divin,
     traits = [],
     actions = [],
+    real_charact = {},
     experiences = {},
-    life = 0,
-    strength = 0,
-    speed = 0,
-    reach = 0,
-    resistance = 0,
-    haste = 0,
-    regeneration = 0,
-    mana = 0,
-    dodge = 0,
-    discretion = 0,
-    charisma = 0,
-    rethoric = 0,
-    negotiation = 0,
-    influence = 0,
-    skill = 0,
-    place = 0
-  } = playerData;
-
-  const jobs = experiences?.jobs || {};
+  } = player;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-10 text-white">
-      <h1 className="text-4xl font-bold mb-6 flex items-center gap-2">
-        <span>👤</span> Mon Personnage
-      </h1>
+    <div className="min-h-screen bg-gray-900 px-4 sm:px-8">
+      <div className="w-full max-w-4xl mx-auto space-y-8">
+        {/* Header */}
+        <header className="text-center">
+          {/* On affiche le pseudo en titre principal */}
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-white">
+            {pseudo_minecraft}
+          </h1>
+          <p className="text-gray-300 mt-2 italic">{description}</p>
+        </header>
 
-      <div className="bg-gray-800 text-white p-6 rounded-xl shadow-lg w-full max-w-2xl">
-        <h2 className="text-2xl font-semibold text-center">
-          {pseudo_minecraft} <span className="text-gray-400">({rank})</span>
-        </h2>
-        <p className="text-gray-400 text-center italic">{description}</p>
-
-        <div className="flex justify-between items-center mt-4 text-lg">
-        <p><strong>💰 Argent :</strong> <MoneyDisplay value={money} /></p>
-          <p><strong>✨ Divin :</strong> {divin ? "Oui" : "Non"}</p>
-        </div>
-
-        <h3 className="text-xl font-bold text-center mt-6">🧬 Traits & Actions</h3>
-        <div className="flex flex-col md:flex-row justify-center gap-6 mt-2">
-          <div className="bg-gray-700 p-4 rounded-lg shadow-md w-full md:w-1/2">
-            <h4 className="text-lg font-semibold text-center mb-2">Traits</h4>
-            {Array.isArray(traits) && traits.length > 0 ? (
-              <ul className="list-none space-y-2">
-                {traits.map((t, idx) => (
-                  <li key={t.trait_id ?? `trait-${idx}`} className="bg-gray-800 p-2 rounded-md shadow text-center">
-                    {t.Name || "Nom inconnu"}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-400 text-center">Aucun trait.</p>
-            )}
+        {/* Main card */}
+        <div className="bg-gray-800 rounded-2xl shadow-lg p-6 sm:p-8 space-y-6">
+          {/* Identity & resources */}
+          <div className="flex flex-col md:flex-row md:justify-between items-center gap-4">
+            {/* Ici on affiche le nom / prénom à la place du pseudo */}
+            <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
+              👤 {first_name} {last_name}
+              <span className="text-base sm:text-lg text-gray-300 font-medium">
+                ({rank})
+              </span>
+            </h2>
+            <div className="flex flex-wrap gap-6 text-white text-base sm:text-lg">
+              <div className="flex items-center gap-1">
+                <span>💰</span>
+                <MoneyDisplay value={money} />
+              </div>
+              <div className="flex items-center gap-1">
+                <span>🔮</span>
+                <span>{divin}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-gray-700 p-4 rounded-lg shadow-md w-full md:w-1/2">
-            <h4 className="text-lg font-semibold text-center mb-2">Actions</h4>
-            {Array.isArray(actions) && actions.length > 0 ? (
-              <ul className="list-none space-y-2">
-                {actions.map((a, idx) => (
-                  <li key={a.action_id ?? `action-${idx}`} className="bg-gray-800 p-2 rounded-md shadow text-center">
-                    {a.Name || "Nom inconnu"}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-400 text-center">Aucune action.</p>
-            )}
-          </div>
-        </div>
+          {/* Stats */}
+          <section>
+            <h3 className="text-xl sm:text-2xl font-semibold text-white mb-4 text-center">
+              📊 Statistiques
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {CHARACTERISTICS.map(({ key, icon, label }) => {
+                const base = player[key] || 0;
+                const bonus = real_charact[key];
+                const total = base + (bonus?.count || 0);
+                return (
+                  <div
+                    key={key}
+                    className="bg-gray-700 rounded-xl p-4 flex flex-col items-center text-center gap-y-2 hover:bg-gray-600 transition"
+                  >
+                    <span className="text-2xl sm:text-3xl">{icon}</span>
+                    <p className="text-white font-semibold">{label}</p>
+                    <p className="text-white text-lg flex items-center gap-1 justify-center">
+                      {total}
+                      {bonus && (
+                        <ToolTip text={`Base: ${base} +${bonus.count}`}>
+                          <span className="text-sm text-green-300">
+                            +{bonus.count}
+                          </span>
+                        </ToolTip>
+                      )}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
 
-        <h3 className="text-xl font-bold mt-6 text-center">📊 Statistiques</h3>
-        <div className="grid grid-cols-2 gap-4 text-lg mt-2">
-          <p><strong>❤️ Vie :</strong> {life}</p>
-          <p><strong>💪 Force :</strong> {strength}</p>
-          <p><strong>⚡ Vitesse :</strong> {speed}</p>
-          <p><strong>🎯 Portée :</strong> {reach}</p>
-          <p><strong>🛡️ Résistance :</strong> {resistance}</p>
-          <p><strong>💖 Régénération :</strong> {regeneration}</p>
-          <p><strong>⛏️ Célérité :</strong> {haste}</p>
-          <p><strong>📦 Inventaire :</strong> {place}</p>
-          <p><strong>🔮 Mana :</strong> {mana}</p>
-          <p><strong>🏃 Esquive :</strong> {dodge}</p>
-          <p><strong>🕵️ Discrétion :</strong> {discretion}</p>
-          <p><strong>🗣️ Charisme :</strong> {charisma}</p>
-          <p><strong>📢 Rhétorique :</strong> {rethoric}</p>
-          <p><strong>🤝 Négociation :</strong> {negotiation}</p>
-          <p><strong>👑 Influence :</strong> {influence}</p>
-          <p><strong>🎓 Compétence :</strong> {skill}</p>
+          {/* Expériences */}
+          <section>
+            <h3 className="text-xl sm:text-2xl font-semibold text-white mb-4 text-center">
+              📜 Expériences
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {Object.entries(experiences.jobs || {}).map(([jobKey, job]) => (
+                <div
+                  key={jobKey}
+                  className="bg-gray-700 rounded-xl p-4 hover:bg-gray-600 transition"
+                >
+                  <p className="text-white font-bold">
+                    {jobKey
+                      .replace(/_/g, " ")
+                      .replace(/\b\w/g, (c) => c.toUpperCase())}
+                  </p>
+                  <p className="text-gray-300">Niveau : {job.level}</p>
+                  <p className="text-gray-300">
+                    XP : {job.xp === -1 ? "🔒" : job.xp}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
 
-        </div>
-
-        <h3 className="text-xl font-bold mt-6 text-center">📜 Expériences</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-lg mt-2">
-          {Object.keys(jobs).map((jobKey) => {
-            const job = jobs[jobKey] || {};
-            return (
-              <p key={jobKey}>
-                <strong>{jobKey.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())} :</strong> (Lvl {job.level ?? 0})
-                <br />
-                <strong></strong> {job.xp === -1 ? "Non débloqué" : `${job.xp ?? 0} XP`}
-              </p>
-            );
-          })
-          }
+          {/* Traits & Actions */}
+          <section>
+            <h3 className="text-xl sm:text-2xl font-semibold text-white mb-4 text-center">
+              🧬 Traits & Actions
+            </h3>
+            <div className="flex flex-wrap gap-3">
+              {traits.map((t) => (
+                <span
+                  key={t.id}
+                  className="bg-green-500 px-3 py-1 rounded-full text-white hover:bg-green-600 transition"
+                >
+                  {t.Name}
+                </span>
+              ))}
+              {actions.map((a) => (
+                <span
+                  key={a.id}
+                  className="bg-blue-500 px-3 py-1 rounded-full text-white hover:bg-blue-600 transition"
+                >
+                  {a.Name}
+                </span>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
     </div>
   );
 }
-
-export default Character;

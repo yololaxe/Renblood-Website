@@ -15,7 +15,7 @@ function CreatePlayer() {
         description: "",
         rank: "Paysan",
         money: 0,
-        divin: false,
+        divin: "",
         experiences: {
             jobs: {
                 lumberjack: {
