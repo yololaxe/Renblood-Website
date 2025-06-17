@@ -55,7 +55,7 @@ export default function DicePage() {
   useEffect(() => {
     if (!isAdmin) return;
     (async () => {
-      const list = await getPlayers();
+      const list = await getPlayers("Admin");
       setPlayers(Array.isArray(list) ? list : []);
     })();
   }, [isAdmin]);

@@ -68,8 +68,8 @@ export default function Character() {
     pseudo_minecraft,
     rank,
     description,
-    first_name,
-    last_name,
+    name,
+    surname,
     money,
     divin,
     traits = [],
@@ -96,7 +96,7 @@ export default function Character() {
           <div className="flex flex-col md:flex-row md:justify-between items-center gap-4">
             {/* Ici on affiche le nom / prénom à la place du pseudo */}
             <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
-              👤 {first_name} {last_name}
+              👤 {name} {surname}
               <span className="text-base sm:text-lg text-gray-300 font-medium">
                 ({rank})
               </span>

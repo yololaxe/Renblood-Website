@@ -6,11 +6,11 @@ import {
   getJobDetails,
   updateTalentProgression,
   getAllNodes,
-  updateJobLevel,      // ← on importe
+  updateJobLevel,
 } from "../services/api";
 import Tooltip from "../components/Tooltip";
 
-function TalentTree2() {
+export default function TalentTree2() {
   const { profession } = useParams();
   const userId = new URLSearchParams(useLocation().search).get("userId");
 
@@ -27,15 +27,12 @@ function TalentTree2() {
         console.error("❌ Aucune userId fournie !");
         return;
       }
-
-      // 1️⃣ Mise à jour du level du métier sur le serveur
       try {
         await updateJobLevel(userId, profession);
       } catch (err) {
         console.warn("⚠️ Impossible de mettre à jour le level:", err);
       }
 
-      // 2️⃣ Chargement parallèle des données
       const [jobs, talents, nodes] = await Promise.all([
         getPlayerJobs(userId),
         getJobDetails(profession),
@@ -53,7 +50,6 @@ function TalentTree2() {
         return acc;
       }, {});
       setItemMap(nodeMap);
-
       setTalentData(talents);
 
       const prog = playerJob.progression;
@@ -69,7 +65,6 @@ function TalentTree2() {
       setUnlockedInterChoices([prog[12] || false, prog[13] || false]);
       setUnlockedMastery(prog[14] || false);
     }
-
     init();
   }, [userId, profession]);
 
@@ -165,17 +160,118 @@ function TalentTree2() {
 
   return (
     <div className="max-w-5xl mx-auto p-8 text-white">
-      <h1 className="text-4xl font-extrabold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
+      <h1 className="text-4xl font-extrabold mb-6 text-center bg-clip-text text-transparent from-purple-400 to-pink-500 bg-gradient-to-r">
         🏛️ Arbre des Talents – {talentData.name}
       </h1>
       <p className="text-center text-lg mb-8">
-        Points disponibles :{" "}
+        Points disponibles :{' '}
         <span className="font-bold text-green-300">{availablePoints}</span>
       </p>
 
-      {/* ...reste de l'UI inchangé... */}
+      {/* 4 colonnes de choix */}
+      <div className="grid grid-cols-4 gap-12">
+        {['choice_1','choice_2','choice_3','choice_4'].map((key, ci) => (
+          <div key={key} className="space-y-6">
+            {talentData.skills[key].map((skill, ti) => {
+              const code = skill.name;
+              const { base } = strip(code);
+              const meta = itemMap[base] || {};
+              const unlocked = unlockedTalents[key][ti];
+              const blocked =
+                (ti > 0 && !unlockedTalents[key][ti - 1]) ||
+                availablePoints < 1;
+
+              return (
+                <div key={skill.id} className="flex flex-col items-center">
+                  <Tooltip text={meta.fr_description || ""}>
+                    <button
+                      onClick={() => handleUnlock(ci, ti)}
+                      disabled={unlocked || blocked}
+                      className={`w-24 h-24 rounded-full flex items-center justify-center p-2 text-sm font-medium transition-shadow ${
+                        unlocked
+                          ? "bg-green-600 shadow-lg"
+                          : blocked
+                          ? "bg-gray-700 cursor-not-allowed"
+                          : "bg-gray-600 hover:bg-gray-500 shadow-md"
+                      }`}>
+                      {displayName(code)}
+                    </button>
+                  </Tooltip>
+                  {ti < talentData.skills[key].length - 1 && (
+                    <svg
+                      className="w-6 h-6 text-gray-400 mt-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      {/* inter choices */}
+      <div className="mt-12 flex justify-center space-x-8">
+        {talentData.inter_choice.map((code, idx) => {
+          const { base } = strip(code);
+          const meta = itemMap[base] || {};
+          const available = canInter(idx);
+          const unlocked = unlockedInterChoices[idx];
+
+          return (
+            <Tooltip key={code} text={meta.fr_description || ""}>
+              <button
+                onClick={() => handleInter(idx)}
+                disabled={!available}
+                className={`px-6 py-3 rounded-lg font-semibold ${
+                  unlocked
+                    ? "bg-indigo-600 shadow-lg"
+                    : available
+                    ? "bg-purple-600 hover:bg-purple-700 shadow-md"
+                    : "bg-gray-700 cursor-not-allowed"
+                }`}>
+                {displayName(code)}
+              </button>
+            </Tooltip>
+          );
+        })}
+      </div>
+
+      {/* mastery */}
+      <div className="mt-12 flex justify-center">
+        {talentData.mastery.map((code) => {
+          const { base } = strip(code);
+          const meta = itemMap[base] || {};
+          const available = canMastery;
+          const unlocked = unlockedMastery;
+
+          return (
+            <Tooltip key={code} text={meta.fr_description || ""}>
+              <button
+                onClick={handleMastery}
+                disabled={!available}
+                className={`px-8 py-4 rounded-lg text-xl font-bold text-white transition ${
+                  unlocked
+                    ? "bg-green-600 shadow-lg"
+                    : available
+                    ? "bg-yellow-400 hover:bg-yellow-300 shadow-md"
+                    : "bg-gray-700 cursor-not-allowed"
+                }`}>
+                {displayName(code)}
+              </button>
+            </Tooltip>
+          );
+        })}
+      </div>
     </div>
   );
 }
-
-export default TalentTree2;
