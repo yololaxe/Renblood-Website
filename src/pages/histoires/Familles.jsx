@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React,{ useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
@@ -178,100 +178,132 @@ const familles = [
 ];
 
 
-function Familles() {
+export default function Familles() {
   const navigate = useNavigate();
-  const [familleSelectionnee, setFamilleSelectionnee] = useState(null);
+  const [selected, setSelected] = useState(null);
 
   return (
-    <div className="p-10 text-center text-gray-200 relative">
-      <h1 className="text-4xl font-bold text-white mb-6">🏰 Les Grandes Familles de Renblood</h1>
-      <p className="text-lg max-w-3xl mx-auto mb-10">
-        Découvrez l’histoire et la puissance des familles nobles du royaume.
-      </p>
+    <div className="min-h-screen bg-gray-900 px-6 py-12 text-gray-200">
+      {/* Page title */}
+      <header className="max-w-4xl mx-auto text-center mb-12">
+        <h1
+          className="
+            inline-block px-4 py-2
+            text-4xl md:text-5xl font-extrabold
+            bg-gradient-to-r from-green-300 to-blue-400
+            text-transparent bg-clip-text
+          "
+        >
+          🏰 Grandes Familles
+        </h1>
+        <p className="mt-4 text-lg text-gray-400">
+          Découvrez l’histoire et la puissance des dynasties de Renblood
+        </p>
+      </header>
 
-      {/* 📜 Affichage des cartes des familles */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto ${familleSelectionnee ? "hidden" : ""}`}>
-        {familles.map((famille) => (
+      {/* Family cards */}
+      <div className={`grid gap-8 max-w-6xl mx-auto ${selected ? "opacity-30 pointer-events-none" : ""}`}
+           style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px,1fr))" }}>
+        {familles.map(f => (
           <motion.div
-            key={famille.id}
-            onClick={() => setFamilleSelectionnee(famille.id)}
-            className="relative bg-gray-800 hover:bg-gray-700 text-white p-6 rounded-xl shadow-lg cursor-pointer transition-transform hover:scale-105 flex flex-col items-center"
-            whileHover={{ scale: 1.05 }}
+            key={f.id}
+            onClick={() => setSelected(f.id)}
+            className="
+              flex flex-col items-center
+              bg-gray-800 rounded-2xl p-6 cursor-pointer
+              shadow-lg hover:shadow-2xl transition
+            "
+            whileHover={{ scale: 1.03 }}
           >
-            <img src={famille.blason} alt={famille.nom} className="w-32 h-32 object-cover rounded-lg" />
-            <h2 className="text-2xl font-bold mt-4">{famille.nom}</h2>
+            <img
+              src={f.blason}
+              alt={`${f.nom} blason`}
+              className="w-24 h-24 object-cover rounded-full border-2 border-gray-700"
+            />
+            <h2 className="mt-4 text-2xl font-bold">{f.nom}</h2>
+            <p className="mt-1 text-sm text-gray-400">{f.comté}, {f.ville}</p>
           </motion.div>
         ))}
       </div>
 
-      {/* 📖 Affichage des détails d'une famille sélectionnée */}
+      {/* Detail Modal */}
       <AnimatePresence>
-        {familleSelectionnee && (
+        {selected && (
           <motion.div
-            className="fixed top-0 left-0 w-full h-full flex items-center justify-center p-10 backdrop-blur-lg"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            onClick={() => setFamilleSelectionnee(null)}
+            className="
+              fixed inset-0 z-50 flex items-center justify-center
+              bg-black bg-opacity-50 backdrop-blur-sm
+            "
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelected(null)}
           >
-            {/* 📜 Récupération des infos de la famille sélectionnée */}
-            {(() => {
-              const famille = familles.find((f) => f.id === familleSelectionnee);
-              return (
+            <motion.div
+              className="
+                bg-gray-800 rounded-2xl max-w-xl w-full p-8
+                shadow-2xl relative text-gray-200
+              "
+              initial={{ scale: 0.8, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 20 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-100 text-3xl"
+                onClick={() => setSelected(null)}
+              >
+                &times;
+              </button>
 
-                <motion.div
-                  className="relative bg-gray-800/90 p-8 rounded-xl shadow-2xl text-white w-full max-w-3xl border border-gray-700"
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 50 }}
-                  onClick={(e) => e.stopPropagation()} // ❌ Empêche la fermeture quand on clique DANS la carte
-                >
+              {(() => {
+                const f = familles.find(x => x.id === selected);
+                return (
+                  <>
+                    <div className="flex flex-col items-center mb-6">
+                      <img
+                        src={f.blason}
+                        alt={f.nom}
+                        className="w-32 h-32 rounded-full border-4 border-gray-700 mb-4"
+                      />
+                      <h2 className="text-3xl font-bold">{f.nom}</h2>
+                      <p className="mt-2 text-gray-400 text-center">
+                        {f.description}
+                      </p>
+                    </div>
 
-                  <button
-                    onClick={() => setFamilleSelectionnee(null)}
-                    className="absolute top-3 right-3 text-gray-400 hover:text-gray-200 text-3xl"
-                  >
-                    ✖
-                  </button>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-left mb-6">
+                      <div><strong>📍 Comté:</strong> {f.comté}</div>
+                      <div><strong>🏙 Ville:</strong> {f.ville}</div>
+                      <div><strong>⚔ Armée:</strong> {f.armee.toLocaleString()}</div>
+                      <div><strong>🐎 Chevaux:</strong> {f.chevaux.toLocaleString()}</div>
+                      <div><strong>🐉 Dragons:</strong> {f.dragons}</div>
+                      <div><strong>🏰 Bâtiments:</strong> {f.batiments}</div>
+                      <div><strong>🔮 Magiciens:</strong> {f.magiciens}</div>
+                      <div><strong>⛵ Navires:</strong> {f.navires}</div>
+                      <div><strong>💰 Argent:</strong> {f.argent} or</div>
+                      <div><strong>👑 Relation Royale:</strong> {f.relationRoyale}%</div>
+                      <div className="sm:col-span-2"><strong>🔥 Puissance:</strong> {f.puissance.toLocaleString()}</div>
+                    </div>
 
-                  <h2 className="text-3xl font-bold mb-4">{famille.nom}</h2>
-                  <div className="flex justify-center mb-4">
-                    <img src={famille.blason} alt={famille.nom} className="w-40 h-40 object-cover rounded-md shadow-lg" />
-                  </div>
-                  <p className="text-lg mb-4">{famille.description}</p>
-
-                  {/* 📊 Détails des statistiques */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-left text-lg">
-                    <p><strong>📍 Comté :</strong> {famille.comté}</p>
-                    <p><strong>🏙 Ville :</strong> {famille.ville}</p>
-                    <p><strong>⚔ Armée :</strong> {famille.armee} soldats</p>
-                    <p><strong>🐎 Chevaux :</strong> {famille.chevaux}</p>
-                    <p><strong>🐉 Dragons :</strong> {famille.dragons}</p>
-                    <p><strong>🏰 Bâtiments :</strong> {famille.batiments}</p>
-                    <p><strong>🔮 Magiciens :</strong> {famille.magiciens}</p>
-                    <p><strong>⛵ Navires :</strong> {famille.navires}</p>
-                    <p><strong>💰 Argent :</strong> {famille.argent} or</p>
-                    <p><strong>👑 Relation Royale :</strong> {famille.relationRoyale}%</p>
-                    <p><strong>🔥 Puissance :</strong> {famille.puissance}</p>
-                  </div>
-
-                  {/* 🌳 Bouton pour ouvrir l’arbre généalogique */}
-
-                  <button
-                    onClick={() => navigate(`/histoires/arbre/${famille.nom.toLowerCase()}`)}
-                    className="mt-6 bg-green-600 hover:bg-green-500 text-white p-4 rounded-lg text-lg font-semibold transition-transform hover:scale-105"
-                  >
-                    🌳 Voir l’Arbre Généalogique
-                  </button>
-                </motion.div>
-              );
-            })()}
+                    <button
+                      onClick={() => navigate(`/histoires/arbre/${f.nom.toLowerCase()}`)}
+                      className="
+                        w-full py-3 bg-green-500 hover:bg-green-400
+                        rounded-full text-lg font-semibold
+                        transition transform hover:scale-102
+                      "
+                    >
+                      🌳 Voir l’Arbre Généalogique
+                    </button>
+                  </>
+                );
+              })()}
+            </motion.div>
           </motion.div>
-        )
-        }
+        )}
       </AnimatePresence>
     </div>
   );
 }
-
-export default Familles;

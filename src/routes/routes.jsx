@@ -10,7 +10,7 @@ import Auth from "../pages/Auth.jsx";
 import TalentSelection from "../pages/TalentSelection.jsx";
 import TalentTree from "../pages/TalentTree.jsx";
 import TalentTree2 from "../pages/TalentTree2.jsx";
-import Histoire from "../pages/Histoire.jsx";
+import Information from "../pages/Information.jsx";
 import Character from "../pages/Character.jsx";
 import Livres from "../pages/histoires/Livre.jsx";
 import Chapitres from "../pages/histoires/livres/Chapitres.jsx";
@@ -24,6 +24,7 @@ import Unauthorized from "../pages/Unauthorized.jsx";
 import Arbre from "../pages/histoires/Arbre.jsx";
 import DicePage from "../pages/dice/DicePage.jsx";
 import Metiers from "../pages/histoires/Metiers.jsx";
+import AdminDashboard from "../pages/adminDashboard/AdminDashboard.jsx";
 
 const routes = [
   { path: "/", element: <Home /> },
@@ -31,9 +32,10 @@ const routes = [
   { path: "/auth", element: <Auth /> },
   { path: "/unauthorized", element: <Unauthorized /> },
 
-  { path: "/histoire", element: <Histoire /> },
+  { path: "/histoire", element: <Information /> },
   { path: "/players", element: <Players />},
   { path: "/players-admin", element: <PlayersAdmin />, private: true, requiredRole: "Admin" },
+
   { path: "/player-jobs/:playerId", element: <PlayerJobs />, private: true, requiredRole: "Admin" },
   { path: "/create-player", element: <CreatePlayer />, private: true, requiredRole: "Admin" },
   { path: "/map", element: <Map />},
@@ -53,6 +55,8 @@ const routes = [
   { path: "/histoires/titres", element: <Titres />},
   { path: "/histoires/guildes", element: <Guildes />},
   { path: "/histoires/metiers", element: <Metiers />},
+
+  { path: "/admin-dashboard", element: <AdminDashboard />, private: true, requiredRole: "Admin" },
 
   { path: "/dice", element: <DicePage />},
 ];

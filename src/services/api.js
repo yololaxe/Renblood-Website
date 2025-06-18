@@ -252,10 +252,27 @@ export const getJobDetails = async (jobId) => {
 
 /////////////////////////// GLOBALS /////////////////////////
 
+
+/**
+ * GET /stats/globals/             → liste de tous les Global
+ */
+export const getGlobals = async () => {
+  try {
+    console.log("🔄 GET /stats/globals/");
+    const { data } = await axiosInstance.get("/stats/globals/");
+    return data;
+  } catch (error) {
+    console.error("❌ getGlobals :", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+/**
+ * GET /stats/globals/             → premier Global
+ */
 export const getCurrentGlobal = async () => {
   try {
-    console.log(`🔄 GET /stats/globals/`);
-    const { data } = await axiosInstance.get(`/stats/globals/`);
+    const data = await getGlobals();
     return data[0];
   } catch (error) {
     console.error("❌ getCurrentGlobal :", error.response?.data || error.message);
@@ -263,13 +280,66 @@ export const getCurrentGlobal = async () => {
   }
 };
 
+/**
+ * GET /stats/globals/current-season/
+ * → { id, year, season, label, one_session_state, future_modif_add_state }
+ */
+export const getYearAndSeason = async () => {
+  try {
+    console.log("🔄 GET /stats/globals/current-season/");
+    const { data } = await axiosInstance.get("/stats/globals/current-season/");
+    return data;
+  } catch (error) {
+    console.error("❌ getYearAndSeason :", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+/**
+ * PATCH /stats/globals/{id}/
+ * Permet de mettre à jour un ou plusieurs champs.
+ */
+export const updateGlobalFields = async (globalId, payload) => {
+  try {
+    console.log(`🔄 PATCH /stats/globals/${globalId}/`, payload);
+    const { data } = await axiosInstance.patch(
+      `/stats/globals/${globalId}/`,
+      payload
+    );
+    return data;
+  } catch (error) {
+    console.error("❌ updateGlobalFields :", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+/**
+ * POST /stats/globals/next-season/
+ */
 export const advanceToNextSeason = async () => {
   try {
-    console.log(`🔄 POST /stats/globals/next-season/`);
-    const { data } = await axiosInstance.post(`/stats/globals/next-season/`);
+    console.log("🔄 POST /stats/globals/next-season/");
+    const { data } = await axiosInstance.post("/stats/globals/next-season/");
     return data;
   } catch (error) {
     console.error("❌ advanceToNextSeason :", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+/**
+ * POST /stats/globals/prev-season/
+ */
+export const retreatToPreviousSeason = async () => {
+  try {
+    console.log("🔄 POST /stats/globals/prev-season/");
+    const { data } = await axiosInstance.post("/stats/globals/prev-season/");
+    return data;
+  } catch (error) {
+    console.error(
+      "❌ retreatToPreviousSeason :",
+      error.response?.data || error.message
+    );
     throw error;
   }
 };
@@ -351,6 +421,27 @@ export const initializeStatsBonus = async (playerId) => {
   }
 };
 
+/**
+ * Ajoute un bonus sur une stat pour le joueur.
+ * @param {string|number} playerId
+ * @param {string} stat   La clé de la stat (ex: "skill", "speed", ...)
+ * @param {number} count  Le montant à ajouter
+ * @param {string} type   Le type du bonus (ex: "COMP", "talent_tree", ...)
+ */
+export const addBonus = async (playerId, stat, count, type) => {
+  try {
+    console.log(`🔄 POST /players/stats/${playerId}/add_bonus/`, { stat, count, type });
+    const { data } = await axiosInstance.post(
+      `/players/stats/${playerId}/add_bonus/`,
+      { stat, count, type }
+    );
+    console.log("✅ addBonus réponse :", data);
+    return data.real_charact;
+  } catch (error) {
+    console.error("❌ addBonus :", error.response?.data || error.message);
+    throw error;
+  }
+};
 
 ////////////////////////////// NODES ////////////////////////////////////
 export const getAllNodes = async () => {

@@ -1,12 +1,13 @@
 // src/pages/TalentTree.jsx
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import {
   getPlayerJobs,
   getJobDetails,
   updateTalentProgression,
+  updateJobLevel,
   getAllNodes,
-  updateJobLevel,         // ← import
+    addBonus
 } from "../services/api";
 import Tooltip from "../components/Tooltip";
 
@@ -22,16 +23,19 @@ export default function TalentTree() {
 
   useEffect(() => {
     async function init() {
-      if (!userId) return console.error("Aucune userId fournie");
+      if (!userId) {
+        console.error("Aucune userId fournie");
+        return;
+      }
 
-      // 1️⃣ On recalcule d'abord le level du métier sur le serveur
+      // 1️⃣ Met à jour le level du métier
       try {
         await updateJobLevel(userId, profession);
       } catch (e) {
         console.warn("Impossible de mettre à jour le level du métier", e);
       }
 
-      // 2️⃣ Charge la liste des nodes pour les tooltips
+      // 2️⃣ Charge tous les nodes pour les tooltips
       const nodeList = await getAllNodes();
       const map = nodeList.reduce((acc, it) => {
         acc[it.id] = it;
@@ -39,7 +43,7 @@ export default function TalentTree() {
       }, {});
       setItemMap(map);
 
-      // 3️⃣ Récupère la progression et le level à jour
+      // 3️⃣ Récupère le job du joueur
       const jobsData = await getPlayerJobs(userId);
       const playerJob = jobsData?.jobs?.jobs?.[profession];
       if (!playerJob || playerJob.xp === -1) {
@@ -51,8 +55,8 @@ export default function TalentTree() {
       const talents = await getJobDetails(profession);
       setTalentData(talents);
 
-      // 5️⃣ Initialise l'état local
-      const prog = playerJob.progression;
+      // 5️⃣ Initialise l'état local des débloqués
+      const prog = playerJob.progression; // array de bools
       setAvailablePoints(
         Math.max(0, playerJob.level - prog.filter(Boolean).length)
       );
@@ -61,7 +65,7 @@ export default function TalentTree() {
         choice_2: prog.slice(3, 6),
         choice_3: prog.slice(6, 9),
       });
-      setUnlockedMastery(prog[9] || false);
+      setUnlockedMastery(!!prog[9]);
     }
 
     init();
@@ -69,13 +73,15 @@ export default function TalentTree() {
 
   const strip = (code) => {
     const m = code.match(/^(.+)_([0-9]+)$/);
-    return m ? { base: m[1], lvl: m[2] } : { base: code, lvl: null };
+    return m
+      ? { base: m[1], lvl: parseInt(m[2], 10) }
+      : { base: code, lvl: null };
   };
 
   const displayName = (code) => {
     const { base, lvl } = strip(code);
     const name = itemMap[base]?.fr_name || base;
-    return lvl ? `${name}${lvl}` : name;
+    return lvl != null ? `${name}${lvl}` : name;
   };
 
   const updateProg = (tal, mastery) => {
@@ -88,17 +94,35 @@ export default function TalentTree() {
     updateTalentProgression(userId, profession, prog);
   };
 
-  const handleUnlock = (ci, ti) => {
+  const handleUnlock = async (ci, ti, skills) => {
     const key = `choice_${ci + 1}`;
-    if (unlockedTalents[key][ti] || availablePoints < 1) return;
-    if (ti > 0 && !unlockedTalents[key][ti - 1]) {
-      alert("Débloquez d'abord le précédent");
+    const branch = unlockedTalents[key] || [];
+    // déjà débloqué ou pas assez de points ?
+    if (branch[ti] || availablePoints < 1) return;
+    // dépendance
+    if (ti > 0 && !branch[ti - 1]) {
+      alert("Débloquez d'abord le palier précédent");
       return;
     }
-    if (!window.confirm("Confirmez ?")) return;
+    if (!window.confirm("Confirmez le déblocage ?")) return;
 
+    const code = skills[ti].name;
+    const { base, lvl } = strip(code);
+
+    // bonus COMP-..._5
+    if (base.startsWith("COMP-") && lvl === 5) {
+      const stat = base.replace(/^COMP-/, "").toLowerCase();
+      try {
+        await addBonus(userId, stat, lvl, "COMP");
+      } catch {
+        console.warn("Le bonus n'a pas pu être appliqué");
+      }
+    }
+
+    // maj local & serveur
     setUnlockedTalents((prev) => {
       const nxt = { ...prev };
+      nxt[key] = [...(nxt[key] || [])];
       nxt[key][ti] = true;
       updateProg(nxt, unlockedMastery);
       return nxt;
@@ -108,13 +132,26 @@ export default function TalentTree() {
 
   const canMastery =
     talentData?.mastery?.length &&
-    Object.values(unlockedTalents).flat().every(Boolean) &&
+    Object.values(unlockedTalents)
+      .flat()
+      .every(Boolean) &&
     !unlockedMastery &&
     availablePoints > 0;
 
-  const handleMastery = () => {
+  const handleMastery = async () => {
     if (!canMastery) return;
     const code = talentData.mastery[0];
+    const { base, lvl } = strip(code);
+
+    if (base.startsWith("COMP-") && lvl === 5) {
+      const stat = base.replace(/^COMP-/, "").toLowerCase();
+      try {
+        await addBonus(userId, stat, lvl, "COMP");
+      } catch {
+        console.warn("Le bonus n'a pas pu être appliqué");
+      }
+    }
+
     alert(`🎖️ Maîtrise débloquée : ${displayName(code)}`);
     setUnlockedMastery(true);
     updateProg(unlockedTalents, true);
@@ -123,7 +160,9 @@ export default function TalentTree() {
 
   if (!talentData) {
     return (
-      <p className="text-center text-gray-400 mt-20 text-lg">Chargement...</p>
+      <p className="text-center text-gray-400 mt-20 text-lg">
+        Chargement...
+      </p>
     );
   }
 
@@ -143,21 +182,26 @@ export default function TalentTree() {
           return (
             <div key={choice} className="space-y-6">
               {skills.map((skill, ti) => {
-                const code = skill.name;
-                const { base } = strip(code);
+                const { base } = strip(skill.name);
                 const meta = itemMap[base] || {};
-                const unlocked = unlockedTalents[key][ti];
+                const branch = unlockedTalents[key] || [];
+                const unlocked = !!branch[ti];
                 const blocked =
-                  ti > 0 && !unlockedTalents[key][ti - 1]
+                  ti > 0 && !branch[ti - 1]
                     ? true
                     : availablePoints < 1;
 
                 return (
-                  <div key={skill.id} className="flex flex-col items-center">
+                  <div
+                    key={skill.id}
+                    className="flex flex-col items-center"
+                  >
                     <Tooltip text={meta.fr_description || ""}>
                       <button
-                        onClick={() => handleUnlock(ci, ti)}
                         disabled={unlocked || blocked}
+                        onClick={() =>
+                          handleUnlock(ci, ti, skills)
+                        }
                         className={`w-24 h-24 rounded-full flex items-center justify-center p-2 text-center text-sm font-medium transition-shadow ${
                           unlocked
                             ? "bg-green-600 shadow-lg"
@@ -166,9 +210,10 @@ export default function TalentTree() {
                             : "bg-gray-600 hover:bg-gray-500 shadow-md"
                         }`}
                       >
-                        {displayName(code)}
+                        {displayName(skill.name)}
                       </button>
                     </Tooltip>
+
                     {ti < skills.length - 1 && (
                       <svg
                         className="w-6 h-6 text-gray-400 mt-2"
@@ -208,8 +253,8 @@ export default function TalentTree() {
           return (
             <Tooltip key={code} text={meta.fr_description || ""}>
               <button
-                onClick={handleMastery}
                 disabled={!available}
+                onClick={handleMastery}
                 className={`px-8 py-4 rounded-lg text-xl font-bold text-white transition ${btnClass}`}
               >
                 {displayName(code)}

@@ -5,7 +5,7 @@ import { auth, listenToAuthChanges, signOut } from "../data/firebaseConfig";
 import { useUser } from "../context/UserContext";
 
 const navItems = [
-  { to: "/",       label: "Accueil" },
+  { to: "/",         label: "Accueil" },
   { to: "/histoire", label: "Information" },
   { to: "/players",  label: "Joueurs" },
   { to: "/map",      label: "Map" },
@@ -15,7 +15,7 @@ const navItems = [
 function Navbar() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const { setUserId, setUserRank } = useUser();
+  const { setUserId, setUserRank, userRank } = useUser();
 
   useEffect(() => {
     listenToAuthChanges(setUser);
@@ -56,7 +56,7 @@ function Navbar() {
             <NavLink
               key={to}
               to={to}
-              end={to === "/"}             // exact match pour la racine
+              end={to === "/"}
               className={linkClass}
             >
               {label}
@@ -69,6 +69,21 @@ function Navbar() {
       <div className="flex items-center space-x-4">
         {user ? (
           <>
+            {/* Lien Admin – n'apparaît que si l’utilisateur est Admin */}
+            {userRank === "Admin" && (
+              <NavLink
+                to="/admin-dashboard"
+                className={({ isActive }) =>
+                  isActive
+                    ? "pointer-events-none text-yellow-400 font-semibold"
+                    : "hover:text-yellow-300 text-white transition"
+                }
+              >
+                ⚙️ Admin
+              </NavLink>
+            )}
+
+            {/* Avatar */}
             <Link to="/character">
               <img
                 src={user.photoURL || "/assets/default-avatar.png"}
@@ -76,6 +91,8 @@ function Navbar() {
                 className="w-10 h-10 rounded-full border-2 border-gray-500 cursor-pointer hover:opacity-80 transition"
               />
             </Link>
+
+            {/* Bouton déconnexion */}
             <button
               onClick={handleSignOut}
               className="text-red-500 hover:text-red-400 transition"

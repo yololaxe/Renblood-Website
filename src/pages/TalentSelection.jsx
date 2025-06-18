@@ -1,5 +1,5 @@
 // src/pages/TalentSelection.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getPlayerJobs, getJobDetails } from "../services/api";
 import { useUser } from "../context/UserContext";
@@ -29,36 +29,39 @@ export default function TalentSelection() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  const cacheKey = `mcJobs_${userId}`;
+
+  const loadJobs = useCallback(async () => {
+    if (!userId) return;
+    setError(null);
+    setLoading(true);
+    try {
+      const data = await getPlayerJobs(userId);
+      const jobsObj = data?.jobs?.jobs ?? {};
+      sessionStorage.setItem(cacheKey, JSON.stringify(jobsObj));
+      setJobs(jobsObj);
+    } catch (err) {
+      console.error("Erreur récupération métiers :", err);
+      setError("Impossible de charger vos métiers.");
+    } finally {
+      setLoading(false);
+    }
+  }, [userId, cacheKey]);
+
   useEffect(() => {
     if (!userId) {
       alert("❌ Vous devez être connecté pour accéder à cette page !");
       navigate("/home");
       return;
     }
-
-    // Tenter de récupérer du cache sessionStorage
-    const cacheKey = `mcJobs_${userId}`;
     const cached = sessionStorage.getItem(cacheKey);
     if (cached) {
       setJobs(JSON.parse(cached));
       setLoading(false);
-      return;
+    } else {
+      loadJobs();
     }
-
-    (async () => {
-      try {
-        const data = await getPlayerJobs(userId);
-        const jobsObj = data?.jobs?.jobs ?? {};
-        sessionStorage.setItem(cacheKey, JSON.stringify(jobsObj));
-        setJobs(jobsObj);
-      } catch (err) {
-        console.error("Erreur récupération métiers :", err);
-        setError("Impossible de charger vos métiers.");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [userId, navigate]);
+  }, [userId, navigate, cacheKey, loadJobs]);
 
   if (!userId) {
     return (
@@ -91,9 +94,23 @@ export default function TalentSelection() {
 
   return (
     <div className="p-10 bg-gray-900 min-h-screen">
-      <h1 className="text-4xl font-extrabold mb-8 text-white text-center">
+      {/* Titre stylé en gradient */}
+      <h1 className="text-5xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-blue-400 mb-6 text-center">
         ⚒️ Sélectionnez un Métier
       </h1>
+
+      {/* Bouton de rafraîchissement */}
+      <div className="flex justify-end mb-6">
+        <button
+          onClick={() => {
+            sessionStorage.removeItem(cacheKey);
+            loadJobs();
+          }}
+          className="text-sm bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded transition"
+        >
+          🔄 Rafraîchir les métiers
+        </button>
+      </div>
 
       <div className="grid grid-cols-4 gap-8">
         {entries.map(([key, job]) => {
@@ -120,12 +137,12 @@ export default function TalentSelection() {
           return (
             <div
               key={key}
+              onClick={handleClick}
               className={`relative rounded-lg overflow-hidden transition-opacity duration-200 ${
                 isLocked
                   ? "opacity-60 cursor-not-allowed"
                   : "cursor-pointer hover:opacity-80"
               }`}
-              onClick={handleClick}
             >
               <img
                 src={`/metiers/${key}.png`}
@@ -133,7 +150,7 @@ export default function TalentSelection() {
                 loading="lazy"
                 className="w-full h-48 object-cover block"
               />
-              <div className="absolute inset-0 bg-black/50" />
+              <div className="absolute inset-0 bg-black/50 pointer-events-none" />
               <div className="absolute inset-0 flex flex-col justify-between p-4">
                 <h2 className="text-white text-xl font-bold drop-shadow">
                   {displayName}

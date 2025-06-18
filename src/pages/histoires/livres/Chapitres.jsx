@@ -2,10 +2,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion"; // ✅ Ajout pour l'animation
 import livre1Img from "../../../../public/livres/livre1.png";
 import livre2Img from "../../../../public/livres/livre2.png";
+import React from "react";
 
 const livres = {
   1: {
-    titre: "📜 Histoire du Royaume de Renblood (0 - 321)",
+    titre: "📜 Information du Royaume de Renblood (0 - 321)",
     image: livre1Img,
     chapitres: [
       {
@@ -230,72 +231,95 @@ const livres = {
 
 
 
-function Chapitres() {
+export default function Chapitres() {
   const { livreId, chapitreId } = useParams();
   const navigate = useNavigate();
   const livre = livres[livreId];
-  const chapitre = livre?.chapitres.find((c) => c.id === Number(chapitreId));
-  const progress = (Number(chapitreId) / livre.chapitres.length) * 100;
+  const chapitre = livre?.chapitres.find(c => c.id === Number(chapitreId));
+  const progress = ((Number(chapitreId) - 1) / livre.chapitres.length) * 100;
 
   return (
-    <motion.div
-      className="p-10 text-center text-gray-200"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <h1 className="text-3xl font-bold text-white mb-6">{livre?.titre}</h1>
+    <div className="min-h-screen bg-gray-900 px-6 py-12 text-gray-200">
+      {/* Header */}
+      <header className="max-w-3xl mx-auto text-center mb-12">
+        <h1 className="text-4xl sm:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-blue-400">
+          {livre?.titre}
+        </h1>
+        <p className="mt-4 text-lg text-gray-400">
+          Chapitre {chapitreId} sur {livre?.chapitres.length}
+        </p>
+      </header>
 
-      <div className="flex justify-center mb-6">
-        <img src={livre.image} alt={livre.titre} className="w-64 h-80 rounded-lg shadow-lg" />
-      </div>
-
-      <h2 className="text-2xl font-semibold text-gray-300 mb-4">{chapitre?.titre}</h2>
-
-      {/* 📊 Barre de progression */}
-      <div className="w-full max-w-2xl mx-auto bg-gray-700 rounded-full h-2.5 mb-4">
-        <motion.div
-          className="bg-blue-500 h-2.5 rounded-full"
-          style={{ width: `${progress}%` }}
-          initial={{ width: "0%" }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.5 }}
+      {/* Cover Image */}
+      <motion.div
+        className="max-w-md mx-auto mb-10 overflow-hidden rounded-2xl shadow-2xl"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <img
+          src={livre?.image}
+          alt={livre?.titre}
+          className="w-full h-80 object-cover"
         />
+      </motion.div>
+
+      {/* Progress Bar */}
+      <div className="max-w-3xl mx-auto mb-8">
+        <div className="w-full bg-gray-700 rounded-full h-3">
+          <motion.div
+            className="bg-green-400 h-3 rounded-full"
+            initial={{ width: "0%" }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.6 }}
+          />
+        </div>
       </div>
 
-      {/* 📖 Affichage des sections du chapitre */}
-      <div className="mt-6 space-y-4">
-        {chapitre?.sections.map((section) => (
-          <motion.div
+      {/* Sections */}
+      <div className="max-w-3xl mx-auto space-y-6">
+        {chapitre?.sections.map(section => (
+          <motion.article
             key={section.id}
-            className="p-6 bg-gray-800 rounded-lg shadow-lg transition-transform transform hover:scale-105"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
+            className="bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transform transition hover:scale-102"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: section.id * 0.1 }}
           >
-            <h3 className="text-xl font-bold text-white mb-2">{section.titre}</h3>
-            <p className="text-gray-300">{section.contenu}</p>
-          </motion.div>
+            <h2 className="text-2xl font-semibold text-white mb-3">
+              {section.titre}
+            </h2>
+            <p className="text-gray-300 leading-relaxed">
+              {section.contenu}
+            </p>
+          </motion.article>
         ))}
       </div>
 
-      {/* ⏩ Navigation entre les chapitres */}
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {livre.chapitres.map((c) => (
+      {/* Navigation Buttons */}
+      <div className="mt-12 max-w-3xl mx-auto flex flex-wrap gap-4 justify-center">
+        {livre.chapitres.map(c => (
           <button
             key={c.id}
-            onClick={() => navigate(`/histoires/livres/${livreId}/chapitre/${c.id}`)}
-            className={`p-4 rounded-lg text-lg font-semibold transition-transform hover:scale-105 
-              ${Number(chapitreId) === c.id ? "bg-gray-500" : "bg-blue-600 hover:bg-blue-500"} 
-              text-white text-center shadow-lg w-full`}
+            onClick={() =>
+              navigate(`/histoires/livres/${livreId}/chapitre/${c.id}`)
+            }
+            className={`px-5 py-2 rounded-full text-sm font-medium transition ${
+              Number(chapitreId) === c.id
+                ? "bg-blue-500 text-white shadow-lg"
+                : "bg-gray-700 text-gray-200 hover:bg-gray-600"
+            }`}
           >
-            {c.titre}
+            {c.id}. {c.titre.split("|")[0].trim()}
           </button>
         ))}
       </div>
-
-    </motion.div>
+    </div>
   );
 }
 
-export default Chapitres;
+
+
+
+
+

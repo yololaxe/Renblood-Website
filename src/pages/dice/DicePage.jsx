@@ -1,5 +1,5 @@
 // src/pages/DicePage.jsx
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "../../context/UserContext";
 import { getPlayers, getPlayerData } from "../../services/api";
@@ -16,7 +16,7 @@ function generateDiceRain(result) {
     count = Math.floor(5 + result * 1.5);
   }
   return Array.from({ length: count }, (_, i) => ({
-    id: i,
+    id: `${Date.now()}-${i}`,
     left: Math.random() * 100,
     size: 30 + Math.random() * 30,
     delay: Math.random() * 0.5,
@@ -78,16 +78,14 @@ export default function DicePage() {
     if (isAdmin) return;
     const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/dice/`);
     socketRef.current = ws;
-    ws.onopen = () => console.log("WS connecté");
-    ws.onmessage = e => {
+    ws.onmessage = (e) => {
       const { type, value } = JSON.parse(e.data);
       if (type === "dice_result") playRoll(value);
     };
-    ws.onclose = () => console.log("WS fermé");
     return () => ws.readyState === WebSocket.OPEN && ws.close();
   }, [isAdmin]);
 
-  const playRoll = rollValue => {
+  const playRoll = useCallback((rollValue) => {
     setRolling(true);
     audioRef.current?.play();
     setRain(generateDiceRain(rollValue));
@@ -96,7 +94,7 @@ export default function DicePage() {
       setResult(rollValue);
       setRain([]);
     }, 1500);
-  };
+  }, []);
 
   const handleRoll = () => {
     let effectiveMin = minValue;
@@ -109,7 +107,7 @@ export default function DicePage() {
     playRoll(roll);
   };
 
-  const applyPreset = preset => {
+  const applyPreset = (preset) => {
     if (preset === "percent") {
       setMinValue(1);
       setMaxValue(100);
@@ -122,24 +120,31 @@ export default function DicePage() {
     }
   };
 
-  // Compute current modifier if any
   const currentMod =
     isAdmin && selectedPlayerData && selectedAttr
       ? selectedPlayerData[selectedAttr] || 0
       : 0;
 
   return (
-    <div className="grid h-screen grid-cols-[18rem_1fr_18rem] bg-gray-900 overflow-hidden">
-      {/* Left panel: players */}
+    <div
+      className={`bg-gray-900 h-screen ${
+        isAdmin
+          ? "grid grid-cols-[18rem_1fr_18rem]"
+          : "flex flex-col justify-center"
+      } overflow-hidden`}
+    >
+      {/* Left panel */}
       {isAdmin && (
-        <aside className="bg-gray-800 p-4 overflow-auto">
-          <h2 className="text-xl font-bold text-white mb-4">Joueurs</h2>
+        <aside className="bg-gray-800 p-6 overflow-auto">
+          <h2 className="text-2xl font-bold text-white mb-4">
+            🎮 Joueurs
+          </h2>
           {!selectedPlayer ? (
             <ul className="space-y-2">
-              {players.map(p => (
+              {players.map((p) => (
                 <li
                   key={p.id}
-                  className="text-white p-2 rounded hover:bg-gray-700 cursor-pointer"
+                  className="text-white p-2 rounded hover:bg-gray-700 cursor-pointer transition"
                   onClick={() => setSelectedPlayer(p)}
                 >
                   {p.pseudo_minecraft}
@@ -149,22 +154,22 @@ export default function DicePage() {
           ) : (
             <>
               <button
-                className="text-sm text-gray-400 underline mb-2"
+                className="text-sm text-gray-400 underline mb-4"
                 onClick={() => {
                   setSelectedPlayer(null);
                   setSelectedPlayerData(null);
                 }}
               >
-                ← Choisir un autre
+                ← Retour
               </button>
-              <h3 className="text-lg font-semibold text-white mb-2">
+              <h3 className="text-xl font-semibold text-white mb-4">
                 {selectedPlayer.pseudo_minecraft}
               </h3>
-              <div className="space-y-2">
-                {attrs.map(a => (
+              <div className="space-y-3">
+                {attrs.map((a) => (
                   <button
                     key={a.key}
-                    className={`w-full text-left px-3 py-1 rounded ${
+                    className={`w-full text-left px-4 py-2 rounded-lg transition ${
                       selectedAttr === a.key
                         ? "bg-indigo-600 text-white"
                         : "bg-gray-700 text-gray-200 hover:bg-gray-600"
@@ -183,36 +188,41 @@ export default function DicePage() {
         </aside>
       )}
 
-      {/* Center: dice + modifiers */}
-      <main className="flex flex-col items-center justify-center relative">
-        {/* Modifiers display above die */}
-        <div className="mb-6 text-center z-10">
-          <span className="text-gray-200 mr-4">
-            Modificateur: +{currentMod}
-          </span>
-          <span className="text-gray-200 mr-4">Min: {minValue}</span>
-          <span className="text-gray-200">Max: {maxValue}</span>
+      {/* Center panel */}
+      <main className="relative flex flex-col items-center justify-center px-4">
+        {/* Title */}
+        <h1 className="text-5xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-blue-400 mb-8 z-10">
+          🎲 Lancer de Dé
+        </h1>
+
+        {/* Modifiers */}
+        <div className="mb-6 flex items-center space-x-6 text-lg text-gray-200 z-10">
+          <span>Modificateur: +{currentMod}</span>
+          <span>Min: {minValue}</span>
+          <span>Max: {maxValue}</span>
         </div>
 
-        <h1 className="text-5xl font-bold text-white mb-6 z-10">🎲</h1>
+        {/* Roll button */}
+        {isAdmin && (
+         <button
+           onClick={handleRoll}
+           className="mb-8 px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg transition transform hover:-translate-y-1 z-10"
+         >
+           Lancer
+         </button>
+       )}
 
-        <button
-          onClick={handleRoll}
-          className="z-10 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded shadow mb-6"
-        >
-          Lancer le dé
-        </button>
-
-        <div className="relative h-32 flex items-center justify-center z-10">
+        {/* Result */}
+        <div className="relative w-40 h-40 flex items-center justify-center z-10">
           <AnimatePresence>
             {!rolling && result !== null && (
               <motion.div
                 key="result"
                 initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1.5, opacity: 1 }}
+                animate={{ scale: 1.8, opacity: 1 }}
                 exit={{ scale: 0, opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className={`text-7xl font-extrabold ${
+                transition={{ duration: 0.4 }}
+                className={`text-8xl font-extrabold ${
                   result === maxValue
                     ? "text-green-400"
                     : result === minValue
@@ -226,13 +236,14 @@ export default function DicePage() {
           </AnimatePresence>
         </div>
 
+        {/* Rain */}
         <div className="absolute inset-0 pointer-events-none">
           {rain.map(({ id, left, size, delay, emoji }) => (
             <motion.div
               key={id}
-              initial={{ y: -50 }}
-              animate={{ y: "100vh", opacity: [1, 0.8, 0] }}
-              transition={{ duration: 2, delay }}
+              initial={{ y: -60 }}
+              animate={{ y: "110vh", opacity: [1, 0.6, 0] }}
+              transition={{ duration: 1.8, delay }}
               style={{
                 position: "absolute",
                 left: `${left}%`,
@@ -247,62 +258,65 @@ export default function DicePage() {
         <audio ref={audioRef} src="/dice-roll.mp3" preload="auto" />
       </main>
 
-      {/* Right panel: controller */}
-      <aside className="bg-gray-800 p-4 overflow-auto">
-        <h2 className="text-xl font-bold text-white mb-4">Contrôleur de dé</h2>
-        <div className="flex space-x-2 mb-4">
-          <button
-            className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600"
-            onClick={() => applyPreset("percent")}
-          >
-            1–100
-          </button>
-          <button
-            className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600"
-            onClick={() => applyPreset("d20")}
-          >
-            D20
-          </button>
-          <button
-            className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600"
-            onClick={() => applyPreset("d6")}
-          >
-            D6
-          </button>
-        </div>
-        <div className="mb-4 flex items-center">
-          <span className="text-white mr-2">Min:</span>
-          <button
-            className="px-2 py-1 bg-gray-700 text-white rounded-l hover:bg-gray-600"
-            onClick={() => setMinValue(v => Math.max(1, v - 1))}
-          >
-            −
-          </button>
-          <span className="px-4 py-1 bg-gray-900 text-white">{minValue}</span>
-          <button
-            className="px-2 py-1 bg-gray-700 text-white rounded-r hover:bg-gray-600"
-            onClick={() => setMinValue(v => Math.min(v + 1, maxValue))}
-          >
-            +
-          </button>
-        </div>
-        <div className="flex items-center">
-          <span className="text-white mr-2">Max:</span>
-          <button
-            className="px-2 py-1 bg-gray-700 text-white rounded-l hover:bg-gray-600"
-            onClick={() => setMaxValue(v => Math.max(v - 1, minValue))}
-          >
-            −
-          </button>
-          <span className="px-4 py-1 bg-gray-900 text-white">{maxValue}</span>
-          <button
-            className="px-2 py-1 bg-gray-700 text-white rounded-r hover:bg-gray-600"
-            onClick={() => setMaxValue(v => v + 1)}
-          >
-            +
-          </button>
-        </div>
-      </aside>
+      {/* Right panel */}
+      {isAdmin && (
+        <aside className="bg-gray-800 p-6 overflow-auto">
+          <h2 className="text-2xl font-bold text-white mb-4">
+            ⚙️ Contrôles
+          </h2>
+          <div className="flex space-x-3 mb-6">
+            <button
+              className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
+              onClick={() => applyPreset("percent")}
+            >
+              1–100
+            </button>
+            <button
+              className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
+              onClick={() => applyPreset("d20")}
+            >
+              D20
+            </button>
+            <button
+              className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
+              onClick={() => applyPreset("d6")}
+            >
+              D6
+            </button>
+          </div>
+          <div className="space-y-4">
+            {["Min", "Max"].map((label) => {
+              const setter = label === "Min" ? setMinValue : setMaxValue;
+              const value = label === "Min" ? minValue : maxValue;
+              const dec = () => setter((v) => Math.max(1, v - 1));
+              const inc = () =>
+                setter((v) =>
+                  label === "Min" ? Math.min(v + 1, maxValue) : v + 1
+                );
+              return (
+                <div key={label} className="flex items-center space-x-2">
+                  <span className="text-white w-12">{label} :</span>
+                  <button
+                    onClick={dec}
+                    className="px-2 py-1 bg-gray-700 text-white rounded-l hover:bg-gray-600 transition"
+                  >
+                    −
+                  </button>
+                  <div className="px-4 py-1 bg-gray-900 text-white">
+                    {value}
+                  </div>
+                  <button
+                    onClick={inc}
+                    className="px-2 py-1 bg-gray-700 text-white rounded-r hover:bg-gray-600 transition"
+                  >
+                    +
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

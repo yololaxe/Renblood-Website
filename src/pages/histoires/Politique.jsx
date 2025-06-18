@@ -1,141 +1,136 @@
+// src/pages/Lois.jsx
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import politique from "../../data/politique"; // ✅ Import des données
+import politique from "../../data/politique";
 
-const Politiques = () => {
-  console.log("📌 Données Politique :", politique); // ✅ Vérification des données
-
-  if (!politique || !Array.isArray(politique.data)) {
-    console.error("❌ Erreur : `politique.data` n'est pas un tableau valide !");
-    return <div className="text-center text-red-500 p-6">Erreur de chargement des données.</div>;
-  }
-
-  // 📌 Extraire dynamiquement tous les lieux disponibles à partir des rôles
+export default function Politiques() {
+  // 1️⃣ Prépare les lieux et le filtre
+  const data = Array.isArray(politique.data) ? politique.data : [];
   const lieuxDisponibles = [
-    ...new Set(politique.data.flatMap((role) => (role.lieu ? role.lieu : []))) // 🔥 Vérification de `role.lieu`
+    ...new Set(data.flatMap((r) => (Array.isArray(r.lieu) ? r.lieu : []))),
   ];
-
-  const [lieuSelectionne, setLieuSelectionne] = useState(lieuxDisponibles[0] || ""); // Sélection par défaut
-
-  // 📌 Filtrer les rôles correspondant au lieu sélectionné
-  const rolesFiltres = politique.data.filter(
-    (role) => Array.isArray(role.lieu) && role.lieu.includes(lieuSelectionne) // ✅ Vérifie si `lieu` est bien défini
+  const [lieuSelectionne, setLieuSelectionne] = useState(lieuxDisponibles[0] || "");
+  const rolesFiltres = data.filter((r) =>
+    Array.isArray(r.lieu) && r.lieu.includes(lieuSelectionne)
   );
 
   return (
-    <div className="table-container">
-      <div className="table-content">
-        <table className="w-full">
-          {/* Contenu du tableau */}
+    <div className="min-h-screen bg-gray-900 text-white p-10">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* ─── TITRE ───────────────────────────── */}
+        <motion.h1
+            className="text-4xl md:text-5xl font-extrabold text-center mb-10
+                     bg-clip-text text-transparent
+                     bg-gradient-to-r from-green-300 to-blue-400"
+            initial={{opacity: 0, y: -20}}
+            animate={{opacity: 1, y: 0}}
+            transition={{duration: 0.6}}
+        >
+          🏛️ Système Politique
+        </motion.h1>
 
 
-          <div className="bg-gray-900 text-white min-h-screen p-6 overflow-hidden">
-            <motion.h1
-              className="text-4xl font-bold text-center mb-6 text-yellow-500"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              🏛️ Système Politique
-            </motion.h1>
-
-            {/* 🔹 Sélection du lieu */}
-            <div className="flex justify-center space-x-4 mb-6">
-              {lieuxDisponibles.length > 0 ? (
-                lieuxDisponibles.map((lieu, index) => (
-                  <motion.button
-                    key={index}
-                    onClick={() => setLieuSelectionne(lieu)}
-                    className={`px-4 py-2 rounded-lg text-lg font-semibold transition ${lieuSelectionne === lieu
+        {/* ─── SELECTEUR DE LIEU ────────────── */}
+        <div className="flex flex-wrap justify-center gap-3">
+          {lieuxDisponibles.map((lieu) => (
+              <button
+                  key={lieu}
+                  onClick={() => setLieuSelectionne(lieu)}
+                  className={`
+                px-4 py-2 rounded-full font-medium transition
+                ${lieuSelectionne === lieu
                       ? "bg-yellow-500 text-black"
-                      : "bg-gray-700 hover:bg-gray-600"
-                      }`}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {lieu}
-                  </motion.button>
-                ))
-              ) : (
-                <p className="text-center text-gray-400">Aucun lieu disponible.</p>
-              )}
-            </div>
+                      : "bg-gray-700 hover:bg-gray-600 text-white"
+                  }
+              `}
+              >
+                {lieu}
+              </button>
+          ))}
+        </div>
 
-            {/* 🔹 Affichage des rôles filtrés avec animation */}
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-700">
-                <thead>
-                  <tr className="bg-gray-800">
-                    <th className="border border-gray-700 px-4 py-2">Titre</th>
-                    <th className="border border-gray-700 px-4 py-2">Privilèges</th>
-                    <th className="border border-gray-700 px-4 py-2">Rôle</th>
-                    <th className="border border-gray-700 px-4 py-2">Arrivée en fonction</th>
-                    <th className="border border-gray-700 px-4 py-2">Requis</th>
-                    <th className="border border-gray-700 px-4 py-2">Revenu</th>
-                    <th className="border border-gray-700 px-4 py-2">Temps</th>
-                  </tr>
-                </thead>
-                <AnimatePresence mode="wait">
-                  <motion.tbody
-                    key={lieuSelectionne} // Ré-anime la liste au changement de lieu
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    {rolesFiltres.length > 0 ? (
-                      rolesFiltres.map((role, index) => (
-                        <motion.tr
-                          key={index}
-                          className="border border-gray-700 text-center"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
-                        >
-                          <td className="border border-gray-700 px-4 py-2 font-bold">{role.titre}</td>
-                          <td className="border border-gray-700 px-4 py-2 text-left">
-                            <ul className="list-disc list-inside">
-                              {role.privileges?.map((privilege, i) => (
-                                <li key={i}>{privilege}</li>
-                              )) || "Aucun"}
-                            </ul>
-                          </td>
-                          <td className="border border-gray-700 px-4 py-2">{role.role || "Non spécifié"}</td>
-                          <td className="border border-gray-700 px-4 py-2">{role.arrivee || "Non spécifié"}</td>
-                          <td className="border border-gray-700 px-4 py-2">
-                            <ul className="list-disc list-inside">
-                              {role.requis?.map((req, i) => (
-                                <li key={i}>{req}</li>
-                              )) || "Aucun"}
-                            </ul>
-                          </td>
-                          <td className="border border-gray-700 px-4 py-2 font-semibold">{role.revenu || "Non spécifié"}</td>
-                          <td className="border border-gray-700 px-4 py-2">{role.temps || "Non spécifié"}</td>
-                        </motion.tr>
-                      ))
-                    ) : (
-                      <motion.tr
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.3 }}
+        {/* ─── TABLEAU ─────────────────────────── */}
+        <div className="overflow-x-auto relative rounded-lg border border-gray-700">
+          <table className="min-w-full table-auto">
+            <thead className="sticky top-0 bg-gray-800 z-10">
+            <tr>
+              {["Titre", "Privilèges", "Rôle", "Arrivée", "Requis", "Revenu", "Temps"].map(
+                  (h) => (
+                      <th
+                          key={h}
+                          className="px-4 py-2 text-left font-semibold border-b border-gray-700"
                       >
-                        <td colSpan="7" className="text-center py-4 text-gray-400">
-                          Aucun rôle disponible pour ce lieu.
-                        </td>
-                      </motion.tr>
-                    )}
-                  </motion.tbody>
-                </AnimatePresence>
-              </table>
-            </div>
-          </div>
-        </table>
+                        {h}
+                      </th>
+                  )
+              )}
+            </tr>
+            </thead>
+
+            <AnimatePresence mode="wait">
+              <motion.tbody
+                  key={lieuSelectionne}
+                  initial={{opacity: 0, y: 10}}
+                  animate={{opacity: 1, y: 0}}
+                  exit={{opacity: 0, y: -10}}
+                  transition={{duration: 0.4}}
+                  className="divide-y divide-gray-700"
+              >
+                {rolesFiltres.length > 0 ? (
+                    rolesFiltres.map((role, i) => (
+                        <motion.tr
+                            key={i}
+                            className="hover:bg-gray-700"
+                            initial={{opacity: 0}}
+                            animate={{opacity: 1}}
+                            transition={{duration: 0.3, delay: i * 0.05}}
+                        >
+                          <td className="px-4 py-3 font-medium">{role.titre}</td>
+                          <td className="px-4 py-3">
+                            {role.privileges?.length ? (
+                                <ul className="list-disc list-inside space-y-1">
+                                  {role.privileges.map((p, j) => (
+                                      <li key={j}>{p}</li>
+                                  ))}
+                                </ul>
+                            ) : (
+                                "Aucun"
+                            )}
+                          </td>
+                          <td className="px-4 py-3">{role.role || "—"}</td>
+                          <td className="px-4 py-3">{role.arrivee || "—"}</td>
+                          <td className="px-4 py-3">
+                            {role.requis?.length ? (
+                                <ul className="list-disc list-inside space-y-1">
+                                  {role.requis.map((r, j) => (
+                                      <li key={j}>{r}</li>
+                                  ))}
+                                </ul>
+                            ) : (
+                                "Aucun"
+                            )}
+                          </td>
+                          <td className="px-4 py-3 font-semibold">
+                            {role.revenu || "—"}
+                          </td>
+                          <td className="px-4 py-3">{role.temps || "—"}</td>
+                        </motion.tr>
+                    ))
+                ) : (
+                    <tr>
+                      <td
+                          colSpan={7}
+                          className="px-4 py-6 text-center text-gray-400"
+                      >
+                        Aucun rôle disponible pour ce lieu.
+                      </td>
+                    </tr>
+                )}
+              </motion.tbody>
+            </AnimatePresence>
+          </table>
+        </div>
       </div>
     </div>
   );
-};
-
-export default Politiques;
+}
