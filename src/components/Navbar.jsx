@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { auth, listenToAuthChanges, signOut } from "../data/firebaseConfig";
 import { useUser } from "../context/UserContext";
+import LiveSessionBanner from "./LiveSessionBanner";
 
 const navItems = [
   { to: "/",         label: "Accueil" },
@@ -106,7 +107,9 @@ function Navbar() {
           </NavLink>
         )}
       </div>
+      <LiveSessionBanner />
     </nav>
+
   );
 }
 

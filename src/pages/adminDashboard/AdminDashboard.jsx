@@ -2,7 +2,8 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
-import GlobalWidget from "./GlobalWidget";  // ← Import du widget global
+import GlobalWidget from "./GlobalWidget";
+import SessionManagerWidget from "./SessionManagerWidget";
 
 export default function AdminDashboard() {
   const { userRank } = useUser();
@@ -16,12 +17,13 @@ export default function AdminDashboard() {
   }, [userRank, navigate]);
 
   const blocks = [
-    { id: "users",    title: "👥 Utilisateurs"    },
-    { id: "jobs",     title: "⚒️ Métiers"         },
-    { id: "stats",    title: "📊 Statistiques"    },
-    { id: "globals",  title: "🌐 Globals"         },
-    { id: "logs",     title: "📜 Logs"            },
-    { id: "settings", title: "⚙️ Paramètres"       },
+    // { id: "users",     title: "👥 Utilisateurs"   },
+    // { id: "jobs",      title: "⚒️ Métiers"        },
+    // { id: "stats",     title: "📊 Statistiques"   },
+    { id: "sessions",  title: "🕹️ Sessions"      },  // ← Nouveau bloc
+    { id: "globals",   title: "🌐 Globals"        },
+    { id: "logs",      title: "📜 Logs"           },
+    { id: "settings",  title: "⚙️ Paramètres"      },
   ];
 
   return (
@@ -41,14 +43,12 @@ export default function AdminDashboard() {
             className="bg-gray-800 rounded-xl shadow-lg p-6
                        flex flex-col hover:bg-gray-700 transition"
           >
-            <h2 className="text-xl font-semibold mb-4">
-              {block.title}
-            </h2>
-
+            <h2 className="text-xl font-semibold mb-4">{block.title}</h2>
             <div className="flex-1">
               {block.id === "globals" ? (
-                // On injecte ici notre GlobalWidget
                 <GlobalWidget />
+              ) : block.id === "sessions" ? (
+                <SessionManagerWidget />
               ) : (
                 <div
                   className="h-full border-2 border-dashed border-gray-700

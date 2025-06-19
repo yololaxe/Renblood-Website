@@ -299,11 +299,11 @@ export const getYearAndSeason = async () => {
  * PATCH /stats/globals/{id}/
  * Permet de mettre à jour un ou plusieurs champs.
  */
-export const updateGlobalFields = async (globalId, payload) => {
+export const updateGlobalFields = async (payload) => {
   try {
-    console.log(`🔄 PATCH /stats/globals/${globalId}/`, payload);
+    console.log("🔄 PATCH /stats/globals/update-flags/", payload);
     const { data } = await axiosInstance.patch(
-      `/stats/globals/${globalId}/`,
+      `/stats/globals/update-flags/`,
       payload
     );
     return data;
@@ -312,6 +312,7 @@ export const updateGlobalFields = async (globalId, payload) => {
     throw error;
   }
 };
+
 
 /**
  * POST /stats/globals/next-season/
@@ -454,4 +455,59 @@ export const getAllNodes = async () => {
   }
 };
 
+
+/////////////////////////////// SESSIONS ////////////////////////////////////
+
+/**
+ * Récupère la session pour l’année/saison courante
+ * GET /stats/sessions/current/
+ */
+export const getCurrentSession = async () => {
+  try {
+    const { data } = await axiosInstance.get("/sessions/current/");
+    return data;
+  } catch (err) {
+    if (err.response?.status === 404) return null;
+    console.error("getCurrentSession error:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+/**
+ * Crée une nouvelle session
+ * POST /stats/sessions/
+ */
+export const createSession = async ({ year, season }) => {
+  try {
+    const { data } = await axiosInstance.post("/sessions/", { year, season });
+    return data;
+  } catch (err) {
+    console.error("createSession error:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+/**
+ * Ajoute un joueur à la session donnée
+ * POST /stats/sessions/{id}/add-player/
+ */
+export const addPlayerToSession = async (sessionId, playerId) => {
+  const { data } = await axiosInstance.post(
+    `/sessions/${sessionId}/add-player/`,
+    { player_id: playerId }
+  );
+  return data;
+};
+
+/**
+ * Supprime un joueur de la session donnée
+ * POST /stats/sessions/{id}/remove-player/
+ */
+export const removePlayerFromSession = async (sessionId, playerId) => {
+  const { data } = await axiosInstance.post(
+    `/sessions/${sessionId}/remove-player/`,
+    { player_id: playerId }
+  );
+  return data;
+};
 
