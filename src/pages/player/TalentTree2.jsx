@@ -7,8 +7,8 @@ import {
   updateTalentProgression,
   getAllNodes,
   updateJobLevel,
-} from "../services/api";
-import Tooltip from "../components/Tooltip";
+} from "../../services/api.js";
+import Tooltip from "../../components/Tooltip.jsx";
 
 export default function TalentTree2() {
   const { profession } = useParams();

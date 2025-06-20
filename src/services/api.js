@@ -345,6 +345,11 @@ export const retreatToPreviousSeason = async () => {
   }
 };
 
+export const getSessionActiveState = async () => {
+  const { data } = await axiosInstance.get('/stats/globals/active-state/');
+  return data.one_session_state;
+};
+
 /////////////////////////// DICE ////////////////////////////
 
 export const rollDice = async (token) => {
@@ -511,3 +516,86 @@ export const removePlayerFromSession = async (sessionId, playerId) => {
   return data;
 };
 
+export const updateSessionDate = async (sessionId, sessionDate) => {
+  try {
+    const { data } = await axiosInstance.patch(
+      `/sessions/${sessionId}/set-session-date/`,
+      { session_date: sessionDate }
+    );
+    return data;
+  } catch (err) {
+    console.error("updateSessionDate error:", err.response?.data || err.message);
+    throw err;
+  }
+};
+/**
+ * Récupère la liste de toutes les sessions
+ * GET /stats/sessions/
+ */
+export const getAllSessions = async () => {
+  const { data } = await axiosInstance.get("/sessions/");
+  return data;
+};
+
+/**
+ * Récupère une session par ID
+ * GET /stats/sessions/{id}/
+ */
+export const getSessionById = async (sessionId) => {
+  const { data } = await axiosInstance.get(`/sessions/${sessionId}/`);
+  return data;
+};
+
+
+/////////////////////////FUTURE/////////////////////////////
+export const getMyFuture = async (sessionId, playerId) => {
+  try {
+    console.log(`🔄 GET /session/futures/my-future/?session=${sessionId}&player_id=${playerId}`);
+    const { data } = await axiosInstance.get(
+        `/sessions/futures/my-future/`,
+        {params: { session: sessionId, player_id: playerId }}
+    );
+    console.log("✅ getMyFuture:", data);
+    return data;
+  } catch (err) {
+    if (err.response?.status === 404) {
+      // pas de future -> on renvoie null
+      return null;
+    }
+    console.error("❌ getMyFuture error:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+export const deleteFuture = async (futureId) => {
+  try {
+    await axiosInstance.delete(`/sessions/futures/${futureId}/`);
+    return true;
+  } catch (err) {
+    console.error("deleteFuture error:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+/**
+ * Crée une future pour une session et un player
+ * POST /sessions/futures/add-future/
+ * → renvoie 205 Reset Content + body de la future créée
+ */
+export const createFuture = async ({ sessionId, playerId, type, answer }) => {
+  try {
+    console.log(
+      `🔄 POST /sessions/futures/add-future/ →`,
+      { session: sessionId, player: playerId, type, answer }
+    );
+    const { data } = await axiosInstance.post(
+      "/sessions/futures/add-future/",
+      { session: sessionId, player: playerId, type, answer }
+    );
+    console.log("✅ createFuture:", data);
+    return data;
+  } catch (err) {
+    console.error("❌ createFuture error:", err.response?.data || err.message);
+    throw err;
+  }
+};

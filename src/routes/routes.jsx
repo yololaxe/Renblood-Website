@@ -7,9 +7,11 @@ import PlayerJobs from "../pages/PlayerJobs.jsx";
 import CreatePlayer from "../pages/CreatePlayer.jsx";
 import Map from "../pages/Map.jsx";
 import Auth from "../pages/Auth.jsx";
-import TalentSelection from "../pages/TalentSelection.jsx";
-import TalentTree from "../pages/TalentTree.jsx";
-import TalentTree2 from "../pages/TalentTree2.jsx";
+import TalentSelection from "../pages/player/TalentSelection.jsx";
+import TalentTree from "../pages/player/TalentTree.jsx";
+import TalentTree2 from "../pages/player/TalentTree2.jsx";
+import SessionsPage from "../pages/player/sessions.jsx";
+
 import Information from "../pages/Information.jsx";
 import Character from "../pages/Character.jsx";
 import Livres from "../pages/histoires/Livre.jsx";
@@ -25,6 +27,7 @@ import Arbre from "../pages/histoires/Arbre.jsx";
 import DicePage from "../pages/dice/DicePage.jsx";
 import Metiers from "../pages/histoires/Metiers.jsx";
 import AdminDashboard from "../pages/adminDashboard/AdminDashboard.jsx";
+import CreateFuturePage from "../pages/player/CreateFuture.jsx";
 
 const routes = [
   { path: "/", element: <Home /> },
@@ -44,6 +47,8 @@ const routes = [
   { path: "/talents", element: <TalentSelection />, private: true, requiredRole: "Esclave"},
   { path: "/talents/:profession", element: <TalentTree />, private: true, requiredRole: "Esclave"},
   { path: "/talent2/:profession", element: <TalentTree2 />, private: true, requiredRole: "Esclave"},
+  { path: "/sessions", element: <SessionsPage />, private: true, requiredRole: "Esclave"},
+  { path: "/futures/create", element: <CreateFuturePage />, private: true, requiredRole: "Esclave"},
 
   { path: "/histoires/livres", element: <Livres />},
   { path: "/histoires/livres/:livreId/chapitre/:chapitreId", element: <Chapitres />},

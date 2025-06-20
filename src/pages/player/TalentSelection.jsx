@@ -1,8 +1,8 @@
 // src/pages/TalentSelection.jsx
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { getPlayerJobs, getJobDetails } from "../services/api";
-import { useUser } from "../context/UserContext";
+import { getPlayerJobs, getJobDetails } from "../../services/api.js";
+import { useUser } from "../../context/UserContext.jsx";
 
 function SkeletonGrid() {
   return (

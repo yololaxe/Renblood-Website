@@ -1,4 +1,5 @@
 // src/components/Navbar.jsx
+
 import { useEffect, useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { auth, listenToAuthChanges, signOut } from "../data/firebaseConfig";
@@ -11,6 +12,7 @@ const navItems = [
   { to: "/players",  label: "Joueurs" },
   { to: "/map",      label: "Map" },
   { to: "/talents",  label: "Arbre des talents", requiresAuth: true },
+  { to: "/sessions", label: "Sessions",         requiresAuth: true },
 ];
 
 function Navbar() {
@@ -51,15 +53,11 @@ function Navbar() {
 
       {/* Menu gauche */}
       <div className="flex space-x-6">
-        {navItems.map(({ to, label, requiresAuth }) => {
+        {navItems.map(({ to, label, requiresAuth, requiredRole }) => {
           if (requiresAuth && !user) return null;
+          if (requiredRole && userRank !== requiredRole) return null;
           return (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === "/"}
-              className={linkClass}
-            >
+            <NavLink key={to} to={to} end={to === "/"} className={linkClass}>
               {label}
             </NavLink>
           );
@@ -107,9 +105,9 @@ function Navbar() {
           </NavLink>
         )}
       </div>
+
       <LiveSessionBanner />
     </nav>
-
   );
 }
 
