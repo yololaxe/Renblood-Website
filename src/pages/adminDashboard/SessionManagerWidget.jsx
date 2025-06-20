@@ -1,8 +1,8 @@
 // src/components/SessionManagerWidget.jsx
-
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import DatePicker, { registerLocale } from "react-datepicker";
+import { FaSyncAlt, FaCalendarAlt, FaUserPlus, FaUserMinus, FaClipboardList } from "react-icons/fa";
 import fr from "date-fns/locale/fr";
 import "react-datepicker/dist/react-datepicker.css";
 import {
@@ -47,7 +47,7 @@ export default function SessionManagerWidget() {
       setSession(s);
     } catch (e) {
       console.error(e);
-      setError("Erreur lors du chargement");
+      setError("Impossible de charger les données");
     } finally {
       setLoading(false);
     }
@@ -65,24 +65,14 @@ export default function SessionManagerWidget() {
     }
   }, [session]);
 
-  const handleRefresh = () => loadData();
-
   const handleCreate = async () => {
     if (!global) return;
-    if (
-      !window.confirm(
-        `Créer la session ${SEASON_LABELS[global.season]} ${global.year} ?`
-      )
-    )
-      return;
+    if (!window.confirm(`Créer la session ${SEASON_LABELS[global.season]} ${global.year} ?`)) return;
     try {
-      const s = await createSession({
-        year: global.year,
-        season: global.season,
-      });
+      const s = await createSession({ year: global.year, season: global.season });
       setSession(s);
     } catch {
-      alert("Échec de la création");
+      alert("❌ Échec de la création");
     }
   };
 
@@ -92,7 +82,7 @@ export default function SessionManagerWidget() {
       setAllPlayers(list || []);
       setShowAddModal(true);
     } catch {
-      alert("Impossible de charger la liste des joueurs");
+      alert("❌ Impossible de charger la liste");
     }
   };
 
@@ -102,273 +92,265 @@ export default function SessionManagerWidget() {
       setSession(updated);
       setShowAddModal(false);
     } catch {
-      alert("Impossible d’ajouter ce joueur");
+      alert("❌ Échec de l’ajout");
     }
   };
 
   const openRemoveModal = () => setShowRemoveModal(true);
-
   const handleRemovePlayer = async (playerId) => {
     try {
       const updated = await removePlayerFromSession(session.id, playerId);
       setSession(updated);
       setShowRemoveModal(false);
     } catch {
-      alert("Impossible de retirer ce joueur");
+      alert("❌ Échec du retrait");
     }
   };
 
   const handleSaveDate = async () => {
     if (!dateValue) return;
     try {
-      const updated = await updateSessionDate(
-        session.id,
-        dateValue.toISOString()
-      );
+      const updated = await updateSessionDate(session.id, dateValue.toISOString());
       setSession(updated);
       setShowDateEdit(false);
     } catch {
-      alert("Impossible de mettre à jour la date");
+      alert("❌ Échec de la mise à jour");
     }
   };
 
   const formatDateFR = (iso) => {
     const dt = new Date(iso);
-    const date = dt.toLocaleDateString("fr-FR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
+    return dt.toLocaleString("fr-FR", {
+      day: "2-digit", month: "long", year: "numeric",
+      hour: "2-digit", minute: "2-digit"
     });
-    const time = dt.toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    return `${date} à ${time}`;
   };
 
-  if (loading) return <p>Chargement…</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (loading) return <p className="text-gray-400">Chargement…</p>;
+  if (error)   return <p className="text-red-500">{error}</p>;
 
   return (
     <motion.div
-      className="relative bg-gray-800 p-6 rounded-lg shadow-lg space-y-4"
+      className="relative bg-gray-800 p-6 rounded-lg shadow-lg space-y-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
+      {/* ▷ rafraîchir */}
       <button
-        onClick={handleRefresh}
-        className="absolute top-4 right-4 text-gray-400 hover:text-white"
+        onClick={loadData}
+        className="absolute top-4 right-4 text-gray-500 hover:text-gray-200"
         aria-label="Rafraîchir"
       >
-        🔄
+        <FaSyncAlt />
       </button>
 
-      <h2 className="text-2xl font-bold text-white">🕹️ Gestion de session</h2>
+      <h2 className="flex items-center text-2xl font-semibold text-white space-x-2">
+        <FaClipboardList /> <span>Gestion de session</span>
+      </h2>
 
       {session ? (
-        <div className="space-y-2">
-          <p className="text-gray-300 flex items-center">
-            Session active :{" "}
-            <span className="ml-1 text-green-300">
-              {SEASON_LABELS[session.season]} {session.year}
-            </span>
-          </p>
+        <>
+          {/*  ▷ Saison & année */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-gray-700 p-4 rounded flex items-center space-x-3">
+              <FaCalendarAlt className="text-green-300 text-xl" />
+              <div>
+                <p className="text-gray-300 text-sm">Session active</p>
+                <p className="text-white font-medium">
+                  {SEASON_LABELS[session.season]} {session.year}
+                </p>
+              </div>
+            </div>
 
-          <p className="flex items-center">
-            Date de session :
-            {showDateEdit ? (
-              <div className="ml-2 flex items-center space-x-2">
+            {/*  ▷ Date de session */}
+            <div className="bg-gray-700 p-4 rounded flex items-center justify-between">
+              <div>
+                <p className="text-gray-300 text-sm">Date de session</p>
+                <p className="text-white font-medium">
+                  {session.session_date ? formatDateFR(session.session_date) : "Non définie"}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowDateEdit(!showDateEdit)}
+                className="text-gray-400 hover:text-gray-200"
+                aria-label="Modifier la date"
+              >
+                <FaCalendarAlt />
+              </button>
+            </div>
+          </div>
+
+          {/*  ▷ Édition de la date */}
+          <AnimatePresence>
+            {showDateEdit && (
+              <motion.div
+                className="mt-2 p-4 bg-gray-700 rounded flex items-center space-x-3"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+              >
                 <DatePicker
                   selected={dateValue}
-                  onChange={(date) => setDateValue(date)}
+                  onChange={setDateValue}
                   showTimeSelect
                   locale="fr"
-                  timeFormat="HH:mm"
-                  timeIntervals={15}
                   dateFormat="dd/MM/yyyy 'à' HH:mm"
-                  className="p-2 rounded bg-gray-700 text-white"
+                  className="w-full bg-gray-600 text-white p-2 rounded"
                 />
                 <button
                   onClick={handleSaveDate}
-                  className="px-2 py-1 bg-blue-600 hover:bg-blue-500 rounded text-white"
+                  className="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded"
+                  aria-label="Sauvegarder la date"
                 >
                   💾
                 </button>
                 <button
                   onClick={() => setShowDateEdit(false)}
-                  className="text-gray-400 hover:text-gray-200"
+                  className="text-gray-400 hover:text-gray-200 px-2"
+                  aria-label="Annuler"
                 >
-                  ✖️
+                  ✖
                 </button>
-              </div>
-            ) : (
-              <div className="ml-2 flex items-center space-x-2">
-                <strong>
-                  {session.session_date
-                    ? formatDateFR(session.session_date)
-                    : "Non défini"}
-                </strong>
-                <button
-                  onClick={() => setShowDateEdit(true)}
-                  className="text-gray-400 hover:text-white"
-                  aria-label="Modifier la date"
-                >
-                  ✏️
-                </button>
-              </div>
+              </motion.div>
             )}
-          </p>
+          </AnimatePresence>
 
-          <p className="flex items-center">
-            Créée le :{" "}
-            <strong className="ml-2">
-              {formatDateFR(session.created_date)}
-            </strong>
-          </p>
-
-          <p className="flex items-center">
-            Joueurs inscrits :{" "}
-            <Tooltip
-              text={
-                session.players?.length > 0
-                  ? session.players.map((p) => p.pseudo_minecraft || p.name).join(", ")
-                  : "Aucun joueur"
-              }
-            >
-              <strong className="ml-2 cursor-help text-blue-400 hover:text-blue-300">
-                {session.players_count}
-              </strong>
+          {/*  ▷ Statistiques joueurs / futures */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Tooltip text={session.players.map(p => p.pseudo_minecraft || p.name).join(", ") || "Aucun"}>
+              <div className="bg-gray-700 p-4 rounded flex items-center space-x-3 cursor-help">
+                <FaUserPlus className="text-blue-400 text-xl" />
+                <div>
+                  <p className="text-gray-300 text-sm">Joueurs inscrits</p>
+                  <p className="text-white font-medium">{session.players_count}</p>
+                </div>
+              </div>
             </Tooltip>
-          </p>
-
-          <p className="flex items-center">
-            Futures liées :{" "}
-            <Tooltip
-              text={
-                session.futures_players?.length > 0
-                  ? session.futures_players.join(", ")
-                  : "Aucune future"
-              }
-            >
-              <strong className="ml-2 cursor-help text-blue-400 hover:text-blue-300">
-                {session.futures_count}
-              </strong>
+            <Tooltip text={session.futures_players.join(", ") || "Aucune"}>
+              <div className="bg-gray-700 p-4 rounded flex items-center space-x-3 cursor-help">
+                <FaUserMinus className="text-yellow-400 text-xl" />
+                <div>
+                  <p className="text-gray-300 text-sm">Futures liées</p>
+                  <p className="text-white font-medium">{session.futures_count}</p>
+                </div>
+              </div>
             </Tooltip>
-          </p>
+          </div>
 
-          <div className="flex space-x-2">
+          {/*  ▷ Actions principales */}
+          <div className="flex flex-wrap gap-3 mt-4">
             <button
-              onClick={() => navigate(`/admin/sessions/${session.id}`)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white"
+              onClick={() => navigate(`/admin/sessions/${session.id}/players-futures`)}
+              className="flex-1 bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded text-white transition"
             >
               Voir le récap
             </button>
             <button
               onClick={openAddModal}
-              className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 rounded text-gray-900"
+              className="flex-1 bg-yellow-500 hover:bg-yellow-400 px-4 py-2 rounded text-gray-900 transition"
             >
               Ajouter un joueur
             </button>
             <button
               onClick={openRemoveModal}
-              className="px-4 py-2 bg-red-600 hover:bg-red-500 rounded text-white"
+              className="flex-1 bg-red-600 hover:bg-red-500 px-4 py-2 rounded text-white transition"
             >
               Retirer un joueur
             </button>
           </div>
-        </div>
+        </>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-4 text-center">
           <p className="text-gray-400">
-            Aucune session pour{" "}
-            <strong>
+            Pas de session pour{" "}
+            <strong className="text-white">
               {SEASON_LABELS[global.season]} {global.year}
             </strong>
           </p>
           <button
             onClick={handleCreate}
-            className="px-4 py-2 bg-green-600 hover:bg-green-500 rounded text-white"
+            className="bg-green-600 hover:bg-green-500 px-6 py-2 rounded text-white transition"
           >
             Créer la session
           </button>
         </div>
       )}
 
-      {showAddModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={() => setShowAddModal(false)}
-        >
-          <div
-            className="bg-gray-800 text-white p-6 rounded-lg max-h-[80vh] overflow-auto w-full max-w-md"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-xl mb-4">Sélectionner un joueur</h3>
-            <ul className="space-y-2">
+      {/* ───────── Modals ───────── */}
+      <AnimatePresence>
+        {showAddModal && (
+          <Modal onClose={() => setShowAddModal(false)}>
+            <h3 className="text-xl mb-4">Ajouter un joueur</h3>
+            <ul className="divide-y divide-gray-600">
               {allPlayers.map((p) => (
                 <li
                   key={p.id}
-                  className="flex justify-between items-center hover:bg-gray-700 px-4 py-2 rounded cursor-pointer"
+                  className="py-2 flex justify-between items-center hover:bg-gray-700 px-3 rounded"
                 >
                   <span>{p.pseudo_minecraft || p.name}</span>
                   <button
-                    className="bg-green-600 hover:bg-green-500 px-2 py-1 rounded text-white"
                     onClick={() => handleAddPlayer(p.id)}
+                    className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white"
                   >
                     ＋
                   </button>
                 </li>
               ))}
             </ul>
-            <button
-              className="mt-4 text-sm text-gray-400 underline"
-              onClick={() => setShowAddModal(false)}
-            >
-              Annuler
-            </button>
-          </div>
-        </div>
-      )}
+          </Modal>
+        )}
 
-      {showRemoveModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={() => setShowRemoveModal(false)}
-        >
-          <div
-            className="bg-gray-800 text-white p-6 rounded-lg max-h-[80vh] overflow-auto w-full max-w-md"
-            onClick={(e) => e.stopPropagation()}
-          >
+        {showRemoveModal && (
+          <Modal onClose={() => setShowRemoveModal(false)}>
             <h3 className="text-xl mb-4">Retirer un joueur</h3>
-            <ul className="space-y-2">
+            <ul className="divide-y divide-gray-600">
               {session.players.length > 0 ? (
                 session.players.map((p) => (
                   <li
                     key={p.id}
-                    className="flex justify-between items-center hover:bg-gray-700 px-4 py-2 rounded"
+                    className="py-2 flex justify-between items-center hover:bg-gray-700 px-3 rounded"
                   >
                     <span>{p.pseudo_minecraft || p.name}</span>
                     <button
-                      className="bg-red-600 hover:bg-red-500 px-2 py-1 rounded text-white"
                       onClick={() => handleRemovePlayer(p.id)}
+                      className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white"
                     >
                       －
                     </button>
                   </li>
                 ))
               ) : (
-                <p>Aucun joueur à retirer.</p>
+                <p className="text-gray-400">Aucun joueur à retirer.</p>
               )}
             </ul>
-            <button
-              className="mt-4 text-sm text-gray-400 underline"
-              onClick={() => setShowRemoveModal(false)}
-            >
-              Annuler
-            </button>
-          </div>
-        </div>
-      )}
+          </Modal>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+/**
+ * Petit composant Modal pour factoriser le fond et l'animation
+ */
+function Modal({ children, onClose }) {
+  return (
+    <motion.div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="bg-gray-800 text-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[80vh] overflow-auto"
+        initial={{ scale: 0.8 }}
+        animate={{ scale: 1 }}
+        exit={{ scale: 0.8 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+      </motion.div>
     </motion.div>
   );
 }

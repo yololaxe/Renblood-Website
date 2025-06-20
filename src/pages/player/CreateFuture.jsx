@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
 import { createFuture } from "../../services/api";
+import { motion } from "framer-motion";
+import { FaPlus, FaQuestionCircle } from "react-icons/fa";
 
 const FUTURE_TEMPLATES = [
   {
@@ -92,7 +94,6 @@ const FUTURE_TEMPLATES = [
     question: "Quel talent ? (Liste déroulante)",
   },
 ];
-
 export default function CreateFuturePage() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session");
@@ -100,66 +101,65 @@ export default function CreateFuturePage() {
   const navigate = useNavigate();
 
   const [answers, setAnswers] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loadingType, setLoadingType] = useState(null);
 
   const handleChange = (type, value) => {
     setAnswers((a) => ({ ...a, [type]: value }));
   };
 
   const handleCreate = async (template) => {
-    const answer = template.question ? answers[template.type] : "";
-    if (template.question && !answer) {
+    if (template.question && !answers[template.type]) {
       return alert("Veuillez répondre à la question avant d’ajouter.");
     }
-    setLoading(true);
+    setLoadingType(template.type);
     try {
       await createFuture({
         sessionId,
         playerId: userId,
         type: template.type,
-        answer,
+        answer: answers[template.type] || "",
       });
-      alert("✅ Votre future a bien été ajoutée !");
+      alert("✅ Future ajoutée !");
       navigate("/sessions");
     } catch (err) {
       console.error(err);
-      alert("❌ Erreur lors de la création de la future.");
+      alert("❌ Échec de la création.");
     } finally {
-      setLoading(false);
+      setLoadingType(null);
     }
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4 text-white">Ajouter une future</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-extrabold text-center text-white mb-4">
+        📝 Ajouter un future
+      </h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {FUTURE_TEMPLATES.map((tpl) => (
-          <div
+          <motion.div
             key={tpl.type}
-            className="bg-gray-800 p-4 rounded-lg flex flex-col justify-between"
+            whileHover={{ scale: 1.02, boxShadow: "0 8px 20px rgba(0,0,0,0.5)" }}
+            className="flex flex-col bg-gray-800 rounded-xl overflow-hidden border border-gray-700"
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
           >
-            <div>
-              <h2 className="text-lg font-semibold text-white mb-2">
-                {tpl.label}
-              </h2>
-              <p className="text-sm text-gray-300">
-                <strong>Restriction :</strong> {tpl.restriction}
-              </p>
-              <p className="text-sm text-gray-300">
-                <strong>Coût :</strong> {tpl.cost}
-              </p>
-              <p className="text-sm text-gray-300">
-                <strong>Détail :</strong> {tpl.detail}
-              </p>
-              <p className="text-sm text-gray-300">
-                <strong>Chance :</strong> {tpl.chance}
-              </p>
-              <p className="text-sm text-gray-300">
-                <strong>Récompense :</strong> {tpl.reward}
-              </p>
+            {/* Header dégradé */}
+            <div className="bg-gradient-to-r from-green-500 to-blue-500 px-4 py-3">
+              <h2 className="text-lg font-semibold text-white">{tpl.label}</h2>
+            </div>
+
+            {/* Contenu */}
+            <div className="flex-1 p-4 space-y-2 text-gray-300 text-sm">
+              <p><strong>Restriction :</strong> {tpl.restriction}</p>
+              <p><strong>Coût :</strong> {tpl.cost}</p>
+              <p><strong>Détail :</strong> {tpl.detail}</p>
+              <p><strong>Chance :</strong> {tpl.chance}</p>
+              <p><strong>Récompense :</strong> {tpl.reward}</p>
+
               {tpl.question && (
-                <div className="mt-2">
-                  <label className="block text-sm text-gray-200 mb-1">
+                <div className="mt-3">
+                  <label className="block mb-1 text-gray-200 font-medium">
+                    <FaQuestionCircle className="inline mr-1" />
                     {tpl.question}
                   </label>
                   <input
@@ -168,20 +168,29 @@ export default function CreateFuturePage() {
                     onChange={(e) =>
                       handleChange(tpl.type, e.target.value)
                     }
-                    className="w-full p-2 rounded bg-gray-700 text-white focus:outline-none"
+                    className="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-green-400"
                     placeholder="Votre réponse…"
                   />
                 </div>
               )}
             </div>
-            <button
-              disabled={loading}
-              onClick={() => handleCreate(tpl)}
-              className="mt-4 w-full px-4 py-2 bg-green-600 hover:bg-green-500 rounded text-white"
-            >
-              {loading ? "…" : "Ajouter"}
-            </button>
-          </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-gray-700 bg-gray-900">
+              <button
+                disabled={!!loadingType}
+                onClick={() => handleCreate(tpl)}
+                className={`w-full flex items-center justify-center px-4 py-2 rounded-lg transition ${
+                  loadingType === tpl.type
+                    ? "bg-gray-600 cursor-wait"
+                    : "bg-green-600 hover:bg-green-500"
+                } text-white font-semibold`}
+              >
+                <FaPlus className="mr-2" />
+                {loadingType === tpl.type ? "…" : "Ajouter"}
+              </button>
+            </div>
+          </motion.div>
         ))}
       </div>
     </div>

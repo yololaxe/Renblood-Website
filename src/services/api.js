@@ -599,3 +599,24 @@ export const createFuture = async ({ sessionId, playerId, type, answer }) => {
     throw err;
   }
 };
+export const getFutureById = async (futureId) => {
+  const { data } = await axiosInstance.get(`/sessions/futures/${futureId}/`);
+  return data;
+};
+
+export const updateFuture = async (futureId, payload) => {
+  // PATCH partiel : on ne met à jour que 'answer'
+  const { data } = await axiosInstance.patch(
+    `/sessions/futures/${futureId}/`,
+    payload
+  );
+  return data;
+};
+
+export const getSessionPlayersWithFutures = async (sessionId) => {
+  const { data } = await axiosInstance.get(
+    `/sessions/futures/players-with-futures/`,
+    { params: { session: sessionId } }
+  );
+  return data;
+};

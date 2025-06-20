@@ -28,6 +28,8 @@ import DicePage from "../pages/dice/DicePage.jsx";
 import Metiers from "../pages/histoires/Metiers.jsx";
 import AdminDashboard from "../pages/adminDashboard/AdminDashboard.jsx";
 import CreateFuturePage from "../pages/player/CreateFuture.jsx";
+import EditFuturePage from "../pages/player/EditFuturePage.jsx";
+import SessionPlayersFuturesPage from "../pages/adminDashboard/SessionPlayers.jsx";
 
 const routes = [
   { path: "/", element: <Home /> },
@@ -48,8 +50,9 @@ const routes = [
   { path: "/talents/:profession", element: <TalentTree />, private: true, requiredRole: "Esclave"},
   { path: "/talent2/:profession", element: <TalentTree2 />, private: true, requiredRole: "Esclave"},
   { path: "/sessions", element: <SessionsPage />, private: true, requiredRole: "Esclave"},
-  { path: "/futures/create", element: <CreateFuturePage />, private: true, requiredRole: "Esclave"},
 
+  { path: "/futures/create", element: <CreateFuturePage />, private: true, requiredRole: "Esclave"},
+  { path: "/futures/create", element: <CreateFuturePage />, private: true, requiredRole: "Esclave"},
   { path: "/histoires/livres", element: <Livres />},
   { path: "/histoires/livres/:livreId/chapitre/:chapitreId", element: <Chapitres />},
   { path: "/histoires/familles", element: <Familles />},
@@ -60,8 +63,11 @@ const routes = [
   { path: "/histoires/titres", element: <Titres />},
   { path: "/histoires/guildes", element: <Guildes />},
   { path: "/histoires/metiers", element: <Metiers />},
+  { path: "/futures/edit/:id", element: <EditFuturePage />,   private: true, requiredRole: "Esclave" },
+
 
   { path: "/admin-dashboard", element: <AdminDashboard />, private: true, requiredRole: "Admin" },
+  { path: "/admin/sessions/:sessionId/players-futures", element: <SessionPlayersFuturesPage  />, private: true, requiredRole: "Admin" },
 
   { path: "/dice", element: <DicePage />},
 ];
