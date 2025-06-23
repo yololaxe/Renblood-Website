@@ -620,3 +620,50 @@ export const getSessionPlayersWithFutures = async (sessionId) => {
   );
   return data;
 };
+
+// DISCORD
+/**
+ * Lance le flow OAuth pour lier le compte Discord :
+ * renvoie une 302 via le backend
+ */
+export const getDiscordLink = async (userId) => {
+  const { data } = await axiosInstance.get(`/players/discord/link/?state=${userId}`);
+  return data.url;
+};
+
+/**
+ * Récupère les infos Discord du joueur logué (si déjà lié)
+ * @returns {Promise<{
+ *   discord_id: string,
+ *   discord_username: string,
+ *   discord_discriminator: string,
+ *   discord_avatar: string
+ * }|null>}
+ */
+export const getPlayerDiscord = async (playerId) => {
+  try {
+    console.log("🔄 GET /players/discord/me/");
+    const { data } = await axiosInstance.get(`/players/discord/${playerId}/me/`);
+    console.log("✅ getPlayerDiscord :", data);
+    return data;
+  } catch (error) {
+    console.error("❌ getPlayerDiscord :", error.response?.data || error.message);
+    return null;
+  }
+};
+export const unlinkDiscord = async (userId) => {
+  console.log("🔄 POST /players/discord/unlink/");
+  const response = await axiosInstance.post(`/players/discord/${userId}/unlink/`);
+  return response.data;
+};
+
+export const getOnlineDiscordMembers = async () => {
+  try {
+    console.log("🔄 GET /players/discord/online-members/");
+    const { data } = await axiosInstance.get(`/players/discord/online-members/`);
+    return data;  // un array de pseudos
+  } catch (err) {
+    console.error("❌ getOnlineDiscordMembers :", err.response?.data || err.message);
+    return [];
+  }
+};

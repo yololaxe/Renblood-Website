@@ -8,7 +8,7 @@ import {
   getSessionPlayersWithFutures,
   getPlayerData,
 } from "../../services/api";
-
+import { MoneyDisplay } from "../../components/MoneyDisplay";
 const SEASON_LABELS = { 1: "Printemps", 2: "Été", 3: "Automne", 4: "Hiver" };
 const FUTURE_LABELS = {
   exploration:     "Exploration",
@@ -114,10 +114,12 @@ export default function SessionPlayersFuturesPage() {
               <tr key={p.id} className="border-b border-gray-700 hover:bg-gray-700">
                 <td className="px-4 py-2">{p.pseudo}</td>
                 <td className="px-4 py-2">{p.name}</td>
-                <td className="px-4 py-2">{p.money.toLocaleString()} B</td>
+                <td className="px-4 py-2">
+                  <MoneyDisplay value={p.money}/>
+                </td>
                 <td className="px-4 py-2">
                   {p.future
-                    ? FUTURE_LABELS[p.future.type] || p.future.type
+                      ? FUTURE_LABELS[p.future.type] || p.future.type
                     : <em>–</em>}
                 </td>
                 <td className="px-4 py-2">{p.future?.answer || <em>–</em>}</td>

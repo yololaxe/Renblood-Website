@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { FaEdit, FaSave, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { updatePlayer, updateJobLevel } from "../../services/api";
+import ToolTip from "../../components/Tooltip";
 
 // Hook to manage editing state
 const useEditingState = () => {
@@ -31,7 +32,6 @@ const useEditingState = () => {
     const payload = editedData[playerId];
     const res = await updatePlayer(playerId, payload);
     if (res) {
-      // locally update list
       setPlayers((list) =>
         list.map((p) => (p.id === playerId ? { ...p, ...payload } : p))
       );
@@ -44,6 +44,13 @@ const useEditingState = () => {
   return { editing, editedData, startEdit, changeField, saveAll };
 };
 
+// Utility to prettify bonus type keys
+const formatTypeLabel = (raw) =>
+  raw
+    .split("_")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+
 export default function PlayerEdit({
   player,
   setPlayers,
@@ -53,13 +60,10 @@ export default function PlayerEdit({
   const { editing, editedData, startEdit, changeField, saveAll } =
     useEditingState();
   const id = player.id;
-  // track which panel is open
   const [openSection, setOpenSection] = useState(null);
-
   const toggleSection = (label) =>
     setOpenSection(openSection === label ? null : label);
 
-  // stat blocks
   const STAT_BLOCKS = [
     {
       label: "👤 Identité",
@@ -158,18 +162,11 @@ export default function PlayerEdit({
       initialValue: job.xp,
     })
   );
-
-  const STAT_EXPERIENCE = [
-    {
-      label: "📜 Expériences métiers",
-      fields: experienceFields,
-    },
-  ];
+  const STAT_EXPERIENCE = [{ label: "📜 Expériences métiers", fields: experienceFields }];
 
   const handleSaveClick = async () => {
     const payload = await saveAll(id, setPlayers);
     if (!payload) return;
-    // update job levels
     const xpKeys = Object.keys(payload).filter(
       (k) => k.startsWith("experiences.jobs.") && k.endsWith(".xp")
     );
@@ -196,7 +193,7 @@ export default function PlayerEdit({
         </motion.button>
       </div>
 
-      {/* Panels */}
+      {/* Editable Panels */}
       {[...STAT_BLOCKS, ...STAT_EXPERIENCE].map(({ label, fields }) => (
         <motion.div
           key={label}
@@ -205,7 +202,6 @@ export default function PlayerEdit({
           animate={{ opacity: 1 }}
           className="bg-gray-800 rounded-2xl shadow-lg overflow-hidden"
         >
-          {/* Section Header */}
           <button
             className="w-full flex justify-between items-center bg-gray-700 px-6 py-3 hover:bg-gray-600 transition"
             onClick={() => toggleSection(label)}
@@ -215,8 +211,6 @@ export default function PlayerEdit({
               {openSection === label ? <FaChevronUp /> : <FaChevronDown />}
             </span>
           </button>
-
-          {/* Section Content */}
           <AnimatePresence initial={false}>
             {openSection === label && (
               <motion.div
@@ -227,106 +221,123 @@ export default function PlayerEdit({
                 transition={{ duration: 0.25 }}
                 className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
               >
-                {fields.map(
-                  ({
-                    key,
-                    icon,
-                    label: lbl,
-                    type,
-                    options,
-                    rows,
-                    initialValue,
-                  }) => {
-                    const val =
-                      editedData[id]?.[key] ??
-                      initialValue ??
-                      player[key] ??
-                      "";
-                    const isEd = editing[id]?.[key];
-
-                    return (
-                      <div
-                        key={key}
-                        className="flex items-start bg-gray-700 rounded-lg p-3 hover:bg-gray-600 transition cursor-pointer"
-                        onClick={() =>
-                          !isEd && startEdit(id, key, val)
-                        }
-                      >
-                        <span className="text-2xl mr-3">{icon}</span>
-                        <div className="flex-1">
-                          <label className="block text-gray-200 mb-1 font-medium">
-                            {lbl}
-                          </label>
-                          {isEd ? (
-                            type === "textarea" ? (
-                              <textarea
-                                rows={rows}
-                                autoFocus
-                                className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                                value={val}
-                                onChange={(e) =>
-                                  changeField(id, key, e.target.value)
-                                }
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            ) : type === "select" ? (
-                              <select
-                                autoFocus
-                                className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                                value={val}
-                                onChange={(e) =>
-                                  changeField(id, key, e.target.value)
-                                }
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {options.map((o) => (
-                                  <option key={o} value={o}>
-                                    {o}
-                                  </option>
-                                ))}
-                              </select>
-                            ) : (
-                              <input
-                                autoFocus
-                                type={type}
-                                className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                                value={val}
-                                onChange={(e) =>
-                                  changeField(
-                                    id,
-                                    key,
-                                    type === "number"
-                                      ? Number(e.target.value)
-                                      : e.target.value
-                                  )
-                                }
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            )
+                {fields.map(({ key, icon, label: lbl, type, options, rows, initialValue }) => {
+                  const val = editedData[id]?.[key] ?? initialValue ?? player[key] ?? "";
+                  const isEd = editing[id]?.[key];
+                  return (
+                    <div
+                      key={key}
+                      className="flex items-start bg-gray-700 rounded-lg p-3 hover:bg-gray-600 transition cursor-pointer"
+                      onClick={() => !isEd && startEdit(id, key, val)}
+                    >
+                      <span className="text-2xl mr-3">{icon}</span>
+                      <div className="flex-1">
+                        <label className="block text-gray-200 mb-1 font-medium">{lbl}</label>
+                        {isEd ? (
+                          type === "textarea" ? (
+                            <textarea
+                              rows={rows}
+                              autoFocus
+                              className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                              value={val}
+                              onChange={(e) => changeField(id, key, e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : type === "select" ? (
+                            <select
+                              autoFocus
+                              className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                              value={val}
+                              onChange={(e) => changeField(id, key, e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {options.map((o) => (
+                                <option key={o} value={o}>
+                                  {o}
+                                </option>
+                              ))}
+                            </select>
                           ) : (
-                            <p className="text-gray-200">{val}</p>
-                          )}
-                        </div>
-                        {!isEd && (
-                          <button
-                            className="ml-3 text-gray-400 hover:text-white"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              startEdit(id, key, val);
-                            }}
-                          >
-                            <FaEdit />
-                          </button>
+                            <input
+                              autoFocus
+                              type={type}
+                              className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                              value={val}
+                              onChange={(e) =>
+                                changeField(id, key, type === "number" ? Number(e.target.value) : e.target.value)
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          )
+                        ) : (
+                          <p className="text-gray-200">{val}</p>
                         )}
                       </div>
-                    );
-                  }
-                )}
+                      {!isEd && (
+                        <button
+                          className="ml-3 text-gray-400 hover:text-white"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            startEdit(id, key, val);
+                          }}
+                        >
+                          <FaEdit />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </motion.div>
             )}
           </AnimatePresence>
         </motion.div>
       ))}
+
+      {/* Bonus résumé */}
+      <div className="bg-gray-800 rounded-2xl shadow-lg p-6">
+        <h3 className="text-xl font-bold text-white mb-4">Bonus résumé</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Object.entries(player.real_charact || {}).map(([statKey, bonusArr]) => {
+            const base = player[statKey] ?? 0;
+            const arr = Array.isArray(bonusArr) ? bonusArr : bonusArr ? [bonusArr] : [];
+            const totalBonus = arr.reduce((sum, b) => sum + b.count, 0);
+            const total = base + totalBonus;
+            const label =
+              STAT_BLOCKS.concat(STAT_EXPERIENCE)
+                .flatMap((b) => b.fields)
+                .find((f) => f.key === statKey)?.label || formatTypeLabel(statKey);
+
+            return (
+              <div
+                key={statKey}
+                className="bg-gray-700 rounded-xl p-4 flex flex-col items-center text-center gap-y-2 hover:bg-gray-600 transition"
+              >
+                <p className="text-white font-semibold">{label}</p>
+                <p className="text-white text-lg flex items-center gap-2 justify-center">
+                  {total}
+                  {arr.length > 0 && (
+                    <ToolTip
+                      text={
+                        `Base: ${base}` +
+                        arr.map((b) => {
+                          const typeLabel = formatTypeLabel(
+                            b.type.replace(/^talent_tree_/, "")
+                          );
+                          return `, +${b.count} (${typeLabel})`;
+                        }).join("")
+                      }
+                    >
+                      <span className="text-sm text-green-300">
+                        {arr.map((b) => `+${b.count}`).join(" ")}
+                      </span>
+                    </ToolTip>
+                  )}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
