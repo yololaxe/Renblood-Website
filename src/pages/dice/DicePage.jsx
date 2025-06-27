@@ -1,12 +1,14 @@
-// src/pages/DicePage.jsx
+// src/pages/dice/DicePage.jsx
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "../../context/UserContext";
 import { getPlayers, getPlayerData } from "../../services/api";
 
+// génère les particules “pluie de dés”
 function generateDiceRain(result) {
   let count = 0,
-    emoji = "🎲";
+      emoji = "🎲";
+
   if (result === 20) {
     count = 30 + Math.floor(Math.random() * 10);
     emoji = "🔥";
@@ -15,6 +17,7 @@ function generateDiceRain(result) {
   } else {
     count = Math.floor(5 + result * 1.5);
   }
+
   return Array.from({ length: count }, (_, i) => ({
     id: `${Date.now()}-${i}`,
     left: Math.random() * 100,
@@ -28,18 +31,22 @@ export default function DicePage() {
   const { userRank } = useUser();
   const isAdmin = userRank === "Admin";
 
+  // — admin : liste de joueurs & sélection
   const [players, setPlayers] = useState([]);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [selectedPlayerData, setSelectedPlayerData] = useState(null);
   const [selectedAttr, setSelectedAttr] = useState(null);
 
+  // — dé : min / max
   const [minValue, setMinValue] = useState(1);
   const [maxValue, setMaxValue] = useState(20);
+
+  // — animation / résultat
   const [rolling, setRolling] = useState(false);
   const [result, setResult] = useState(null);
   const [rain, setRain] = useState([]);
 
-  const socketRef = useRef(null);
+  const wsRef    = useRef(null);
   const audioRef = useRef(null);
 
   const attrs = [
@@ -51,7 +58,7 @@ export default function DicePage() {
     { key: "influence", label: "Influence" }
   ];
 
-  // Load players list
+  // — Admin : charge la liste
   useEffect(() => {
     if (!isAdmin) return;
     (async () => {
@@ -60,7 +67,7 @@ export default function DicePage() {
     })();
   }, [isAdmin]);
 
-  // Load selected player's data
+  // — Admin : charge le choix
   useEffect(() => {
     if (!selectedPlayer) {
       setSelectedPlayerData(null);
@@ -73,18 +80,7 @@ export default function DicePage() {
     })();
   }, [selectedPlayer]);
 
-  // WebSocket for non-admin
-  useEffect(() => {
-    if (isAdmin) return;
-    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/dice/`);
-    socketRef.current = ws;
-    ws.onmessage = (e) => {
-      const { type, value } = JSON.parse(e.data);
-      if (type === "dice_result") playRoll(value);
-    };
-    return () => ws.readyState === WebSocket.OPEN && ws.close();
-  }, [isAdmin]);
-
+  // — playRoll : animation + son
   const playRoll = useCallback((rollValue) => {
     setRolling(true);
     audioRef.current?.play();
@@ -96,33 +92,64 @@ export default function DicePage() {
     }, 1500);
   }, []);
 
+  // — WebSocket Channels
+  useEffect(() => {
+    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/dice/`);
+    wsRef.current = ws;
+
+    ws.onopen = () => console.log("🟢 WebSocket connecté !");
+    ws.onclose = () => console.log("🔴 WebSocket déconnecté.");
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "dice_result") {
+          setRolling(true);
+          audioRef.current?.play();
+          setRain(generateDiceRain(data.value));
+          setTimeout(() => {
+            setRolling(false);
+            setResult(data.value);
+            setRain([]); // nettoie après animation
+          }, 2000);
+        }
+      } catch {
+        console.error("Message WS invalide :", event.data);
+      }
+    };
+
+    return () => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
+
+  // — Lance le dé
   const handleRoll = () => {
-    let effectiveMin = minValue;
-    if (isAdmin && selectedPlayerData && selectedAttr) {
-      effectiveMin = 1 + (selectedPlayerData[selectedAttr] || 0);
+    if (isAdmin && wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "roll" }));
+      return;
     }
-    const roll =
-      Math.floor(Math.random() * (maxValue - effectiveMin + 1)) +
-      effectiveMin;
+    // non-admin ou WS indisponible : roll local
+    const roll = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
     playRoll(roll);
   };
 
+  // — presets min/max
   const applyPreset = (preset) => {
     if (preset === "percent") {
-      setMinValue(1);
-      setMaxValue(100);
+      setMinValue(1); setMaxValue(100);
     } else if (preset === "d20") {
-      setMinValue(1);
-      setMaxValue(20);
+      setMinValue(1); setMaxValue(20);
     } else if (preset === "d6") {
-      setMinValue(1);
-      setMaxValue(6);
+      setMinValue(1); setMaxValue(6);
     }
   };
 
   const currentMod =
     isAdmin && selectedPlayerData && selectedAttr
-      ? selectedPlayerData[selectedAttr] || 0
+      ? (selectedPlayerData[selectedAttr] || 0)
       : 0;
 
   return (
@@ -133,12 +160,10 @@ export default function DicePage() {
           : "flex flex-col justify-center"
       } overflow-hidden`}
     >
-      {/* Left panel */}
+      {/* Panneau gauche (Admin) */}
       {isAdmin && (
         <aside className="bg-gray-800 p-6 overflow-auto">
-          <h2 className="text-2xl font-bold text-white mb-4">
-            🎮 Joueurs
-          </h2>
+          <h2 className="text-2xl font-bold text-white mb-4">🎮 Joueurs</h2>
           {!selectedPlayer ? (
             <ul className="space-y-2">
               {players.map((p) => (
@@ -188,31 +213,27 @@ export default function DicePage() {
         </aside>
       )}
 
-      {/* Center panel */}
+      {/* Centre : lancement */}
       <main className="relative flex flex-col items-center justify-center px-4">
-        {/* Title */}
         <h1 className="text-5xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-blue-400 mb-8 z-10">
           🎲 Lancer de Dé
         </h1>
 
-        {/* Modifiers */}
         <div className="mb-6 flex items-center space-x-6 text-lg text-gray-200 z-10">
           <span>Modificateur: +{currentMod}</span>
           <span>Min: {minValue}</span>
           <span>Max: {maxValue}</span>
         </div>
 
-        {/* Roll button */}
         {isAdmin && (
-         <button
-           onClick={handleRoll}
-           className="mb-8 px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg transition transform hover:-translate-y-1 z-10"
-         >
-           Lancer
-         </button>
-       )}
+          <button
+            onClick={handleRoll}
+            className="mb-8 px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg transition transform hover:-translate-y-1 z-10"
+          >
+            Lancer
+          </button>
+        )}
 
-        {/* Result */}
         <div className="relative w-40 h-40 flex items-center justify-center z-10">
           <AnimatePresence>
             {!rolling && result !== null && (
@@ -236,7 +257,7 @@ export default function DicePage() {
           </AnimatePresence>
         </div>
 
-        {/* Rain */}
+        {/* pluie de dés */}
         <div className="absolute inset-0 pointer-events-none">
           {rain.map(({ id, left, size, delay, emoji }) => (
             <motion.div
@@ -244,11 +265,7 @@ export default function DicePage() {
               initial={{ y: -60 }}
               animate={{ y: "110vh", opacity: [1, 0.6, 0] }}
               transition={{ duration: 1.8, delay }}
-              style={{
-                position: "absolute",
-                left: `${left}%`,
-                fontSize: `${size}px`
-              }}
+              style={{ position: "absolute", left: `${left}%`, fontSize: `${size}px` }}
             >
               {emoji}
             </motion.div>
@@ -258,12 +275,10 @@ export default function DicePage() {
         <audio ref={audioRef} src="/dice-roll.mp3" preload="auto" />
       </main>
 
-      {/* Right panel */}
+      {/* Panneau droit (Admin) */}
       {isAdmin && (
         <aside className="bg-gray-800 p-6 overflow-auto">
-          <h2 className="text-2xl font-bold text-white mb-4">
-            ⚙️ Contrôles
-          </h2>
+          <h2 className="text-2xl font-bold text-white mb-4">⚙️ Contrôles</h2>
           <div className="flex space-x-3 mb-6">
             <button
               className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
@@ -302,9 +317,7 @@ export default function DicePage() {
                   >
                     −
                   </button>
-                  <div className="px-4 py-1 bg-gray-900 text-white">
-                    {value}
-                  </div>
+                  <div className="px-4 py-1 bg-gray-900 text-white">{value}</div>
                   <button
                     onClick={inc}
                     className="px-2 py-1 bg-gray-700 text-white rounded-r hover:bg-gray-600 transition"

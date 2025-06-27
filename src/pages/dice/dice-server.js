@@ -1,3 +1,4 @@
+// dice-server.js
 const { Server } = require("socket.io");
 
 const io = new Server(3000, {
@@ -9,6 +10,10 @@ io.on("connection", (socket) => {
 
   socket.on("rollDice", () => {
     const result = Math.floor(Math.random() * 20) + 1;
-    io.emit("diceResult", result); // Diffuse le résultat à tous les clients
+    io.emit("diceResult", result);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("👤 Un utilisateur déconnecté");
   });
 });

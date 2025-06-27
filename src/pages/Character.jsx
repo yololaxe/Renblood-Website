@@ -172,7 +172,7 @@ export default function Character() {
         </header>
 
         {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_3fr_1fr] gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_3fr_1.2fr] gap-6 items-start">
           {/* Discord Card */}
           <aside className="bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col items-center">
             {discordInfo?.discord_id ? (
@@ -227,7 +227,7 @@ export default function Character() {
               </div>
               <div className="flex flex-wrap gap-6 text-white text-lg">
                 <div className="flex items-center gap-2">
-                  <MoneyDisplay value={money}/> B
+                  <MoneyDisplay value={money}/>
                 </div>
                 <div className="flex items-center gap-2">
                   🔮 <span>{divin}</span>
@@ -371,7 +371,7 @@ export default function Character() {
                     <h3 className="text-xl font-semibold text-white">
                       {authUser.displayName || "Utilisateur"}
                     </h3>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-gray-400 text-sm break-all">
                       {authUser.email}
                     </p>
                   </div>
