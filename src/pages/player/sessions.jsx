@@ -36,7 +36,8 @@ export default function SessionsPage() {
   const [around, setAround] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [summary, setSummary] = useState(null);
-  const [myFuture, setMyFuture] = useState(null);
+  // undefined = en cours de chargement, null = pas de future, objet = future existant
+  const [myFuture, setMyFuture] = useState();
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -47,15 +48,23 @@ export default function SessionsPage() {
       setGlobal(g);
 
       const sessions = await getAllSessions();
-      const combo = Array.from({ length: 5 }, (_, i) => shiftSeason(g.year, g.season, i - 2));
+      const combo = Array.from({ length: 5 }, (_, i) =>
+        shiftSeason(g.year, g.season, i - 2)
+      );
       const arr = combo.map(({ year, season }) => {
-        const found = sessions.find((s) => s.year === year && s.season === season);
-        return found ? { ...found, exists: true } : { year, season, exists: false };
+        const found = sessions.find(
+          (s) => s.year === year && s.season === season
+        );
+        return found
+          ? { ...found, exists: true }
+          : { year, season, exists: false };
       });
       setAround(arr);
 
       // pré-sélection de la session courante si existante
-      const current = arr.find((x) => x.exists && x.year === g.year && x.season === g.season);
+      const current = arr.find(
+        (x) => x.exists && x.year === g.year && x.season === g.season
+      );
       if (current) setSelectedId(current.id);
 
       setLoading(false);
@@ -64,18 +73,28 @@ export default function SessionsPage() {
 
   // 2) Dès que selectedId change, on rafraîchit résumé & future
   useEffect(() => {
-    if (!selectedId) return setSummary(null) || setMyFuture(null);
+    if (!selectedId) {
+      setSummary(null);
+      setMyFuture(undefined);
+      return;
+    }
 
     (async () => {
+      // début du chargement de myFuture
+      setMyFuture(undefined);
+
       const s = await getSessionById(selectedId);
       setSummary(s);
+
       const f = await getMyFuture(selectedId, userId);
       setMyFuture(f);
     })();
   }, [selectedId, userId]);
 
   if (loading || !global) {
-    return <p className="text-center text-gray-400 mt-20">Chargement…</p>;
+    return (
+      <p className="text-center text-gray-400 mt-20">Chargement…</p>
+    );
   }
 
   const canModifyFuture = global.future_modif_add_state;
@@ -83,7 +102,8 @@ export default function SessionsPage() {
   const hasFuture = Boolean(myFuture);
 
   const handleRemoveFuture = async () => {
-    if (!confirm("Voulez-vous vraiment supprimer votre proposition ?")) return;
+    if (!confirm("Voulez-vous vraiment supprimer votre proposition ?"))
+      return;
     await deleteFuture(myFuture.id);
     const s = await getSessionById(selectedId);
     setSummary(s);
@@ -105,12 +125,13 @@ export default function SessionsPage() {
                 ? selectedId === item.id
                   ? "bg-blue-600 text-white shadow-lg"
                   : "bg-gray-700 text-gray-200 hover:bg-gray-600"
-                : "bg-gray-800 text-gray-500 cursor-not-allowed"}
-            `}
+                : "bg-gray-800 text-gray-500 cursor-not-allowed"}`}
           >
             {SEASON_LABELS[item.season]} {item.year}
             {!item.exists && (
-              <span className="block text-[10px] text-gray-400">bientôt</span>
+              <span className="block text-[10px] text-gray-400">
+                bientôt
+              </span>
             )}
           </button>
         ))}
@@ -132,18 +153,23 @@ export default function SessionsPage() {
               Date réelle :{" "}
               <strong className="text-gray-100">
                 {summary.session_date
-                  ? new Date(summary.session_date).toLocaleString("fr-FR", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
+                  ? new Date(summary.session_date).toLocaleString(
+                      "fr-FR",
+                      {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )
                   : "Non définie"}
               </strong>
             </p>
             <div>
-              <h2 className="text-lg text-white mb-2">Joueurs inscrits</h2>
+              <h2 className="text-lg text-white mb-2">
+                Joueurs inscrits
+              </h2>
               <ul className="max-h-40 overflow-auto list-disc list-inside text-gray-200 space-y-1">
                 {summary.players.map((p) => (
                   <li key={p.id}>{p.name}</li>
@@ -167,17 +193,22 @@ export default function SessionsPage() {
               <div className="space-y-4">
                 <h2 className="text-lg text-white">Mon Future</h2>
 
-                {hasFuture ? (
+                {myFuture === undefined ? null : hasFuture ? (
                   <div className="space-y-2">
                     <p className="text-gray-200">
                       Votre proposition :{" "}
                       <strong className="text-green-300">
-                        {FUTURE_LABELS[myFuture.type] || myFuture.type}
+                        {FUTURE_LABELS[myFuture.type] ||
+                          myFuture.type}
                       </strong>
                     </p>
                     <div className="flex gap-3">
                       <button
-                        onClick={() => navigate(`/futures/edit/${myFuture.id}`)}
+                        onClick={() =>
+                          navigate(
+                            `/futures/edit/${myFuture.id}`
+                          )
+                        }
                         className="flex-1 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 rounded text-gray-900 font-medium transition"
                       >
                         Modifier
@@ -193,7 +224,9 @@ export default function SessionsPage() {
                 ) : (
                   <button
                     onClick={() =>
-                      navigate(`/futures/create?session=${selectedId}`)
+                      navigate(
+                        `/futures/create?session=${selectedId}`
+                      )
                     }
                     className="w-full px-4 py-2 bg-green-600 hover:bg-green-500 rounded text-white font-medium transition"
                   >

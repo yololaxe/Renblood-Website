@@ -1,120 +1,153 @@
-import {useEffect, useState, useRef} from "react";
-import {motion} from "framer-motion";
+// src/pages/Home.jsx
+import { useEffect, useState, useRef } from "react";
+import { motion } from "framer-motion";
 import YouTube from "react-youtube";
-import {FaVolumeMute, FaVolumeUp} from "react-icons/fa";
+import { FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 
 function Home() {
-    const [isMuted, setIsMuted] = useState(true);
-    const playerRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(true);
+  const [volume, setVolume] = useState(50);
+  const playerRef = useRef(null);
 
-    useEffect(() => {
-        document.title = "Renblood - Accueil";
-    }, []);
+  useEffect(() => {
+    document.title = "Renblood - Accueil";
+  }, []);
 
-    const onPlayerReady = (event) => {
-        const player = event.target;
-        player.mute();
-        player.setPlaybackQuality("hd1080");
-        playerRef.current = player;
-    };
+  const onPlayerReady = (event) => {
+    const player = event.target;
+    player.mute();
+    player.setVolume(volume);
+    player.setPlaybackQuality("hd1080");
+    playerRef.current = player;
+  };
 
-    const toggleSound = () => {
-        if (!playerRef.current) return;
-        if (isMuted) {
-            playerRef.current.unMute();
-        } else {
-            playerRef.current.mute();
-        }
-        setIsMuted((prev) => !prev);
-    };
+  const toggleSound = () => {
+    if (!playerRef.current) return;
+    if (isMuted) {
+      playerRef.current.unMute();
+      playerRef.current.setVolume(volume);
+    } else {
+      playerRef.current.mute();
+    }
+    setIsMuted(!isMuted);
+  };
 
-    const videoOptions = {
-        height: "100%",
-        width: "100%",
-        playerVars: {
-            autoplay: 1,
-            controls: 0,
-            mute: 1,
-            loop: 1,
-            playlist: "jLFNzAMJ5DE",
-            modestbranding: 1,
-            showinfo: 0,
-            fs: 0,
-            disablekb: 1,
-            rel: 0,
-            iv_load_policy: 3,
-            cc_load_policy: 0,
-            quality: "hd1080",
-            vq: "hd1080",
-        },
-    };
+  const handleVolumeChange = (e) => {
+    const newVol = Number(e.target.value);
+    setVolume(newVol);
+    if (!playerRef.current) return;
+    playerRef.current.setVolume(newVol);
+    if (newVol === 0) {
+      playerRef.current.mute();
+      setIsMuted(true);
+    } else {
+      playerRef.current.unMute();
+      setIsMuted(false);
+    }
+  };
 
-    return (
-        <div className="text-white bg-gray-900 min-h-screen relative">
-            {/* 🎇 Message d'intro avec vidéo de fond */}
-            <div className="relative w-screen h-screen overflow-hidden">
-                {/* Vidéo de fond YouTube (clics désactivés) */}
-                <YouTube
-                    videoId="jLFNzAMJ5DE"
-                    opts={videoOptions}
-                    onReady={onPlayerReady}
-                    className="absolute inset-0 z-0 w-full h-full"        // conteneur cliquable
-                    iframeClassName="pointer-events-none"                  // iframe non cliquable
-                />
-                {/* Filtres (clics désactivés) */}
-                <div className="absolute inset-0 bg-black opacity-10 pointer-events-none"/>
-                <div className="absolute inset-0 backdrop-blur-xs pointer-events-none"/>
+  const videoOptions = {
+    height: "100%",
+    width: "100%",
+    playerVars: {
+      autoplay: 1,
+      controls: 0,
+      mute: 1,
+      loop: 1,
+      playlist: "jLFNzAMJ5DE",
+      modestbranding: 1,
+      showinfo: 0,
+      fs: 0,
+      disablekb: 1,
+      rel: 0,
+      iv_load_policy: 3,
+      cc_load_policy: 0,
+      quality: "hd1080",
+      vq: "hd1080",
+    },
+  };
 
-                {/* Icône de son */}
+  return (
+    <div className="text-white bg-gray-900 min-h-screen relative">
+      {/* 🎇 Intro with YouTube background */}
+      <div className="relative w-screen h-screen overflow-hidden">
+        <YouTube
+          videoId="jLFNzAMJ5DE"
+          opts={videoOptions}
+          onReady={onPlayerReady}
+          className="absolute inset-0 z-0 w-full h-full"
+          iframeClassName="pointer-events-none"
+        />
+        <div className="absolute inset-0 bg-black opacity-10 pointer-events-none" />
+        <div className="absolute inset-0 backdrop-blur-xs pointer-events-none" />
 
-
-                {/* 🎇 Contenu du message d'intro */}
-                <motion.div
-                    className="relative z-10 flex flex-col items-center justify-center h-full"
-                    initial={{opacity: 0}}
-                    animate={{opacity: 1}}
-                    transition={{duration: 1.5}}
-                >
-                    <div className="absolute top-4 right-4 z-10">
-                        <button
-                            onClick={toggleSound}
-                            className="
-              text-white text-2xl
-              bg-gray-700 p-2 rounded-full
-              transform transition
-              hover:scale-110 active:scale-90
+        {/* 🎇 Main intro content */}
+        <motion.div
+          className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.5 }}
+        >
+          {/* Sound controls moved here */}
+          {/* inside your motion.div */}
+        <div
+          className="
+            absolute top-4 right-4 z-20
+            flex flex-row items-center space-x-2
+            bg-gray-800 bg-opacity-60 p-2 rounded-lg
+          "
+        >
+          <button
+            onClick={toggleSound}
+            className="
+              text-white text-2xl bg-gray-700 p-2 rounded-full
+              transform transition hover:scale-110 active:scale-90
               hover:bg-gray-600 focus:outline-none
             "
-                        >
-                            {isMuted ? <FaVolumeMute/> : <FaVolumeUp/>}
-                        </button>
-                    </div>
-                    <img
-                        src="/accueil/logo.png"
-                        alt="Renblood"
-                        className="w-48 mb-4 drop-shadow-lg"
-                        loading="lazy"
-                    />
-                    <h1 className="text-4xl md:text-6xl font-bold">
-                        Bienvenue sur Renblood
-                    </h1>
-                    <p className="text-lg text-gray-300 mt-2">
-                        Un monde Semi-RP où votre aventure commence.
-                    </p>
-                    <motion.button
-                        onClick={() =>
-                            (window.location.href = "https://discord.gg/uwNy5tM8jU")
-                        }
-                        whileHover={{scale: 1.1}}
-                        whileTap={{scale: 0.9}}
-                        className="
+          >
+            {isMuted ? <FaVolumeMute/> : <FaVolumeUp/>}
+          </button>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={volume}
+            onChange={handleVolumeChange}
+            className="
+              w-24 h-1 rounded-lg
+              bg-gray-600 accent-blue-400
+              cursor-pointer
+            "
+          />
+        </div>
+
+
+          <img
+            src="/accueil/logo.png"
+            alt="Renblood"
+            className="w-48 mb-4 drop-shadow-lg"
+            loading="lazy"
+          />
+          <h1 className="text-4xl md:text-6xl font-bold">
+            Bienvenue sur Renblood
+          </h1>
+          <p className="text-lg text-gray-300 mt-2">
+            Un monde Semi-RP où votre aventure commence.
+          </p>
+          <motion.button
+            onClick={() =>
+              (window.location.href = "https://discord.gg/uwNy5tM8jU")
+            }
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="
               mt-6 px-8 py-3 bg-blue-600 text-white text-lg
               font-semibold rounded-lg shadow-lg
               hover:bg-blue-500 transition
             "
-                    >
-                        Rejoindre l'Aventure
-                    </motion.button>
+          >
+            Rejoindre l'Aventure
+                                </motion.button>
                 </motion.div>
             </div>
 

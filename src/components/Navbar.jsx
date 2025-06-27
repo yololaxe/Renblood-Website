@@ -1,10 +1,10 @@
 // src/components/Navbar.jsx
-
 import { useEffect, useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { auth, listenToAuthChanges, signOut } from "../data/firebaseConfig";
 import { useUser } from "../context/UserContext";
 import LiveSessionBanner from "./LiveSessionBanner";
+import { HiMenu, HiX } from "react-icons/hi";
 
 const navItems = [
   { to: "/",         label: "Accueil" },
@@ -16,27 +16,36 @@ const navItems = [
 ];
 
 function Navbar() {
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+  const [user, setUser]       = useState(null);
+  const [showNav, setShowNav] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate               = useNavigate();
   const { setUserId, setUserRank, userRank } = useUser();
 
   useEffect(() => {
     listenToAuthChanges(setUser);
   }, []);
 
+  useEffect(() => {
+    let lastY = window.pageYOffset;
+    const onScroll = () => {
+      const y = window.pageYOffset;
+      setShowNav(y < lastY || y < 50);
+      lastY = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const handleSignOut = async () => {
     if (!window.confirm("Voulez-vous vraiment vous déconnecter ?")) return;
-    try {
-      await signOut(auth);
-      sessionStorage.clear();
-      localStorage.removeItem("access_token");
-      setUser(null);
-      setUserId(null);
-      setUserRank(null);
-      navigate("/home");
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion :", error);
-    }
+    await signOut(auth);
+    sessionStorage.clear();
+    localStorage.removeItem("access_token");
+    setUser(null);
+    setUserId(null);
+    setUserRank(null);
+    navigate("/home");
   };
 
   const linkClass = ({ isActive }) =>
@@ -45,69 +54,166 @@ function Navbar() {
       : "hover:text-gray-400 text-white transition";
 
   return (
-    <nav className="relative bg-gray-800 text-white p-4 flex justify-between items-center">
-      {/* 🎲 Emoji centré */}
-      <div className="absolute left-1/2 transform -translate-x-1/2 text-2xl">
-        <Link to="/dice">🎲</Link>
-      </div>
-
-      {/* Menu gauche */}
-      <div className="flex space-x-6">
-        {navItems.map(({ to, label, requiresAuth, requiredRole }) => {
-          if (requiresAuth && !user) return null;
-          if (requiredRole && userRank !== requiredRole) return null;
-          return (
-            <NavLink key={to} to={to} end={to === "/"} className={linkClass}>
-              {label}
+    <>
+      <nav
+        className={`fixed top-0 inset-x-0 bg-gray-800 bg-opacity-90 backdrop-blur-sm text-white z-50 transform transition-transform duration-300 ${
+          showNav ? "translate-y-0" : "-translate-y-full"
+        }`}
+      >
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+          {/* Logo + Dice */}
+          <div className="flex items-center space-x-4">
+            <Link to="/" className="text-xl font-bold hover:text-gray-300">
+              Renblood
+            </Link>
+            <NavLink
+              to="/dice"
+              className="text-2xl hover:text-gray-300 transition"
+            >
+              🎲
             </NavLink>
-          );
-        })}
-      </div>
+          </div>
 
-      {/* Menu droite */}
-      <div className="flex items-center space-x-4">
-        {user ? (
-          <>
-            {/* Lien Admin – n'apparaît que si l’utilisateur est Admin */}
-            {userRank === "Admin" && (
-              <NavLink
-                to="/admin-dashboard"
-                className={({ isActive }) =>
-                  isActive
-                    ? "pointer-events-none text-yellow-400 font-semibold"
-                    : "hover:text-yellow-300 text-white transition"
-                }
-              >
-                ⚙️ Admin
+          {/* Desktop links */}
+          <div className="hidden md:flex space-x-6">
+            {navItems.map(({ to, label, requiresAuth, requiredRole }) => {
+              if (requiresAuth && !user) return null;
+              if (requiredRole && userRank !== requiredRole) return null;
+              return (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={to === "/"}
+                  className={linkClass}
+                >
+                  {label}
+                </NavLink>
+              );
+            })}
+          </div>
+
+          {/* User actions + mobile toggle */}
+          <div className="flex items-center space-x-4">
+            {user ? (
+              <>
+                {userRank === "Admin" && (
+                  <NavLink
+                    to="/admin-dashboard"
+                    className={({ isActive }) =>
+                      isActive
+                        ? "pointer-events-none text-yellow-400 font-semibold"
+                        : "hover:text-yellow-300 text-white transition"
+                    }
+                  >
+                    ⚙️ Admin
+                  </NavLink>
+                )}
+                <Link to="/character">
+                  <img
+                    src={user.photoURL || "/assets/default-avatar.png"}
+                    alt="Avatar"
+                    className="w-9 h-9 rounded-full border-2 border-gray-600 hover:opacity-80 transition"
+                  />
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="text-red-500 hover:text-red-400 transition"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <NavLink to="/auth" className={linkClass}>
+                Connexion
               </NavLink>
             )}
 
-            {/* Avatar */}
-            <Link to="/character">
-              <img
-                src={user.photoURL || "/assets/default-avatar.png"}
-                alt="Avatar"
-                className="w-10 h-10 rounded-full border-2 border-gray-500 cursor-pointer hover:opacity-80 transition"
-              />
-            </Link>
-
-            {/* Bouton déconnexion */}
             <button
-              onClick={handleSignOut}
-              className="text-red-500 hover:text-red-400 transition"
+              className="md:hidden p-2 focus:outline-none"
+              onClick={() => setMobileOpen(o => !o)}
             >
-              Déconnexion
+              {mobileOpen ? (
+                <HiX className="w-6 h-6" />
+              ) : (
+                <HiMenu className="w-6 h-6" />
+              )}
             </button>
-          </>
-        ) : (
-          <NavLink to="/auth" className={linkClass}>
-            Connexion
-          </NavLink>
-        )}
-      </div>
+          </div>
+        </div>
 
-      <LiveSessionBanner />
-    </nav>
+        {/* Mobile menu */}
+        {mobileOpen && (
+          <div className="md:hidden bg-gray-800 border-t border-gray-700">
+            <div className="px-4 pt-2 pb-4 space-y-1">
+              {[...navItems].map(({ to, label, requiresAuth, requiredRole }) => {
+                if (requiresAuth && !user) return null;
+                if (requiredRole && userRank !== requiredRole) return null;
+                return (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    end={to === "/"}
+                    className={({ isActive }) =>
+                      `block px-3 py-2 rounded ${
+                        isActive
+                          ? "bg-gray-700 text-blue-400"
+                          : "hover:bg-gray-700 text-white"
+                      }`
+                    }
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {label}
+                  </NavLink>
+                );
+              })}
+              <NavLink
+                to="/dice"
+                className="block px-3 py-2 rounded hover:bg-gray-700 text-white"
+                onClick={() => setMobileOpen(false)}
+              >
+                🎲
+              </NavLink>
+              {user && (
+                <>
+                  {userRank === "Admin" && (
+                    <NavLink
+                      to="/admin-dashboard"
+                      className="block px-3 py-2 rounded hover:bg-gray-700 text-yellow-300"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      ⚙️ Admin
+                    </NavLink>
+                  )}
+                  <button
+                    className="w-full text-left px-3 py-2 rounded hover:bg-gray-700 text-red-500"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      handleSignOut();
+                    }}
+                  >
+                    Déconnexion
+                  </button>
+                </>
+              )}
+              {!user && (
+                <NavLink
+                  to="/auth"
+                  className="block px-3 py-2 rounded hover:bg-gray-700 text-white"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Connexion
+                </NavLink>
+              )}
+            </div>
+          </div>
+        )}
+
+        <LiveSessionBanner />
+      </nav>
+
+      {/* placeholder so page content isn't hidden */}
+      <div className="h-16" />
+    </>
   );
 }
 

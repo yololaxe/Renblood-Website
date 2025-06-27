@@ -1,8 +1,8 @@
+import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion"; // ✅ Ajout pour l'animation
+import { motion } from "framer-motion";
 import livre1Img from "../../../../public/livres/livre1.png";
 import livre2Img from "../../../../public/livres/livre2.png";
-import React from "react";
 
 const livres = {
   1: {
@@ -229,46 +229,51 @@ const livres = {
   },
 };
 
-
-
 export default function Chapitres() {
   const { livreId, chapitreId } = useParams();
   const navigate = useNavigate();
   const livre = livres[livreId];
-  const chapitre = livre?.chapitres.find(c => c.id === Number(chapitreId));
-  const progress = ((Number(chapitreId) - 1) / livre.chapitres.length) * 100;
+  const chapitreIndex = Number(chapitreId) - 1;
+  const total = livre.chapitres.length;
+  const chapitre = livre.chapitres[chapitreIndex];
+
+  // ← ici on divise par (total - 1), pour que le dernier chapitre donne 100%
+  const progress =
+    total > 1
+      ? (chapitreIndex / (total - 1)) * 100
+      : 100;
 
   return (
-    <div className="min-h-screen bg-gray-900 px-6 py-12 text-gray-200">
-      {/* Header */}
-      <header className="max-w-3xl mx-auto text-center mb-12">
-        <h1 className="text-4xl sm:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-blue-400">
-          {livre?.titre}
+    <div className="min-h-screen bg-gray-900 text-gray-200">
+      {/* HEADER */}
+      <header className="max-w-4xl mx-auto px-6 py-12 text-center">
+        <h1 className="text-4xl sm:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-blue-400 mb-2">
+          {livre.titre}
         </h1>
-        <p className="mt-4 text-lg text-gray-400">
-          Chapitre {chapitreId} sur {livre?.chapitres.length}
+        <p className="text-gray-400">
+          Chapitre {chapitreId} sur {total}
         </p>
       </header>
 
-      {/* Cover Image */}
+      {/* COVER IMAGE */}
       <motion.div
-        className="max-w-md mx-auto mb-10 overflow-hidden rounded-2xl shadow-2xl"
+        className="max-w-md mx-auto mb-12 overflow-hidden rounded-2xl shadow-2xl"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
         <img
-          src={livre?.image}
-          alt={livre?.titre}
+          src={livre.image}
+          alt={livre.titre}
           className="w-full h-80 object-cover"
         />
       </motion.div>
 
-      {/* Progress Bar */}
-      <div className="max-w-3xl mx-auto mb-8">
-        <div className="w-full bg-gray-700 rounded-full h-3">
+      {/* PROGRESS BAR */}
+      <div className="max-w-3xl mx-auto px-6 mb-16">
+        <div className="w-full bg-gray-700 rounded-full h-4">
           <motion.div
-            className="bg-green-400 h-3 rounded-full"
+            className="bg-green-400 h-4 rounded-full"
             initial={{ width: "0%" }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.6 }}
@@ -276,50 +281,74 @@ export default function Chapitres() {
         </div>
       </div>
 
-      {/* Sections */}
-      <div className="max-w-3xl mx-auto space-y-6">
-        {chapitre?.sections.map(section => (
-          <motion.article
-            key={section.id}
-            className="bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transform transition hover:scale-102"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: section.id * 0.1 }}
-          >
-            <h2 className="text-2xl font-semibold text-white mb-3">
-              {section.titre}
-            </h2>
-            <p className="text-gray-300 leading-relaxed">
-              {section.contenu}
-            </p>
-          </motion.article>
-        ))}
+      <div className="max-w-5xl mx-auto px-6 flex flex-col lg:flex-row gap-8">
+        {/* STICKY NAV (desktop) */}
+        <nav className="hidden lg:block flex-shrink-0 w-48 sticky top-28 self-start">
+          <ul className="space-y-2">
+            {livre.chapitres.map((c, idx) => (
+              <li key={c.id}>
+                <button
+                  onClick={() =>
+                    navigate(
+                      `/histoires/livres/${livreId}/chapitre/${c.id}`
+                    )
+                  }
+                  className={`block w-full text-left px-4 py-2 rounded-lg transition ${
+                    idx === chapitreIndex
+                      ? "bg-blue-500 text-white font-semibold shadow"
+                      : "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
+                  }`}
+                >
+                  {c.id}. {c.titre.split("|")[0].trim()}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* SECTIONS */}
+        <div className="flex-1 space-y-6">
+          {chapitre.sections.map((section) => (
+            <motion.article
+              key={section.id}
+              className="bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transform transition"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: section.id * 0.1 }}
+            >
+              <h2 className="text-2xl font-semibold text-white mb-3">
+                {section.titre}
+              </h2>
+              <p className="text-gray-300 leading-relaxed">
+                {section.contenu}
+              </p>
+            </motion.article>
+          ))}
+        </div>
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="mt-12 max-w-3xl mx-auto flex flex-wrap gap-4 justify-center">
-        {livre.chapitres.map(c => (
-          <button
-            key={c.id}
-            onClick={() =>
-              navigate(`/histoires/livres/${livreId}/chapitre/${c.id}`)
-            }
-            className={`px-5 py-2 rounded-full text-sm font-medium transition ${
-              Number(chapitreId) === c.id
-                ? "bg-blue-500 text-white shadow-lg"
-                : "bg-gray-700 text-gray-200 hover:bg-gray-600"
-            }`}
-          >
-            {c.id}. {c.titre.split("|")[0].trim()}
-          </button>
-        ))}
+      {/* BOTTOM NAV (mobile) */}
+      <div className="lg:hidden fixed bottom-4 left-0 right-0 px-4">
+        <div className="overflow-x-auto flex space-x-3 bg-gray-800 bg-opacity-90 p-2 rounded-xl shadow-lg">
+          {livre.chapitres.map((c, idx) => (
+            <button
+              key={c.id}
+              onClick={() =>
+                navigate(
+                  `/histoires/livres/${livreId}/chapitre/${c.id}`
+                )
+              }
+              className={`flex-shrink-0 px-3 py-2 rounded-full text-sm transition ${
+                idx === chapitreIndex
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+            >
+              {c.id}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
-
-
-
-
-
-

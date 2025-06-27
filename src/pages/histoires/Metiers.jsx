@@ -32,7 +32,7 @@ function JobCard({ job, level, xp }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             whileHover={{ scale: 1.03 }}
-            className="relative rounded-2xl shadow-xl overflow-hidden cursor-pointer"
+            className="flex flex-col h-full rounded-2xl shadow-xl overflow-hidden cursor-pointer bg-gray-800"
         >
             {/* Niveau du joueur, si > 0, avec tooltip XP */}
             {/* test avec title natif */}
@@ -83,7 +83,7 @@ function JobCard({ job, level, xp }) {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="px-4 pb-4 bg-gray-700 text-gray-200 space-y-2"
+                        className="flex-1 px-4 pb-4 bg-gray-700 text-gray-200 space-y-2"
                     >
                         <p>{job.description}</p>
                         <p>
@@ -192,11 +192,11 @@ export default function Metier() {
                 )}
 
                 {/* Grid 2x2 */}
-                <div className="grid grid-cols-2 gap-6 mb-16">
+                <div className="grid grid-cols-2 gap-6 mb-16 items-stretch">
                     <AnimatePresence>
                         {(query.length > 0 ? filteredJobs : filteredTabs.find(t => t.name === activeTab)?.jobs || [])
                             .map(job => {
-                                const stats = jobStats[job.id] || { level: 0, xp: 0 };
+                                const stats = jobStats[job.id] || {level: 0, xp: 0};
                                 return (
                                     <JobCard
                                         key={job.id}

@@ -216,7 +216,7 @@ export default function DicePage() {
       {/* Centre : lancement */}
       <main className="relative flex flex-col items-center justify-center px-4">
         <h1 className="text-5xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-blue-400 mb-8 z-10">
-          🎲 Lancer de Dé
+           Lancer de Dé
         </h1>
 
         <div className="mb-6 flex items-center space-x-6 text-lg text-gray-200 z-10">
