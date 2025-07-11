@@ -1,6 +1,6 @@
-// src/pages/dice/DicePage.jsx
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { io } from "socket.io-client";
 import { useUser } from "../../context/UserContext";
 import { getPlayers, getPlayerData } from "../../services/api";
 
@@ -46,19 +46,19 @@ export default function DicePage() {
   const [result, setResult] = useState(null);
   const [rain, setRain] = useState([]);
 
-  const wsRef    = useRef(null);
-  const audioRef = useRef(null);
+  const socketRef = useRef(null);
+  const audioRef  = useRef(null);
 
   const attrs = [
-    { key: "dodge", label: "Esquive" },
-    { key: "discretion", label: "Discrétion" },
-    { key: "charisma", label: "Charisme" },
-    { key: "rethoric", label: "Rhétorique" },
+    { key: "dodge",       label: "Esquive" },
+    { key: "discretion",  label: "Discrétion" },
+    { key: "charisma",    label: "Charisme" },
+    { key: "rethoric",    label: "Rhétorique" },
     { key: "negotiation", label: "Négociation" },
-    { key: "influence", label: "Influence" }
+    { key: "influence",   label: "Influence" }
   ];
 
-  // — Admin : charge la liste
+  // — Admin : charge la liste de joueurs
   useEffect(() => {
     if (!isAdmin) return;
     (async () => {
@@ -67,7 +67,7 @@ export default function DicePage() {
     })();
   }, [isAdmin]);
 
-  // — Admin : charge le choix
+  // — Admin : charge les données du joueur sélectionné
   useEffect(() => {
     if (!selectedPlayer) {
       setSelectedPlayerData(null);
@@ -80,7 +80,7 @@ export default function DicePage() {
     })();
   }, [selectedPlayer]);
 
-  // — playRoll : animation + son
+  // — playRoll : animation + son + pluie
   const playRoll = useCallback((rollValue) => {
     setRolling(true);
     audioRef.current?.play();
@@ -92,51 +92,51 @@ export default function DicePage() {
     }, 1500);
   }, []);
 
-  // — WebSocket Channels
+  // — Socket.IO connection
   useEffect(() => {
-    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/dice/`);
-    wsRef.current = ws;
+    const socket = io(import.meta.env.VITE_WS_URL, {
+      transports: ["websocket"]
+    });
+    socketRef.current = socket;
 
-    ws.onopen = () => console.log("🟢 WebSocket connecté !");
-    ws.onclose = () => console.log("🔴 WebSocket déconnecté.");
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "dice_result") {
-          setRolling(true);
-          audioRef.current?.play();
-          setRain(generateDiceRain(data.value));
-          setTimeout(() => {
-            setRolling(false);
-            setResult(data.value);
-            setRain([]); // nettoie après animation
-          }, 2000);
-        }
-      } catch {
-        console.error("Message WS invalide :", event.data);
-      }
-    };
+    socket.on("diceResult", playRoll);
 
     return () => {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.close();
-      }
+      socket.disconnect();
     };
-  }, []);
+  }, [playRoll]);
 
   // — Lance le dé
   const handleRoll = () => {
-    if (isAdmin && wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: "roll" }));
+    if (isAdmin) {
+      // calcule le min effectif avec modificateur
+      let effectiveMin = minValue;
+      if (selectedPlayerData && selectedAttr) {
+        effectiveMin += selectedPlayerData[selectedAttr] || 0;
+      }
+      // génère le jet
+      const roll =
+        Math.floor(Math.random() * (maxValue - effectiveMin + 1)) +
+        effectiveMin;
+
+      // joue l'animation et le son localement
+      playRoll(roll);
+
+      // envoie la valeur aux autres
+      if (socketRef.current?.connected) {
+        socketRef.current.emit("rollDice", { value: roll });
+      }
       return;
     }
-    // non-admin ou WS indisponible : roll local
-    const roll = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
+
+    // non-admin : jet local simple
+    const roll =
+      Math.floor(Math.random() * (maxValue - minValue + 1)) +
+      minValue;
     playRoll(roll);
   };
 
-  // — presets min/max
+  // — Presets de plage
   const applyPreset = (preset) => {
     if (preset === "percent") {
       setMinValue(1); setMaxValue(100);
@@ -147,20 +147,19 @@ export default function DicePage() {
     }
   };
 
+  // modificateur courant
   const currentMod =
     isAdmin && selectedPlayerData && selectedAttr
-      ? (selectedPlayerData[selectedAttr] || 0)
+      ? selectedPlayerData[selectedAttr] || 0
       : 0;
 
   return (
-    <div
-      className={`bg-gray-900 h-screen ${
+    <div className={`bg-gray-900 h-screen ${
         isAdmin
           ? "grid grid-cols-[18rem_1fr_18rem]"
           : "flex flex-col justify-center"
-      } overflow-hidden`}
-    >
-      {/* Panneau gauche (Admin) */}
+      } overflow-hidden`}>
+      {/* — Panneau gauche (Admin) */}
       {isAdmin && (
         <aside className="bg-gray-800 p-6 overflow-auto">
           <h2 className="text-2xl font-bold text-white mb-4">🎮 Joueurs</h2>
@@ -213,10 +212,10 @@ export default function DicePage() {
         </aside>
       )}
 
-      {/* Centre : lancement */}
+      {/* — Centre : zone de lancement */}
       <main className="relative flex flex-col items-center justify-center px-4">
         <h1 className="text-5xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-blue-400 mb-8 z-10">
-           Lancer de Dé
+          🎲 Lancer de Dé
         </h1>
 
         <div className="mb-6 flex items-center space-x-6 text-lg text-gray-200 z-10">
@@ -275,7 +274,7 @@ export default function DicePage() {
         <audio ref={audioRef} src="/dice-roll.mp3" preload="auto" />
       </main>
 
-      {/* Panneau droit (Admin) */}
+      {/* — Panneau droit (Admin) */}
       {isAdmin && (
         <aside className="bg-gray-800 p-6 overflow-auto">
           <h2 className="text-2xl font-bold text-white mb-4">⚙️ Contrôles</h2>
