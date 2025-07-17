@@ -95,23 +95,21 @@ export default function DicePage() {
 
   // — WebSocket Channels (utilise VITE_WS_URL)
   useEffect(() => {
-    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/dice/`);
-    wsRef.current = ws;
+  const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/dice/`);
 
-    // ws.onopen    = () => console.log("🟢 WS Channels connecté");
-    // ws.onclose   = () => console.log("🔴 WS Channels déconnecté");
-    ws.onmessage = (event) => {
-      console.log("← WS reçoit :", event.data);
-      const d = JSON.parse(event.data);
-      if (d.type === "dice_result") {
-        playRoll(d.value);
-      }
-    };
+  ws.onopen = () => console.log("🟢 WS Channels connecté");
+  ws.onerror = (err) => console.error("❌ WS Channels error", err);
+  ws.onclose = (ev) => console.log("🔴 WS Channels déconnecté", ev);
 
-    return () => {
-      if (ws.readyState === WebSocket.OPEN) ws.close();
-    };
-  }, [playRoll]);
+  ws.onmessage = (event) => {
+    const d = JSON.parse(event.data);
+    if (d.type === "dice_result") {
+      playRoll(d.value);            // → tous les clients jouent ici
+    }
+  };
+  return () => ws.readyState === WebSocket.OPEN && ws.close();
+}, [playRoll]);
+
 
 
   // — calcule le modificateur courant
@@ -128,8 +126,8 @@ export default function DicePage() {
        const res = await rollDice(token, { min: minValue, max: maxValue, mod: currentMod });
        console.log("← HTTP répond :", res);
        // le serveur broadcastera sur Channels, votre WS captera et jouera l'animation
-       const base = Math.floor(Math.random()*(maxValue-minValue+1))+minValue;
-       playRoll(base + currentMod);
+       // const base = Math.floor(Math.random()*(maxValue-minValue+1))+minValue;
+       // playRoll(base + currentMod);
      } catch (err) {
        console.error("Erreur appel rollDice:", err);
        // en fallback, on peut toujours jouer local :
