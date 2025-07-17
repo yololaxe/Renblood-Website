@@ -1,8 +1,9 @@
+// src/pages/dice/DicePage.jsx
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { io } from "socket.io-client";
 import { useUser } from "../../context/UserContext";
 import { getPlayers, getPlayerData } from "../../services/api";
+import { rollDice } from "../../services/api";
 
 // génère les particules “pluie de dés”
 function generateDiceRain(result) {
@@ -28,7 +29,7 @@ function generateDiceRain(result) {
 }
 
 export default function DicePage() {
-  const { userRank } = useUser();
+  const { userRank, token } = useUser();   // on récupère aussi le token
   const isAdmin = userRank === "Admin";
 
   // — admin : liste de joueurs & sélection
@@ -46,8 +47,8 @@ export default function DicePage() {
   const [result, setResult] = useState(null);
   const [rain, setRain] = useState([]);
 
-  const socketRef = useRef(null);
-  const audioRef  = useRef(null);
+  const wsRef    = useRef(null);
+  const audioRef = useRef(null);
 
   const attrs = [
     { key: "dodge",       label: "Esquive" },
@@ -92,51 +93,51 @@ export default function DicePage() {
     }, 1500);
   }, []);
 
-  // — Socket.IO connection
+  // — WebSocket Channels (utilise VITE_WS_URL)
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_WS_URL, {
-      transports: ["websocket"]
-    });
-    socketRef.current = socket;
+    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/dice/`);
+    wsRef.current = ws;
 
-    socket.on("diceResult", playRoll);
+    // ws.onopen    = () => console.log("🟢 WS Channels connecté");
+    // ws.onclose   = () => console.log("🔴 WS Channels déconnecté");
+    ws.onmessage = (event) => {
+      console.log("← WS reçoit :", event.data);
+      const d = JSON.parse(event.data);
+      if (d.type === "dice_result") {
+        playRoll(d.value);
+      }
+    };
 
     return () => {
-      socket.disconnect();
+      if (ws.readyState === WebSocket.OPEN) ws.close();
     };
   }, [playRoll]);
 
+
+  // — calcule le modificateur courant
+  const currentMod =
+    isAdmin && selectedPlayerData && selectedAttr
+      ? (selectedPlayerData[selectedAttr] || 0)
+      : 0;
+
   // — Lance le dé
-  const handleRoll = () => {
-    if (isAdmin) {
-      // calcule le min effectif avec modificateur
-      let effectiveMin = minValue;
-      if (selectedPlayerData && selectedAttr) {
-        effectiveMin += selectedPlayerData[selectedAttr] || 0;
-      }
-      // génère le jet
-      const roll =
-        Math.floor(Math.random() * (maxValue - effectiveMin + 1)) +
-        effectiveMin;
+  const handleRoll = async () => {
+     try {
+       // on alerte dans la console exactement ce qu'on envoie
+       console.log("→ HTTP POST /dice/roll/", { min: minValue, max: maxValue, mod: currentMod });
+       const res = await rollDice(token, { min: minValue, max: maxValue, mod: currentMod });
+       console.log("← HTTP répond :", res);
+       // le serveur broadcastera sur Channels, votre WS captera et jouera l'animation
+       const base = Math.floor(Math.random()*(maxValue-minValue+1))+minValue;
+       playRoll(base + currentMod);
+     } catch (err) {
+       console.error("Erreur appel rollDice:", err);
+       // en fallback, on peut toujours jouer local :
 
-      // joue l'animation et le son localement
-      playRoll(roll);
+     }
+   };
 
-      // envoie la valeur aux autres
-      if (socketRef.current?.connected) {
-        socketRef.current.emit("rollDice", { value: roll });
-      }
-      return;
-    }
-
-    // non-admin : jet local simple
-    const roll =
-      Math.floor(Math.random() * (maxValue - minValue + 1)) +
-      minValue;
-    playRoll(roll);
-  };
-
-  // — Presets de plage
+  // — Presets min/max
   const applyPreset = (preset) => {
     if (preset === "percent") {
       setMinValue(1); setMaxValue(100);
@@ -146,12 +147,6 @@ export default function DicePage() {
       setMinValue(1); setMaxValue(6);
     }
   };
-
-  // modificateur courant
-  const currentMod =
-    isAdmin && selectedPlayerData && selectedAttr
-      ? selectedPlayerData[selectedAttr] || 0
-      : 0;
 
   return (
     <div className={`bg-gray-900 h-screen ${
@@ -200,10 +195,7 @@ export default function DicePage() {
                     }`}
                     onClick={() => setSelectedAttr(a.key)}
                   >
-                    {a.label}:{" "}
-                    {selectedPlayerData
-                      ? selectedPlayerData[a.key] ?? 0
-                      : "..."}
+                    {a.label}: {selectedPlayerData?.[a.key] ?? "..."}
                   </button>
                 ))}
               </div>
@@ -271,7 +263,7 @@ export default function DicePage() {
           ))}
         </div>
 
-        <audio ref={audioRef} src="/dice-roll.mp3" preload="auto" />
+        {/*<audio ref={audioRef} src="/dice-roll.mp3" preload="auto" />*/}
       </main>
 
       {/* — Panneau droit (Admin) */}
