@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "../../context/UserContext";
 import { getPlayers, getPlayerData } from "../../services/api";
-import { rollDice } from "../../services/api";
 
 // génère les particules “pluie de dés”
 function generateDiceRain(result) {
@@ -29,7 +28,7 @@ function generateDiceRain(result) {
 }
 
 export default function DicePage() {
-  const { userRank, token } = useUser();   // on récupère aussi le token
+  const { userRank } = useUser();
   const isAdmin = userRank === "Admin";
 
   // — admin : liste de joueurs & sélection
@@ -59,7 +58,7 @@ export default function DicePage() {
     { key: "influence",   label: "Influence" }
   ];
 
-  // — Admin : charge la liste de joueurs
+  // — Admin : charge la liste
   useEffect(() => {
     if (!isAdmin) return;
     (async () => {
@@ -68,7 +67,7 @@ export default function DicePage() {
     })();
   }, [isAdmin]);
 
-  // — Admin : charge les données du joueur sélectionné
+  // — Admin : charge le choix
   useEffect(() => {
     if (!selectedPlayer) {
       setSelectedPlayerData(null);
@@ -81,7 +80,7 @@ export default function DicePage() {
     })();
   }, [selectedPlayer]);
 
-  // — playRoll : animation + son + pluie
+  // — playRoll : animation + son
   const playRoll = useCallback((rollValue) => {
     setRolling(true);
     audioRef.current?.play();
@@ -95,22 +94,29 @@ export default function DicePage() {
 
   // — WebSocket Channels (utilise VITE_WS_URL)
   useEffect(() => {
-  const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/dice/`);
+    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/dice/`);
+    wsRef.current = ws;
 
-  ws.onopen = () => console.log("🟢 WS Channels connecté");
-  ws.onerror = (err) => console.error("❌ WS Channels error", err);
-  ws.onclose = (ev) => console.log("🔴 WS Channels déconnecté", ev);
+    ws.onopen = () => console.log("🟢 WebSocket connecté !");
+    ws.onclose = () => console.log("🔴 WebSocket déconnecté.");
 
-  ws.onmessage = (event) => {
-    const d = JSON.parse(event.data);
-    if (d.type === "dice_result") {
-      playRoll(d.value);            // → tous les clients jouent ici
-    }
-  };
-  return () => ws.readyState === WebSocket.OPEN && ws.close();
-}, [playRoll]);
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "dice_result") {
+          playRoll(data.value);
+        }
+      } catch {
+        console.error("Message WS invalide :", event.data);
+      }
+    };
 
-
+    return () => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
+      }
+    };
+  }, [playRoll]);
 
   // — calcule le modificateur courant
   const currentMod =
@@ -119,23 +125,29 @@ export default function DicePage() {
       : 0;
 
   // — Lance le dé
-  const handleRoll = async () => {
-     try {
-       // on alerte dans la console exactement ce qu'on envoie
-       console.log("→ HTTP POST /dice/roll/", { min: minValue, max: maxValue, mod: currentMod });
-       const res = await rollDice(token, { min: minValue, max: maxValue, mod: currentMod });
-       console.log("← HTTP répond :", res);
-       // le serveur broadcastera sur Channels, votre WS captera et jouera l'animation
-       // const base = Math.floor(Math.random()*(maxValue-minValue+1))+minValue;
-       // playRoll(base + currentMod);
-     } catch (err) {
-       console.error("Erreur appel rollDice:", err);
-       // en fallback, on peut toujours jouer local :
+  const handleRoll = () => {
+    // Si la WS est ouverte, envoi des bornes et du modificateur pour que le serveur tire le dé
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: "roll",
+          min: minValue,
+          max: maxValue,
+          mod: currentMod
+        })
+      );
+      return;
+    }
 
-     }
-   };
+    // Sinon (fallback local), on fait le tirage côté client
+    const baseRoll = Math.floor(
+      Math.random() * (maxValue - minValue + 1)
+    ) + minValue;
+    const totalRoll = baseRoll + currentMod;
+    playRoll(totalRoll);
+  };
 
-  // — Presets min/max
+  // — presets min/max
   const applyPreset = (preset) => {
     if (preset === "percent") {
       setMinValue(1); setMaxValue(100);
@@ -147,12 +159,14 @@ export default function DicePage() {
   };
 
   return (
-    <div className={`bg-gray-900 h-screen ${
+    <div
+      className={`bg-gray-900 h-screen ${
         isAdmin
           ? "grid grid-cols-[18rem_1fr_18rem]"
           : "flex flex-col justify-center"
-      } overflow-hidden`}>
-      {/* — Panneau gauche (Admin) */}
+      } overflow-hidden`}
+    >
+      {/* panneau Admin gauche */}
       {isAdmin && (
         <aside className="bg-gray-800 p-6 overflow-auto">
           <h2 className="text-2xl font-bold text-white mb-4">🎮 Joueurs</h2>
@@ -193,7 +207,10 @@ export default function DicePage() {
                     }`}
                     onClick={() => setSelectedAttr(a.key)}
                   >
-                    {a.label}: {selectedPlayerData?.[a.key] ?? "..."}
+                    {a.label}:{" "}
+                    {selectedPlayerData
+                      ? selectedPlayerData[a.key] ?? 0
+                      : "..."}
                   </button>
                 ))}
               </div>
@@ -202,10 +219,10 @@ export default function DicePage() {
         </aside>
       )}
 
-      {/* — Centre : zone de lancement */}
+      {/* zone centrale */}
       <main className="relative flex flex-col items-center justify-center px-4">
         <h1 className="text-5xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-blue-400 mb-8 z-10">
-          🎲 Lancer de Dé
+          Lancer de Dé
         </h1>
 
         <div className="mb-6 flex items-center space-x-6 text-lg text-gray-200 z-10">
@@ -214,14 +231,12 @@ export default function DicePage() {
           <span>Max: {maxValue}</span>
         </div>
 
-        {isAdmin && (
-          <button
-            onClick={handleRoll}
-            className="mb-8 px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg transition transform hover:-translate-y-1 z-10"
-          >
-            Lancer
-          </button>
-        )}
+        <button
+          onClick={handleRoll}
+          className="mb-8 px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg transition transform hover:-translate-y-1 z-10"
+        >
+          Lancer
+        </button>
 
         <div className="relative w-40 h-40 flex items-center justify-center z-10">
           <AnimatePresence>
@@ -246,7 +261,6 @@ export default function DicePage() {
           </AnimatePresence>
         </div>
 
-        {/* pluie de dés */}
         <div className="absolute inset-0 pointer-events-none">
           {rain.map(({ id, left, size, delay, emoji }) => (
             <motion.div
@@ -261,10 +275,10 @@ export default function DicePage() {
           ))}
         </div>
 
-        {/*<audio ref={audioRef} src="/dice-roll.mp3" preload="auto" />*/}
+        <audio ref={audioRef} src="/dice-roll.mp3" preload="auto" />
       </main>
 
-      {/* — Panneau droit (Admin) */}
+      {/* panneau Admin droite */}
       {isAdmin && (
         <aside className="bg-gray-800 p-6 overflow-auto">
           <h2 className="text-2xl font-bold text-white mb-4">⚙️ Contrôles</h2>
