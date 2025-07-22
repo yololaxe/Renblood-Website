@@ -397,18 +397,23 @@ export const getSessionActiveState = async () => {
 
 /////////////////////////// DICE ////////////////////////////
 
+// src/services/api.js
 export const rollDice = async (token, { min, max, mod }) => {
   try {
-    console.log("🔄 POST /api/jobs/dice/roll/", { min, max, mod });
+    console.log("→ rollDice called with", { min, max, mod });
     const { data } = await axiosInstance.post(
-      `/api/jobs/dice/roll/`,
-      { min, max, mod },
-      { headers: { Authorization: `Bearer ${token}` } }
+      `/stats/dice/roll/`,
+      { min, max, mod }
     );
+    console.log("← rollDice response:", data);
     return data.result;
-  } catch (error) {
-    console.error("❌ rollDice:", error.response?.data || error.message);
-    return null;
+  } catch (err) {
+    console.error("❌ rollDice error in service:", {
+      message: err.message,
+      status:  err.response?.status,
+      data:    err.response?.data,
+    });
+    throw err;
   }
 };
 
