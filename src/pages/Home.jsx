@@ -237,7 +237,7 @@ function Home() {
             >
                 <h2 className="text-3xl font-bold mb-6">📸 Aperçu du Serveur</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                    {["screen1.png", "screen2.png", "screen3.png", "screen4.png", "screen5.png"].map(
+                    {["screen1.png", "screen2.png", "screen3.png", "screen4.png", "screen5.png", "screen6.png", "screen7.png", "screen8.png", "screen9.png"].map(
                         (screen, index) => (
                             <motion.div
                                 key={index}
