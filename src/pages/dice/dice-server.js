@@ -1,5 +1,5 @@
+// server.js
 const { Server } = require("socket.io");
-
 const io = new Server(3000, {
   cors: { origin: "*" }
 });
@@ -8,13 +8,17 @@ io.on("connection", (socket) => {
   console.log("👤 Un utilisateur connecté");
 
   socket.on("rollDice", (data) => {
-    // Si l'admin envoie déjà une valeur, on la reprend ;
-    // sinon on génère un d20 classique
-    const result =
-      data && typeof data.value === "number"
-        ? data.value
-        : Math.floor(Math.random() * 20) + 1;
+    const min = typeof data.min === "number" ? data.min : 1;
+    const max = typeof data.max === "number" ? data.max : 20;
+    const mod = typeof data.mod === "number" ? data.mod : 0;
 
+    // générer le résultat
+    const result =
+      (typeof data.value === "number")
+        ? data.value
+        : Math.floor(Math.random() * (max - min + 1)) + min + mod;
+
+    // broadcast
     io.emit("diceResult", result);
   });
 

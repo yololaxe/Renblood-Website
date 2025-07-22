@@ -397,20 +397,21 @@ export const getSessionActiveState = async () => {
 
 /////////////////////////// DICE ////////////////////////////
 
-export const rollDice = async (token) => {
+export const rollDice = async (token, { min, max, mod }) => {
   try {
-    console.log(`🔄 POST /api/jobs/dice/roll/`);
+    console.log("🔄 POST /api/jobs/dice/roll/", { min, max, mod });
     const { data } = await axiosInstance.post(
       `/api/jobs/dice/roll/`,
-      {},
+      { min, max, mod },
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    return data;
+    return data.result;
   } catch (error) {
-    console.error("❌ rollDice :", error.response?.data || error.message);
+    console.error("❌ rollDice:", error.response?.data || error.message);
     return null;
   }
 };
+
 
 ////////////////////////// UPDATES /////////////////////////
 
