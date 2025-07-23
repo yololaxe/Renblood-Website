@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
+// src/pages/Map.jsx
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import comtes from "../data/comtes";
 import { motion, AnimatePresence } from "framer-motion";
 import "tailwindcss/tailwind.css";
@@ -13,10 +14,8 @@ function Map() {
   const imageWidth = 1154;
   const imageHeight = 1608;
 
-  // 1️⃣ Raccourci clavier “M”
   useEffect(() => {
     const onKeyDown = (e) => {
-      // touche "m" ou "M"
       if (e.key.toLowerCase() === "m") {
         setIsMinecraft((prev) => !prev);
       }
@@ -66,13 +65,17 @@ function Map() {
     ? "/map/carte-minecraft.png"
     : "/map/carte-renblood.png";
 
+  // légende des types de villes
+  const cityTypes = useMemo(() => {
+    const all = Object.values(comtes).flat().map((v) => v.type);
+    return Array.from(new Set(all));
+  }, []);
+
   return (
     <div className="relative flex items-center justify-center bg-gray-900 min-h-screen overflow-hidden">
-      {/* 2️⃣ Panneau fixe à droite qui “bob” */}
+      {/* Toggle “Mode Minecraft” */}
       <motion.div
-        className="fixed right-4 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 backdrop-blur-sm p-3 rounded-lg shadow-lg z-10"
-        animate={{ y: [-10, 10] }}
-        transition={{ duration: 2, repeat: Infinity, repeatType: "mirror" }}
+        className="fixed right-4 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-50 backdrop-blur-sm p-3 rounded-lg shadow-lg z-20"
       >
         <label className="flex items-center space-x-2 text-white">
           <input
@@ -81,9 +84,33 @@ function Map() {
             onChange={(e) => setIsMinecraft(e.target.checked)}
             className="w-5 h-5"
           />
-          <span>Mode Minecraft <kbd className="px-1 bg-gray-700 rounded">M</kbd></span>
+          <span>
+            Mode Minecraft <kbd className="px-1 bg-gray-700 rounded">M</kbd>
+          </span>
         </label>
       </motion.div>
+
+      {/* Légende agrandie, sans animation */}
+      <div className="fixed left-4 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-60 backdrop-blur-sm p-4 rounded-lg shadow-lg z-20 w-60">
+        <h3 className="text-white font-semibold text-lg mb-3 text-center">Légende</h3>
+        <ul className="space-y-3">
+          {cityTypes.map((type) => {
+            const iconSrc = `/kit/${type
+              .toLowerCase()
+              .replace(/ /g, "-")}.png`;
+            return (
+              <li key={type} className="flex items-center text-white text-base">
+                <img
+                  src={iconSrc}
+                  alt={type}
+                  className="w-8 h-8 mr-3 flex-shrink-0"
+                />
+                <span>{type}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
 
       <div className="map-container relative mx-auto w-full max-w-5xl px-4">
         <img
@@ -103,7 +130,9 @@ function Map() {
             if (!ville.Coords) return null;
             const x = (ville.Coords[0] / imageWidth) * mapSize.width;
             const y = (ville.Coords[1] / imageHeight) * mapSize.height;
-            const icon = `/kit/${ville.type.toLowerCase().replace(/ /g, "-")}.png`;
+            const icon = `/kit/${ville.type
+              .toLowerCase()
+              .replace(/ /g, "-")}.png`;
             return (
               <motion.div
                 key={idx}

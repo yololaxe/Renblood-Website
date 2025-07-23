@@ -79,9 +79,9 @@ export default function PlayerTraitAction({
         ));
       });
   };
-  const onDeleteAction = (id, label) => {
-    if (!window.confirm(`Supprimer l'action « ${label} » ?`)) return;
-    removeActionToPlayer(player.id, id)
+   const onDeleteAction = (id, label) => {
+   if (!window.confirm(`Supprimer l'action « ${label} » ?`)) return;
+   removeActionFromPlayer(player.id, id)
       .then(() => {
         const updated = actionsList.filter(a => (a.action_id ?? a.id) !== id);
         setActionsList(updated);

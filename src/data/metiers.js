@@ -36,7 +36,7 @@ export const categories = [
       {
         id: 'carpenter',
         name: 'Charpentier',
-        image: '/metiers/naval_architect.png',
+        image: '/metiers/carpenter.png',
         description:
           'Expert dans la construction de charpentes et de toits, fabrique tous les éléments en bois d’une construction.',
         difficulty: 'Facile',

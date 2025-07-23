@@ -1,5 +1,5 @@
 // src/pages/Character.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { listenToAuthChanges } from "../data/firebaseConfig";
 import {
@@ -37,6 +37,10 @@ import {
   FaGraduationCap,
 } from "react-icons/fa";
 
+// définitions de métiers en français
+import { categories, specials } from "../data/metiers";
+
+// pour les stats
 const CHARACTERISTICS = [
   { key: "life", icon: <FaHeart />, label: "Vie" },
   { key: "strength", icon: <FaFistRaised />, label: "Force" },
@@ -56,11 +60,46 @@ const CHARACTERISTICS = [
   { key: "skill", icon: <FaGraduationCap />, label: "Compétence" },
 ];
 
+// traduction camel_case → Title Case
 const formatTypeLabel = (raw) =>
   raw
     .split("_")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
+
+// niveaux témoins (xpThreshold → level)
+const LEVEL_THRESHOLDS = [
+  { thresh: 3000, level: 15 },
+  { thresh: 2000, level: 14 },
+  { thresh: 1600, level: 13 },
+  { thresh: 1250, level: 12 },
+  { thresh: 1000, level: 11 },
+  { thresh: 750, level: 10 },
+  { thresh: 600, level: 9 },
+  { thresh: 450, level: 8 },
+  { thresh: 350, level: 7 },
+  { thresh: 270, level: 6 },
+  { thresh: 200, level: 5 },
+  { thresh: 140, level: 4 },
+  { thresh: 90, level: 3 },
+  { thresh: 50, level: 2 },
+  { thresh: 20, level: 1 },
+  { thresh: 0, level: 0 },
+];
+
+// métiers exceptionnels (pas de max=10)
+const EXCEPTIONS = new Set([
+  "bestiaire",
+  "banquier",
+  "politique",
+  "builder",
+]);
+
+// trouve l’xp nécessaire pour atteindre `targetLevel`
+function xpForLevel(targetLevel) {
+  const entry = LEVEL_THRESHOLDS.find((e) => e.level === targetLevel);
+  return entry ? entry.thresh : null;
+}
 
 export default function Character() {
   const [loading, setLoading] = useState(true);
@@ -73,20 +112,31 @@ export default function Character() {
   const [toast, setToast] = useState({ status: null, message: "" });
   const navigate = useNavigate();
 
+  // map jobId → nom français
+  const jobNameMap = useMemo(() => {
+    const all = [
+      ...categories.flatMap((cat) => cat.jobs),
+      ...specials,
+    ];
+    return all.reduce((m, job) => {
+      m[job.id] = job.name;
+      return m;
+    }, {});
+  }, []);
+
+  // chargement du profil
   useEffect(() => {
     const unsub = listenToAuthChanges(async (user) => {
       if (!user) return navigate("/auth");
       setAuthUser(user);
       setUserId(user.uid);
 
-      // Discord
       const d = await getPlayerDiscord(user.uid);
       setDiscordInfo(d);
       if (d?.discord_id) {
         getOnlineDiscordMembers().then(setOnlineMembers);
       }
 
-      // Profil complet
       const cache = sessionStorage.getItem("mcFullProfile");
       if (cache) {
         setPlayer(JSON.parse(cache));
@@ -130,10 +180,10 @@ export default function Character() {
     try {
       await unlinkDiscord(userId);
       setDiscordInfo(null);
-      setToast({ status: "success", message: "Discord déliené !" });
+      setToast({ status: "success", message: "Discord délié !" });
       setTimeout(() => window.location.reload(), 1200);
     } catch {
-      setToast({ status: "error", message: "Échec du délienement." });
+      setToast({ status: "error", message: "Échec du déliement." });
     }
   };
 
@@ -143,8 +193,7 @@ export default function Character() {
         <div className="w-32 h-32 bg-gray-800 animate-pulse rounded-2xl" />
       </div>
     );
-  if (error)
-    return <p className="text-red-400 text-center mt-10">{error}</p>;
+  if (error) return <p className="text-red-400 text-center mt-10">{error}</p>;
 
   const {
     pseudo_minecraft,
@@ -171,54 +220,53 @@ export default function Character() {
           <p className="text-gray-400 italic">{description}</p>
         </header>
 
-        {/* Main Grid */}
+        {/* Grille Principale */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_3fr_1.2fr] gap-6 items-start">
-          {/* Discord Card */}
+          {/* Discord */}
           <aside className="bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col items-center">
             {discordInfo?.discord_id ? (
-                <>
-                  <img
-                      src={`https://cdn.discordapp.com/avatars/${discordInfo.discord_id}/${discordInfo.discord_avatar}.png`}
-                      alt="Avatar Discord"
-                      className="w-16 h-16 rounded-full mb-4"
-                  />
-                  <p className="flex items-center gap-2 text-white font-medium mb-4">
-                    <FaDiscord className="text-indigo-400"/>
-                    {discordInfo.discord_username}
-                  </p>
-                  <button
-                      onClick={handleUnlinkDiscord}
-                      className="mt-auto flex items-center gap-2 bg-red-600 hover:bg-red-500 px-4 py-2 rounded"
-                  >
-                    Délier Discord
-                  </button>
-                  <p className="mt-4 text-gray-300 text-sm">
-                    En ligne :{" "}
-                    {onlineMembers.length > 0
-                        ? onlineMembers.join(", ")
-                        : "Aucun membre"}
-                  </p>
-                </>
+              <>
+                <img
+                  src={`https://cdn.discordapp.com/avatars/${discordInfo.discord_id}/${discordInfo.discord_avatar}.png`}
+                  alt="Avatar Discord"
+                  className="w-16 h-16 rounded-full mb-4"
+                />
+                <p className="flex items-center gap-2 text-white font-medium mb-4">
+                  <FaDiscord className="text-indigo-400" />
+                  {discordInfo.discord_username}
+                </p>
+                <button
+                  onClick={handleUnlinkDiscord}
+                  className="mt-auto flex items-center gap-2 bg-red-600 hover:bg-red-500 px-4 py-2 rounded"
+                >
+                  Délier Discord
+                </button>
+                <p className="mt-4 text-gray-300 text-sm">
+                  En ligne :{" "}
+                  {onlineMembers.length > 0
+                    ? onlineMembers.join(", ")
+                    : "Aucun membre"}
+                </p>
+              </>
             ) : (
-                <>
-                  <FaDiscord className="text-4xl text-indigo-400 mb-2"/>
-                  <p className="text-white font-semibold mb-4">Discord</p>
-                  <p className="text-gray-400 mb-6">Aucun compte lié</p>
-                  <button
-                      onClick={handleLinkDiscord}
-                      className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded"
-                  >
-                    Lier à Discord
-                  </button>
-                </>
+              <>
+                <FaDiscord className="text-4xl text-indigo-400 mb-2" />
+                <p className="text-white font-semibold mb-4">Discord</p>
+                <p className="text-gray-400 mb-6">Aucun compte lié</p>
+                <button
+                  onClick={handleLinkDiscord}
+                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded"
+                >
+                  Lier à Discord
+                </button>
+              </>
             )}
           </aside>
 
-          {/* Profile & Stats */}
+          {/* Profil & Stats */}
           <main className="space-y-8">
-            {/* Identity & Resources */}
-            <div
-                className="bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            {/* Identité & Ressources */}
+            <div className="bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col md:flex-row md:justify-between md:items-center gap-4">
               <div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
                   👤 {name} {surname}
@@ -227,7 +275,7 @@ export default function Character() {
               </div>
               <div className="flex flex-wrap gap-6 text-white text-lg">
                 <div className="flex items-center gap-2">
-                  <MoneyDisplay value={money}/>
+                  <MoneyDisplay value={money} />
                 </div>
                 <div className="flex items-center gap-2">
                   🔮 <span>{divin}</span>
@@ -235,95 +283,117 @@ export default function Character() {
               </div>
             </div>
 
-            {/* Stats Grid */}
+            {/* Statistiques */}
             <section className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-xl sm:text-2xl font-semibold text-white">
                   📊 Statistiques
                 </h3>
                 <button
-                    onClick={handleReloadStats}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded"
+                  onClick={handleReloadStats}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded"
                 >
-                  <FaSync className="animate-spin duration-500"/>
+                  <FaSync className="animate-spin duration-500" />
                   Recharger
                 </button>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {CHARACTERISTICS.map(({key, icon, label}) => {
+                {CHARACTERISTICS.map(({ key, icon, label }) => {
                   const base = player[key] || 0;
                   const bonuses = Array.isArray(real_charact[key])
-                      ? real_charact[key]
-                      : real_charact[key]
-                          ? [real_charact[key]]
-                          : [];
+                    ? real_charact[key]
+                    : real_charact[key]
+                    ? [real_charact[key]]
+                    : [];
                   const totalBonus = bonuses.reduce((s, b) => s + b.count, 0);
                   const total = base + totalBonus;
+
+                  const getBonusLabel = (b) => {
+                    if (b.type.startsWith("talent_tree_")) {
+                      return formatTypeLabel(b.type.replace("talent_tree_", ""));
+                    }
+                    if (b.type.startsWith("trait_")) {
+                      const id = Number(b.type.split("_")[1]);
+                      const t = traits.find((t) => t.id === id);
+                      return t?.Name || "Trait";
+                    }
+                    return b.type;
+                  };
+
+                  const tooltipText =
+                    `Base : ${base}` +
+                    bonuses
+                      .map((b) => `, +${b.count} (${getBonusLabel(b)})`)
+                      .join("");
+
                   return (
-                      <div
-                          key={key}
-                          className="bg-gray-700 p-4 rounded-xl text-center hover:bg-gray-600 transition"
-                      >
-                        <div className="text-2xl flex justify-center">
-                          {icon}
-                        </div>
-                        <p className="mt-2 text-white font-semibold">{label}</p>
-                        <p className="mt-1 flex justify-center items-center text-white text-lg gap-1">
-                          {total}
-                          {bonuses.length > 0 && (
-                              <ToolTip
-                                  text={
-                                      `Base: ${base}` +
-                                      bonuses
-                                          .map((b) => {
-                                            const raw = b.type.replace(
-                                                /^talent_tree_/,
-                                                ""
-                                            );
-                                            return `, +${b.count} (${formatTypeLabel(
-                                                raw
-                                            )})`;
-                                          })
-                                          .join("")
-                                  }
-                              >
+                    <div
+                      key={key}
+                      className="bg-gray-700 p-4 rounded-xl text-center hover:bg-gray-600 transition"
+                    >
+                      <div className="text-2xl flex justify-center">{icon}</div>
+                      <p className="mt-2 text-white font-semibold">{label}</p>
+                      <p className="mt-1 flex justify-center items-center text-white text-lg gap-1">
+                        {total}
+                        {bonuses.length > 0 && (
+                          <ToolTip text={tooltipText}>
                             <span className="text-sm text-green-300">
                               +{totalBonus}
                             </span>
-                              </ToolTip>
-                          )}
-                        </p>
-                      </div>
+                          </ToolTip>
+                        )}
+                      </p>
+                    </div>
                   );
                 })}
               </div>
             </section>
 
-            {/* Expériences */}
+            {/* Expériences métiers */}
             <section className="space-y-4">
               <h3 className="text-xl sm:text-2xl font-semibold text-white text-center">
                 📜 Expériences
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {Object.entries(experiences.jobs || {}).map(
-                    ([jobKey, job]) => (
-                        <div
-                            key={jobKey}
-                            className="bg-gray-700 p-4 rounded-xl hover:bg-gray-600 transition"
-                        >
-                          <p className="font-bold text-white">
-                            {jobKey
-                                .replace(/_/g, " ")
-                                .replace(/\b\w/g, (c) => c.toUpperCase())}
-                          </p>
+                  ([jobKey, job]) => {
+                    const label = jobNameMap[jobKey] || jobKey;
+                    const xp = job.xp;
+                    const lvl = job.level;
+                    let tip = "";
+
+                    if (xp === -1) {
+                      tip = "Métier non débloqué";
+                    } else {
+                      // défaut : max 10 pour les non-exceptions
+                      const isException = EXCEPTIONS.has(jobKey);
+                      const maxLevel = isException ? Infinity : 10;
+
+                      if (lvl >= maxLevel) {
+                        tip = "Métier complété à 100%";
+                      } else {
+                        const next = xpForLevel(lvl + 1);
+                        if (next != null) {
+                          const missing = next - xp;
+                          tip = `${missing} XP avant le niveau ${lvl + 1}`;
+                        }
+                      }
+                    }
+
+                    return (
+                      <ToolTip key={jobKey} text={tip}>
+                        <div className="bg-gray-700 p-4 rounded-xl hover:bg-gray-600 transition cursor-pointer">
+                          <p className="font-bold text-white">{label}</p>
                           <p className="text-gray-300 mt-1">
-                            Niveau : {job.level}
+                            Niveau : {lvl}
                           </p>
                           <p className="text-gray-300">
-                            XP : {job.xp === -1 ? "🔒" : job.xp}
+                            XP : {xp === -1 ? "🔒" : xp}
                           </p>
                         </div>
-                    )
+                      </ToolTip>
+                    );
+                  }
                 )}
               </div>
             </section>
@@ -335,18 +405,18 @@ export default function Character() {
               </h3>
               <div className="flex flex-wrap gap-3 justify-center">
                 {traits.map((t) => (
-                    <span
-                        key={t.id}
-                        className="bg-green-500 px-3 py-1 rounded-full text-white hover:bg-green-600 transition"
-                    >
+                  <span
+                    key={t.id}
+                    className="bg-green-500 px-3 py-1 rounded-full text-white hover:bg-green-600 transition"
+                  >
                     {t.Name}
                   </span>
                 ))}
                 {actions.map((a) => (
-                    <span
-                        key={a.id}
-                        className="bg-blue-500 px-3 py-1 rounded-full text-white hover:bg-blue-600 transition"
-                    >
+                  <span
+                    key={a.id}
+                    className="bg-blue-500 px-3 py-1 rounded-full text-white hover:bg-blue-600 transition"
+                  >
                     {a.Name}
                   </span>
                 ))}
@@ -354,70 +424,70 @@ export default function Character() {
             </section>
           </main>
 
-          {/* Firebase Profile Card */}
+          {/* Profil Firebase */}
           {authUser && (
-              <aside className="bg-gray-800 rounded-2xl shadow-lg p-6">
-                <div className="flex items-center gap-4 mb-4">
-                  {authUser.photoURL ? (
-                      <img
-                          src={authUser.photoURL}
-                          alt="Avatar"
-                          className="w-16 h-16 rounded-full border-2 border-gray-600"
-                      />
-                  ) : (
-                      <FaUserCircle className="w-16 h-16 text-gray-400"/>
-                  )}
-                  <div>
-                    <h3 className="text-xl font-semibold text-white">
-                      {authUser.displayName || "Utilisateur"}
-                    </h3>
-                    <p className="text-gray-400 text-sm break-all">
-                      {authUser.email}
-                    </p>
-                  </div>
+            <aside className="bg-gray-800 rounded-2xl shadow-lg p-6">
+              <div className="flex items-center gap-4 mb-4">
+                {authUser.photoURL ? (
+                  <img
+                    src={authUser.photoURL}
+                    alt="Avatar"
+                    className="w-16 h-16 rounded-full border-2 border-gray-600"
+                  />
+                ) : (
+                  <FaUserCircle className="w-16 h-16 text-gray-400" />
+                )}
+                <div>
+                  <h3 className="text-xl font-semibold text-white">
+                    {authUser.displayName || "Utilisateur"}
+                  </h3>
+                  <p className="text-gray-400 text-sm break-all">
+                    {authUser.email}
+                  </p>
                 </div>
-                <dl className="space-y-2 text-gray-200 text-sm">
+              </div>
+              <dl className="space-y-2 text-gray-200 text-sm">
+                <div className="flex justify-between">
+                  <dt>UID :</dt>
+                  <dd className="break-all">{authUser.uid}</dd>
+                </div>
+                {authUser.phoneNumber && (
                   <div className="flex justify-between">
-                    <dt>UID :</dt>
-                    <dd className="break-all">{authUser.uid}</dd>
+                    <dt>Téléphone :</dt>
+                    <dd>{authUser.phoneNumber}</dd>
                   </div>
-                  {authUser.phoneNumber && (
-                      <div className="flex justify-between">
-                        <dt>Téléphone :</dt>
-                        <dd>{authUser.phoneNumber}</dd>
-                      </div>
-                  )}
-                  <div className="flex justify-between">
-                    <dt>Créé le :</dt>
-                    <dd>
-                      {new Date(
-                          authUser.metadata.creationTime
-                      ).toLocaleDateString("fr-FR", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt>Dernière connexion :</dt>
-                    <dd>
-                      {new Date(
-                          authUser.metadata.lastSignInTime
-                      ).toLocaleDateString("fr-FR", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </dd>
-                  </div>
-                </dl>
-              </aside>
+                )}
+                <div className="flex justify-between">
+                  <dt>Créé le :</dt>
+                  <dd>
+                    {new Date(
+                      authUser.metadata.creationTime
+                    ).toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt>Dernière connexion :</dt>
+                  <dd>
+                    {new Date(
+                      authUser.metadata.lastSignInTime
+                    ).toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </dd>
+                </div>
+              </dl>
+            </aside>
           )}
         </div>
       </div>
 
-      <Toast status={toast.status} message={toast.message}/>
+      <Toast status={toast.status} message={toast.message} />
     </div>
   );
 }
