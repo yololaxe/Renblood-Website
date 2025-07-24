@@ -592,6 +592,52 @@ export const getSessionById = async (sessionId) => {
   return data;
 };
 
+/**
+ * Récupère tous les snapshots de money
+ * GET /api/session-money/
+ */
+export const getAllSessionMoney = async () => {
+  try {
+    const { data } = await axiosInstance.get("/sessions/money/");
+    return data;
+  } catch (err) {
+    console.error("getAllSessionMoney error:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+/**
+ * Récupère l’évolution de money pour une session donnée
+ * GET /api/session-money/?session__id={sessionId}
+ */
+export const getSessionMoneyBySession = async (sessionId) => {
+  try {
+    const { data } = await axiosInstance.get(`/sessions/money/`, {
+      params: { "session__id": sessionId },
+    });
+    return data;
+  } catch (err) {
+    console.error("getSessionMoneyBySession error:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+/**
+ * Récupère l’évolution de money pour un joueur donné
+ * GET /api/session-money/?player__id={playerId}
+ */
+export const getSessionMoneyByPlayer = async (playerId) => {
+  try {
+    const { data } = await axiosInstance.get(`/sessions/money/`, {
+      params: { "player__id": playerId },
+    });
+    return data;
+  } catch (err) {
+    console.error("getSessionMoneyByPlayer error:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
 
 /////////////////////////FUTURE/////////////////////////////
 export const getMyFuture = async (sessionId, playerId) => {

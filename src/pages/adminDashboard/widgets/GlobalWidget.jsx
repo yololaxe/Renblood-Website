@@ -5,7 +5,7 @@ import {
   updateGlobalFields,
   advanceToNextSeason,
   retreatToPreviousSeason,
-} from "../../services/api";
+} from "../../../services/api.js";
 import { FaChevronLeft, FaChevronRight, FaCircle } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 

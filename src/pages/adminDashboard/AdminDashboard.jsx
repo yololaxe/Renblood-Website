@@ -2,9 +2,9 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
-import GlobalWidget from "./GlobalWidget";
-import SessionManagerWidget from "./SessionManagerWidget";
-
+import GlobalWidget from "./widgets/GlobalWidget.jsx";
+import SessionManagerWidget from "./widgets/SessionManagerWidget.jsx";
+import ReportingWidget from "./widgets/ReportingWidget.jsx";
 export default function AdminDashboard() {
   const { userRank } = useUser();
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ export default function AdminDashboard() {
     // { id: "stats",     title: "📊 Statistiques"   },
     { id: "sessions",  title: "🕹️ Sessions"      },  // ← Nouveau bloc
     { id: "globals",   title: "🌐 Globals"        },
-    { id: "logs",      title: "📜 Logs"           },
+    { id: "reporting", title: "📊 Reporting"      },  // ← Nouveau bloc
     { id: "settings",  title: "⚙️ Paramètres"      },
   ];
 
@@ -49,6 +49,8 @@ export default function AdminDashboard() {
                 <GlobalWidget />
               ) : block.id === "sessions" ? (
                 <SessionManagerWidget />
+              ) : block.id === "reporting" ? (
+               <ReportingWidget />
               ) : (
                 <div
                   className="h-full border-2 border-dashed border-gray-700

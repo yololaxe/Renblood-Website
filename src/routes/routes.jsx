@@ -30,6 +30,7 @@ import AdminDashboard from "../pages/adminDashboard/AdminDashboard.jsx";
 import CreateFuturePage from "../pages/player/CreateFuture.jsx";
 import EditFuturePage from "../pages/player/EditFuturePage.jsx";
 import SessionPlayersFuturesPage from "../pages/adminDashboard/SessionPlayers.jsx";
+import MoneyReport from "../pages/adminDashboard/reporting/MoneyReport.jsx";
 
 const routes = [
   { path: "/", element: <Home /> },
@@ -43,6 +44,8 @@ const routes = [
 
   { path: "/player-jobs/:playerId", element: <PlayerJobs />, private: true, requiredRole: "Admin" },
   { path: "/create-player", element: <CreatePlayer />, private: true, requiredRole: "Admin" },
+  { path: "/reporting/money", element: <MoneyReport />,   private: true, requiredRole: "Admin" },
+
   { path: "/map", element: <Map />},
 
   { path: "/character", element: <Character />},

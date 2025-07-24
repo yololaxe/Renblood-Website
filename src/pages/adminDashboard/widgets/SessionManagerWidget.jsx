@@ -13,9 +13,9 @@ import {
   removePlayerFromSession,
   updateSessionDate,
   getPlayers,
-} from "../../services/api";
+} from "../../../services/api.js";
 import { useNavigate } from "react-router-dom";
-import Tooltip from "../../components/tooltip";
+import Tooltip from "../../../components/Tooltip.jsx";
 
 registerLocale("fr", fr);
 
