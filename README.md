@@ -45,4 +45,7 @@ npm run dev
 To deploy : 
 
 npm run build
-firebase deploy
+
+Staging → npm run deploy:staging → https://renblood-staging.web.app
+
+Prod → npm run deploy:prod → https://renblood-website.web.app

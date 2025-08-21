@@ -230,13 +230,14 @@ export default function DicePage() {
           <span>Min: {minValue}</span>
           <span>Max: {maxValue}</span>
         </div>
-
-        <button
-          onClick={handleRoll}
-          className="mb-8 px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg transition transform hover:-translate-y-1 z-10"
-        >
-          Lancer
-        </button>
+        {isAdmin && (
+                <button
+                  onClick={handleRoll}
+                  className="mb-8 px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg transition transform hover:-translate-y-1 z-10"
+                >
+                  Lancer
+                </button>
+        )}
 
         <div className="relative w-40 h-40 flex items-center justify-center z-10">
           <AnimatePresence>

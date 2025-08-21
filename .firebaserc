@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "renblood-website"
-  }
+  },
+  "targets": {
+    "renblood-website": {
+      "hosting": {
+        "prod": [
+          "renblood-website"
+        ],
+        "staging": [
+          "renblood-staging"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

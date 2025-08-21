@@ -1,7 +1,7 @@
 // src/services/axiosInstance.js
 import axios from "axios";
 
-// 🔐 API Key stockée dans .env (ex: VITE_API_KEY=ma-cle-secrete)
+// 🔐 API Key stockée dans .env.development (ex: VITE_API_KEY=ma-cle-secrete)
 const apiKey = import.meta.env.VITE_API_KEY;
 
 // 🌍 Base URL de l’API (ex: VITE_API_URL=http://127.0.0.1:8000)

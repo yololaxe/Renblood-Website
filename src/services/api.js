@@ -215,6 +215,7 @@ export const createDefaultPlayer = async (firebaseUser) => {
 
     // Expériences et caractéristiques réelles
     experiences,
+    patreon: 0,
     real_charact: {}
   };
 
