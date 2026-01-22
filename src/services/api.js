@@ -760,3 +760,23 @@ export const getOnlineDiscordMembers = async () => {
     return [];
   }
 };
+
+////////////////////////// LICENCES /////////////////////////
+
+/**
+ * Gère les licences d'un joueur via son ID Minecraft.
+ * @param {string} mcId - L'ID Minecraft du joueur.
+ * @param {Object} payload - Le corps de la requête (action, name, owner_name, etc.).
+ * @returns {Promise<Object>} - La réponse du serveur.
+ */
+export const managePlayerLicences = async (mcId, payload) => {
+  try {
+    console.log(`🔄 POST /players/licences/${mcId}/`, payload);
+    const { data } = await axiosInstance.post(`/players/licences/${mcId}/`, payload);
+    console.log("✅ managePlayerLicences :", data);
+    return data;
+  } catch (error) {
+    console.error("❌ managePlayerLicences :", error.response?.data || error.message);
+    throw error;
+  }
+};

@@ -205,16 +205,16 @@ function Home() {
       </motion.section>
 
       {/* 🧩 Pub (réutilisable) — visible si invité (null) ou tier 0 */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <AdBox
-            patreon={adPatreonProp}      // undefined | null | 0..3
-            slot="home-bottom-right"     // label pour la persistance & debug
-            // adSlot / adClient → valeurs par défaut déjà mises
-            size="sm"                    // "sm"=250×200 | "md"=300×250
-            hideWhenAdFree={true}        // masque pour tiers ≥ 1 (prod)
-            test={true}                  // en dev
-        />
-      </div>
+      {/*<div className="fixed bottom-6 right-6 z-50">*/}
+      {/*  <AdBox*/}
+      {/*      patreon={adPatreonProp}      // undefined | null | 0..3*/}
+      {/*      slot="home-bottom-right"     // label pour la persistance & debug*/}
+      {/*      // adSlot / adClient → valeurs par défaut déjà mises*/}
+      {/*      size="sm"                    // "sm"=250×200 | "md"=300×250*/}
+      {/*      hideWhenAdFree={true}        // masque pour tiers ≥ 1 (prod)*/}
+      {/*      test={true}                  // en dev*/}
+      {/*  />*/}
+      {/*</div>*/}
 
 
       {/* 🌆 Grandes Villes */}

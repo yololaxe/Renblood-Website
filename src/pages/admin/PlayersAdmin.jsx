@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "../../context/UserContext";
 import PlayerEdit from "./PlayerEdit";
 import PlayerTraitAction from "./PlayerTraitAction";
+import PlayerLicenceManager from "./PlayerLicenceManager"; // Import du nouveau composant
 import Toast from "../../components/Toast";
 import {
   handleAddTrait,
@@ -10,12 +11,15 @@ import {
   handleRemoveAction,
 } from "./PlayerActions";
 import { getPlayers } from "../../services/api";
+import { FaFileContract } from "react-icons/fa"; // Import de l'icône
 
 function PlayersAdmin() {
   const { userRank } = useUser();
   const [players, setPlayers] = useState([]);
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
   const [updateTrigger, setUpdateTrigger] = useState(0);
+  const [showLicenceManager, setShowLicenceManager] = useState(false); // État pour la modale de licence
+  const [playerForLicence, setPlayerForLicence] = useState(null); // Joueur pour la gestion des licences
 
   // État de la notification
   const [toast, setToast] = useState({ status: null, message: "" });
@@ -39,6 +43,16 @@ function PlayersAdmin() {
   const showToast = (status, message) => {
     setToast({ status, message });
     setTimeout(() => setToast({ status: null, message: "" }), 3000);
+  };
+
+  const handleOpenLicenceManager = (player) => {
+    setPlayerForLicence(player);
+    setShowLicenceManager(true);
+  };
+
+  const handleCloseLicenceManager = () => {
+    setShowLicenceManager(false);
+    setPlayerForLicence(null);
   };
 
   return (
@@ -87,7 +101,14 @@ function PlayersAdmin() {
                       handleAddAction={handleAddAction}
                       handleRemoveAction={handleRemoveAction}
                     />
-                    <div className="flex justify-end mt-6">
+                    {/* Nouveau bouton pour gérer les licences */}
+                    <div className="mt-6 flex justify-end">
+                      <button
+                        onClick={() => handleOpenLicenceManager(player)}
+                        className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg font-semibold mr-4"
+                      >
+                        <FaFileContract /> Gérer les licences
+                      </button>
                       <button
                         onClick={handleCancel}
                         className="px-6 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg"
@@ -102,6 +123,16 @@ function PlayersAdmin() {
           })}
         </div>
       </div>
+
+      {/* Modale de gestion des licences */}
+      {showLicenceManager && playerForLicence && (
+        <PlayerLicenceManager
+          playerId={playerForLicence.id} // Firebase UID
+          mcId={playerForLicence.id_minecraft} // Minecraft ID
+          onClose={handleCloseLicenceManager}
+          showToast={showToast}
+        />
+      )}
 
       {/* Toast */}
       <Toast status={toast.status} message={toast.message} />

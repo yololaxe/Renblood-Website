@@ -9,6 +9,7 @@ import {
   getDiscordLink,
   unlinkDiscord,
   getOnlineDiscordMembers,
+  managePlayerLicences,
 } from "../services/api";
 import { MoneyDisplay } from "../components/MoneyDisplay";
 import ToolTip from "../components/Tooltip";
@@ -35,6 +36,8 @@ import {
   FaHandshake,
   FaCrown,
   FaGraduationCap,
+  FaFileContract,
+  FaTimes,
 } from "react-icons/fa";
 
 // définitions de métiers en français
@@ -109,6 +112,8 @@ export default function Character() {
   const [userId, setUserId] = useState(null);
   const [discordInfo, setDiscordInfo] = useState(null);
   const [onlineMembers, setOnlineMembers] = useState([]);
+  const [licences, setLicences] = useState([]);
+  const [selectedLicence, setSelectedLicence] = useState(null);
   const [toast, setToast] = useState({ status: null, message: "" });
   const navigate = useNavigate();
 
@@ -123,6 +128,13 @@ export default function Character() {
       return m;
     }, {});
   }, []);
+
+  // Helper pour extraire le tableau de licences
+  const extractLicences = (data) => {
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.licences)) return data.licences;
+    return [];
+  };
 
   // chargement du profil
   useEffect(() => {
@@ -139,7 +151,18 @@ export default function Character() {
 
       const cache = sessionStorage.getItem("mcFullProfile");
       if (cache) {
-        setPlayer(JSON.parse(cache));
+        const p = JSON.parse(cache);
+        setPlayer(p);
+        // Charger les licences si on a l'ID Minecraft
+        if (p.id_minecraft) {
+          try {
+            const lics = await managePlayerLicences(p.id_minecraft, { action: "list" });
+            setLicences(extractLicences(lics));
+          } catch (err) {
+            console.error("Erreur chargement licences:", err);
+            setLicences([]);
+          }
+        }
         setLoading(false);
         return;
       }
@@ -147,6 +170,11 @@ export default function Character() {
         const data = await getPlayerFullProfile(user.uid);
         sessionStorage.setItem("mcFullProfile", JSON.stringify(data));
         setPlayer(data);
+        // Charger les licences
+        if (data.id_minecraft) {
+          const lics = await managePlayerLicences(data.id_minecraft, { action: "list" });
+          setLicences(extractLicences(lics));
+        }
       } catch {
         setError("Impossible de charger les données.");
       } finally {
@@ -164,6 +192,11 @@ export default function Character() {
       const full = await getPlayerFullProfile(userId);
       sessionStorage.setItem("mcFullProfile", JSON.stringify(full));
       setPlayer(full);
+      // Recharger les licences
+      if (full.id_minecraft) {
+        const lics = await managePlayerLicences(full.id_minecraft, { action: "list" });
+        setLicences(extractLicences(lics));
+      }
     } catch {
       setError("Erreur lors du rafraîchissement.");
     } finally {
@@ -422,6 +455,29 @@ export default function Character() {
                 ))}
               </div>
             </section>
+
+            {/* Licences */}
+            <section className="space-y-4">
+              <h3 className="text-xl sm:text-2xl font-semibold text-white text-center flex items-center justify-center gap-2">
+                <FaFileContract /> Licences
+              </h3>
+              {(!licences || licences.length === 0) ? (
+                <p className="text-gray-400 text-center italic">Aucune licence active.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {licences.map((lic) => (
+                    <div
+                      key={lic.id}
+                      onClick={() => setSelectedLicence(lic)}
+                      className="bg-gray-700 p-4 rounded-xl shadow-md border border-gray-600 cursor-pointer hover:bg-gray-600 transition flex flex-col items-center justify-center min-h-[6rem] h-full"
+                    >
+                      <FaFileContract className="text-2xl text-blue-400 mb-2 flex-shrink-0" />
+                      <h4 className="text-lg font-bold text-white text-center break-words w-full">{lic.name}</h4>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </main>
 
           {/* Profil Firebase */}
@@ -486,6 +542,53 @@ export default function Character() {
           )}
         </div>
       </div>
+
+      {/* Modal Licence */}
+      {selectedLicence && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setSelectedLicence(null)}
+        >
+          <div
+            className="bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-md w-full border border-gray-600 relative animate-fadeIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedLicence(null)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-white transition"
+            >
+              <FaTimes size={20} />
+            </button>
+            <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 border-b border-gray-700 pb-4">
+              <FaFileContract className="text-blue-400" />
+              {selectedLicence.name}
+            </h3>
+            <div className="space-y-4 text-gray-200">
+              <div className="flex justify-between border-b border-gray-700 pb-2">
+                <span className="font-semibold text-gray-400">Propriétaire</span>
+                <span>{selectedLicence.owner_name}</span>
+              </div>
+              <div className="flex justify-between border-b border-gray-700 pb-2">
+                <span className="font-semibold text-gray-400">Exploitant</span>
+                <span>{selectedLicence.exploitant_name}</span>
+              </div>
+              <div className="flex justify-between border-b border-gray-700 pb-2">
+                <span className="font-semibold text-gray-400">Prix</span>
+                <MoneyDisplay value={selectedLicence.price} />
+              </div>
+              <div className="flex justify-between border-b border-gray-700 pb-2">
+                <span className="font-semibold text-gray-400">Validité</span>
+                <span className="text-sm">{selectedLicence.start_date} - {selectedLicence.end_date}</span>
+              </div>
+              {selectedLicence.details && (
+                <div className="mt-4 p-4 bg-gray-700/50 rounded-lg border border-gray-600/50">
+                  <p className="text-sm italic text-gray-300">{selectedLicence.details}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <Toast status={toast.status} message={toast.message} />
     </div>
