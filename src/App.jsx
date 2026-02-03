@@ -7,6 +7,7 @@ import PublicRoutes from "./routes/PublicRoutes";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import PageTransition from "./components/PageTransition";
+import BackButton from "./components/BackButton"; // Import du bouton retour
 import "./index.css";
 
 // 👇 NEW
@@ -50,6 +51,10 @@ const App = () => {
       <AdProvider />
 
       <Navbar />
+      
+      {/* Bouton retour global */}
+      <BackButton />
+
       <div className="flex-grow">
         <AnimatedRoutes />
       </div>
