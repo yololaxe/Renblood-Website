@@ -7,9 +7,12 @@ import {
   updateTalentProgression,
   updateJobLevel,
   getAllNodes,
-    addBonus
+  addBonus
 } from "../../services/api.js";
 import Tooltip from "../../components/Tooltip.jsx";
+
+// Liste des métiers "globaux" qui ont 15 points max
+const GLOBAL_JOBS = ["bestiary", "banker", "politician", "builder"];
 
 export default function TalentTree() {
   const { profession } = useParams();
@@ -57,9 +60,17 @@ export default function TalentTree() {
 
       // 5️⃣ Initialise l'état local des débloqués
       const prog = playerJob.progression; // array de bools
+      
+      // Calcul du niveau effectif pour les points disponibles
+      // Si métier non global, max 10 points
+      const isGlobal = GLOBAL_JOBS.includes(profession);
+      const maxPoints = isGlobal ? 15 : 10;
+      const effectiveLevel = Math.min(playerJob.level, maxPoints);
+      
       setAvailablePoints(
-        Math.max(0, playerJob.level - prog.filter(Boolean).length)
+        Math.max(0, effectiveLevel - prog.filter(Boolean).length)
       );
+
       setUnlockedTalents({
         choice_1: prog.slice(0, 3),
         choice_2: prog.slice(3, 6),

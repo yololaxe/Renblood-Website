@@ -99,7 +99,7 @@ const EXCEPTIONS = new Set([
 ]);
 
 // trouve l’xp nécessaire pour atteindre `targetLevel`
-function xpForLevel(targetLevel) {
+function xpForLevel(targetLevel, jobKey) {
   const entry = LEVEL_THRESHOLDS.find((e) => e.level === targetLevel);
   return entry ? entry.thresh : null;
 }
@@ -405,7 +405,7 @@ export default function Character() {
                       if (lvl >= maxLevel) {
                         tip = "Métier complété à 100%";
                       } else {
-                        const next = xpForLevel(lvl + 1);
+                        const next = xpForLevel(lvl + 1, jobKey);
                         if (next != null) {
                           const missing = next - xp;
                           tip = `${missing} XP avant le niveau ${lvl + 1}`;
