@@ -5,6 +5,8 @@ import { useUser } from "../../context/UserContext";
 import GlobalWidget from "./widgets/GlobalWidget.jsx";
 import SessionManagerWidget from "./widgets/SessionManagerWidget.jsx";
 import ReportingWidget from "./widgets/ReportingWidget.jsx";
+import QuestsWidget from "./widgets/QuestsWidget.jsx";
+
 export default function AdminDashboard() {
   const { userRank } = useUser();
   const navigate = useNavigate();
@@ -20,9 +22,10 @@ export default function AdminDashboard() {
     // { id: "users",     title: "👥 Utilisateurs"   },
     // { id: "jobs",      title: "⚒️ Métiers"        },
     // { id: "stats",     title: "📊 Statistiques"   },
-    { id: "sessions",  title: "🕹️ Sessions"      },  // ← Nouveau bloc
+    { id: "sessions",  title: "🕹️ Sessions"      },
     { id: "globals",   title: "🌐 Globals"        },
-    { id: "reporting", title: "📊 Reporting"      },  // ← Nouveau bloc
+    { id: "reporting", title: "📊 Reporting"      },
+    { id: "quests",    title: "📜 Quêtes"         }, // ← Nouveau bloc
     { id: "settings",  title: "⚙️ Paramètres"      },
   ];
 
@@ -51,6 +54,8 @@ export default function AdminDashboard() {
                 <SessionManagerWidget />
               ) : block.id === "reporting" ? (
                <ReportingWidget />
+              ) : block.id === "quests" ? (
+               <QuestsWidget />
               ) : (
                 <div
                   className="h-full border-2 border-dashed border-gray-700

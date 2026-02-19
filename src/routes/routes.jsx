@@ -11,6 +11,7 @@ import TalentSelection from "../pages/player/TalentSelection.jsx";
 import TalentTree from "../pages/player/TalentTree.jsx";
 import TalentTree2 from "../pages/player/TalentTree2.jsx";
 import SessionsPage from "../pages/player/sessions.jsx";
+import Quests from "../pages/Quests.jsx";
 
 import Information from "../pages/Information.jsx";
 import Character from "../pages/Character.jsx";
@@ -31,6 +32,7 @@ import CreateFuturePage from "../pages/player/CreateFuture.jsx";
 import EditFuturePage from "../pages/player/EditFuturePage.jsx";
 import SessionPlayersFuturesPage from "../pages/adminDashboard/SessionPlayers.jsx";
 import MoneyReport from "../pages/adminDashboard/reporting/MoneyReport.jsx";
+import QuestEditor from "../pages/adminDashboard/QuestEditor.jsx";
 
 const routes = [
   { path: "/", element: <Home /> },
@@ -53,6 +55,7 @@ const routes = [
   { path: "/talents/:profession", element: <TalentTree />, private: true, requiredRole: "Esclave"},
   { path: "/talent2/:profession", element: <TalentTree2 />, private: true, requiredRole: "Esclave"},
   { path: "/sessions", element: <SessionsPage />, private: true, requiredRole: "Esclave"},
+  { path: "/quests", element: <Quests />, private: true, requiredRole: "Etranger"},
 
   { path: "/futures/create", element: <CreateFuturePage />, private: true, requiredRole: "Esclave"},
   { path: "/futures/create", element: <CreateFuturePage />, private: true, requiredRole: "Esclave"},
@@ -71,6 +74,7 @@ const routes = [
 
   { path: "/admin-dashboard", element: <AdminDashboard />, private: true, requiredRole: "Admin" },
   { path: "/admin/sessions/:sessionId/players-futures", element: <SessionPlayersFuturesPage  />, private: true, requiredRole: "Admin" },
+  { path: "/admin/quests", element: <QuestEditor />, private: true, requiredRole: "Admin" },
 
   { path: "/dice", element: <DicePage />},
 ];

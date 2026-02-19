@@ -780,3 +780,96 @@ export const managePlayerLicences = async (mcId, payload) => {
     throw error;
   }
 };
+
+////////////////////////// QUESTS /////////////////////////
+
+export const getQuestsList = async () => {
+  try {
+    console.log(`🔄 GET /quests/list/`);
+    const { data } = await axiosInstance.get(`/quests/list/`);
+    return data;
+  } catch (error) {
+    console.error("❌ getQuestsList :", error.response?.data || error.message);
+    return [];
+  }
+};
+
+export const createQuest = async (questData) => {
+  try {
+    console.log(`🔄 POST /quests/create/`, questData);
+    const { data } = await axiosInstance.post(`/quests/create/`, questData);
+    return data;
+  } catch (error) {
+    console.error("❌ createQuest :", error.response?.data || error.message);
+    return null;
+  }
+};
+
+export const getQuestById = async (questId) => {
+  try {
+    console.log(`🔄 GET /quests/${questId}/`);
+    const { data } = await axiosInstance.get(`/quests/${questId}/`);
+    return data;
+  } catch (error) {
+    console.error("❌ getQuestById :", error.response?.data || error.message);
+    return null;
+  }
+};
+
+export const updateQuest = async (questId, updates) => {
+  try {
+    console.log(`🔄 PUT /quests/${questId}/`, updates);
+    const { data } = await axiosInstance.put(`/quests/${questId}/`, updates);
+    return data;
+  } catch (error) {
+    console.error("❌ updateQuest :", error.response?.data || error.message);
+    return null;
+  }
+};
+
+export const deleteQuest = async (questId) => {
+  try {
+    console.log(`🔄 DELETE /quests/${questId}/`);
+    const { data } = await axiosInstance.delete(`/quests/${questId}/`);
+    return data;
+  } catch (error) {
+    console.error("❌ deleteQuest :", error.response?.data || error.message);
+    return null;
+  }
+};
+
+export const getPlayerQuests = async (playerId) => {
+  try {
+    console.log(`🔄 GET /quests/player/${playerId}/`);
+    const { data } = await axiosInstance.get(`/quests/player/${playerId}/`);
+    return data;
+  } catch (error) {
+    console.error("❌ getPlayerQuests :", error.response?.data || error.message);
+    return [];
+  }
+};
+
+export const updatePlayerQuestStatus = async (playerId, questId, status) => {
+  try {
+    console.log(`🔄 POST /quests/player/${playerId}/update/`, { quest_id: questId, status });
+    const { data } = await axiosInstance.post(`/quests/player/${playerId}/update/`, {
+      quest_id: questId,
+      status,
+    });
+    return data;
+  } catch (error) {
+    console.error("❌ updatePlayerQuestStatus :", error.response?.data || error.message);
+    return null;
+  }
+};
+
+export const getAllPlayerQuestStates = async () => {
+  try {
+    console.log(`🔄 GET /quests/all_player_states/`);
+    const { data } = await axiosInstance.get(`/quests/all_player_states/`);
+    return data;
+  } catch (error) {
+    console.error("❌ getAllPlayerQuestStates :", error.response?.data || error.message);
+    return [];
+  }
+};

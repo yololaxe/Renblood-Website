@@ -13,6 +13,7 @@ const navItems = [
   { to: "/map",      label: "Map" },
   { to: "/talents",  label: "Arbre des talents", requiresAuth: true },
   { to: "/sessions", label: "Sessions",         requiresAuth: true },
+  { to: "/quests",   label: "Quêtes",           requiresAuth: true },
 ];
 
 function Navbar() {
