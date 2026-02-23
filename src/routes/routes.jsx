@@ -33,6 +33,8 @@ import EditFuturePage from "../pages/player/EditFuturePage.jsx";
 import SessionPlayersFuturesPage from "../pages/adminDashboard/SessionPlayers.jsx";
 import MoneyReport from "../pages/adminDashboard/reporting/MoneyReport.jsx";
 import QuestEditor from "../pages/adminDashboard/QuestEditor.jsx";
+import LegalMentions from "../pages/LegalMentions.jsx";
+import CGU from "../pages/CGU.jsx";
 
 const routes = [
   { path: "/", element: <Home /> },
@@ -77,6 +79,8 @@ const routes = [
   { path: "/admin/quests", element: <QuestEditor />, private: true, requiredRole: "Admin" },
 
   { path: "/dice", element: <DicePage />},
+  { path: "/legal", element: <LegalMentions />},
+  { path: "/tos", element: <CGU />},
 ];
 
 export default routes;
