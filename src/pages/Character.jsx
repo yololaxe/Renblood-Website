@@ -1,6 +1,7 @@
 // src/pages/Character.jsx
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { listenToAuthChanges } from "../data/firebaseConfig";
 import {
   getPlayerFullProfile,
@@ -14,8 +15,6 @@ import {
 import { MoneyDisplay } from "../components/MoneyDisplay";
 import ToolTip from "../components/Tooltip";
 import Toast from "../components/Toast";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import {
   FaSync,
   FaUserCircle,
@@ -38,39 +37,71 @@ import {
   FaGraduationCap,
   FaFileContract,
   FaTimes,
+  FaStar,
+  FaLink,
+  FaUnlink
 } from "react-icons/fa";
 
 // définitions de métiers en français
 import { categories, specials } from "../data/metiers";
 
-// pour les stats
-const CHARACTERISTICS = [
-  { key: "life", icon: <FaHeart />, label: "Vie" },
-  { key: "strength", icon: <FaFistRaised />, label: "Force" },
-  { key: "speed", icon: <FaBolt />, label: "Vitesse" },
-  { key: "reach", icon: <FaBullseye />, label: "Portée" },
-  { key: "resistance", icon: <FaShieldAlt />, label: "Résistance" },
-  { key: "regeneration", icon: <FaHeartbeat />, label: "Régénération" },
-  { key: "haste", icon: <FaPalette />, label: "Célérité" },
-  { key: "place", icon: <FaBoxOpen />, label: "Inventaire" },
-  { key: "mana", icon: <FaMagic />, label: "Mana" },
-  { key: "dodge", icon: <FaRunning />, label: "Esquive" },
-  { key: "discretion", icon: <FaUserNinja />, label: "Discrétion" },
-  { key: "charisma", icon: <FaSmile />, label: "Charisme" },
-  { key: "rethoric", icon: <FaBullhorn />, label: "Rhétorique" },
-  { key: "negotiation", icon: <FaHandshake />, label: "Négociation" },
-  { key: "influence", icon: <FaCrown />, label: "Influence" },
-  { key: "skill", icon: <FaGraduationCap />, label: "Compétence" },
-];
+// --- CONFIGURATION DES STATS ---
+const STAT_GROUPS = {
+  physical: {
+    label: "Physique & Combat",
+    color: "text-red-400",
+    border: "border-red-500/30",
+    bg: "bg-red-500/10",
+    stats: [
+      { key: "life", icon: <FaHeart />, label: "Vie" },
+      { key: "strength", icon: <FaFistRaised />, label: "Force" },
+      { key: "resistance", icon: <FaShieldAlt />, label: "Résistance" },
+      { key: "regeneration", icon: <FaHeartbeat />, label: "Régénération" },
+    ]
+  },
+  agility: {
+    label: "Agilité & Compétence",
+    color: "text-yellow-400",
+    border: "border-yellow-500/30",
+    bg: "bg-yellow-500/10",
+    stats: [
+      { key: "speed", icon: <FaBolt />, label: "Vitesse" },
+      { key: "dodge", icon: <FaRunning />, label: "Esquive" },
+      { key: "haste", icon: <FaPalette />, label: "Célérité" },
+      { key: "reach", icon: <FaBullseye />, label: "Portée" },
+      { key: "skill", icon: <FaGraduationCap />, label: "Compétence" },
+    ]
+  },
+  social: {
+    label: "Social & Mental",
+    color: "text-blue-400",
+    border: "border-blue-500/30",
+    bg: "bg-blue-500/10",
+    stats: [
+      { key: "mana", icon: <FaMagic />, label: "Mana" },
+      { key: "charisma", icon: <FaSmile />, label: "Charisme" },
+      { key: "rethoric", icon: <FaBullhorn />, label: "Rhétorique" },
+      { key: "negotiation", icon: <FaHandshake />, label: "Négociation" },
+      { key: "influence", icon: <FaCrown />, label: "Influence" },
+      { key: "discretion", icon: <FaUserNinja />, label: "Discrétion" },
+    ]
+  },
+  other: {
+    label: "Divers",
+    color: "text-gray-400",
+    border: "border-gray-500/30",
+    bg: "bg-gray-500/10",
+    stats: [
+      { key: "place", icon: <FaBoxOpen />, label: "Inventaire" },
+    ]
+  }
+};
 
-// traduction camel_case → Title Case
+// Traduction camel_case → Title Case
 const formatTypeLabel = (raw) =>
-  raw
-    .split("_")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
+  raw.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
-// niveaux témoins (xpThreshold → level)
+// Niveaux témoins (xpThreshold → level)
 const LEVEL_THRESHOLDS = [
   { thresh: 3000, level: 15 },
   { thresh: 2000, level: 14 },
@@ -90,19 +121,77 @@ const LEVEL_THRESHOLDS = [
   { thresh: 0, level: 0 },
 ];
 
-// métiers exceptionnels (pas de max=10)
-const EXCEPTIONS = new Set([
-  "bestiaire",
-  "banquier",
-  "politique",
-  "builder",
-]);
+// Métiers exceptionnels (pas de max=10)
+const EXCEPTIONS = new Set(["bestiaire", "banquier", "politique", "builder"]);
 
-// trouve l’xp nécessaire pour atteindre `targetLevel`
-function xpForLevel(targetLevel, jobKey) {
+// Trouve l’xp nécessaire pour atteindre `targetLevel`
+function xpForLevel(targetLevel) {
   const entry = LEVEL_THRESHOLDS.find((e) => e.level === targetLevel);
   return entry ? entry.thresh : null;
 }
+
+// --- COMPOSANTS UI ---
+
+const StatCard = ({ icon, label, value, bonus, tooltip }) => (
+  <div className="flex items-center justify-between bg-gray-800/50 p-2 rounded-lg border border-gray-700 hover:border-gray-500 transition-colors">
+    <div className="flex items-center gap-3">
+      <span className="text-xl text-gray-400">{icon}</span>
+      <span className="text-sm font-medium text-gray-300">{label}</span>
+    </div>
+    <div className="flex items-center gap-1">
+      <span className="text-lg font-bold text-white">{value}</span>
+      {bonus > 0 && (
+        <ToolTip text={tooltip}>
+          <span className="text-xs font-bold text-green-400 bg-green-900/30 px-1.5 py-0.5 rounded">
+            +{bonus}
+          </span>
+        </ToolTip>
+      )}
+    </div>
+  </div>
+);
+
+const JobCard = ({ label, xp, level, maxLevel, nextXp, image }) => {
+  const isMaxed = level >= maxLevel;
+  const prevXp = xpForLevel(level) || 0;
+  const progressPercent = isMaxed 
+    ? 100 
+    : Math.min(100, Math.max(0, ((xp - prevXp) / (nextXp - prevXp)) * 100));
+
+  return (
+    <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+      {/* Background Image (Optional, low opacity) */}
+      {image && (
+        <div 
+          className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity bg-cover bg-center pointer-events-none"
+          style={{ backgroundImage: `url(${image})` }}
+        />
+      )}
+      
+      <div className="relative z-10">
+        <div className="flex justify-between items-center mb-2">
+          <h4 className="font-bold text-white text-lg">{label}</h4>
+          <span className="text-xs font-mono bg-gray-900 px-2 py-1 rounded text-yellow-500 border border-gray-600">
+            Lvl {level}
+          </span>
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="w-full h-3 bg-gray-900 rounded-full overflow-hidden border border-gray-700">
+          <div 
+            className={`h-full transition-all duration-500 ${isMaxed ? 'bg-gradient-to-r from-yellow-500 to-yellow-300' : 'bg-blue-600'}`}
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        
+        <div className="flex justify-between text-xs text-gray-400 mt-1">
+          <span>{xp === -1 ? "Verrouillé" : `${xp} XP`}</span>
+          <span>{isMaxed ? "Max" : `${nextXp} XP`}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function Character() {
   const [loading, setLoading] = useState(true);
@@ -117,14 +206,11 @@ export default function Character() {
   const [toast, setToast] = useState({ status: null, message: "" });
   const navigate = useNavigate();
 
-  // map jobId → nom français
-  const jobNameMap = useMemo(() => {
-    const all = [
-      ...categories.flatMap((cat) => cat.jobs),
-      ...specials,
-    ];
+  // Map jobId → nom français & image
+  const jobMetaMap = useMemo(() => {
+    const all = [...categories.flatMap((cat) => cat.jobs), ...specials];
     return all.reduce((m, job) => {
-      m[job.id] = job.name;
+      m[job.id] = { name: job.name, image: job.image };
       return m;
     }, {});
   }, []);
@@ -136,7 +222,7 @@ export default function Character() {
     return [];
   };
 
-  // chargement du profil
+  // Chargement du profil
   useEffect(() => {
     const unsub = listenToAuthChanges(async (user) => {
       if (!user) return navigate("/auth");
@@ -153,7 +239,6 @@ export default function Character() {
       if (cache) {
         const p = JSON.parse(cache);
         setPlayer(p);
-        // Charger les licences si on a l'ID Minecraft
         if (p.id_minecraft) {
           try {
             const lics = await managePlayerLicences(p.id_minecraft, { action: "list" });
@@ -170,7 +255,6 @@ export default function Character() {
         const data = await getPlayerFullProfile(user.uid);
         sessionStorage.setItem("mcFullProfile", JSON.stringify(data));
         setPlayer(data);
-        // Charger les licences
         if (data.id_minecraft) {
           const lics = await managePlayerLicences(data.id_minecraft, { action: "list" });
           setLicences(extractLicences(lics));
@@ -192,11 +276,11 @@ export default function Character() {
       const full = await getPlayerFullProfile(userId);
       sessionStorage.setItem("mcFullProfile", JSON.stringify(full));
       setPlayer(full);
-      // Recharger les licences
       if (full.id_minecraft) {
         const lics = await managePlayerLicences(full.id_minecraft, { action: "list" });
         setLicences(extractLicences(lics));
       }
+      setToast({ status: "success", message: "Données mises à jour !" });
     } catch {
       setError("Erreur lors du rafraîchissement.");
     } finally {
@@ -223,10 +307,10 @@ export default function Character() {
   if (loading)
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <div className="w-32 h-32 bg-gray-800 animate-pulse rounded-2xl" />
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-yellow-500"></div>
       </div>
     );
-  if (error) return <p className="text-red-400 text-center mt-10">{error}</p>;
+  if (error) return <p className="text-red-400 text-center mt-10 text-xl">{error}</p>;
 
   const {
     pseudo_minecraft,
@@ -243,352 +327,295 @@ export default function Character() {
   } = player;
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="max-w-screen-xl mx-auto px-4 lg:px-6 space-y-8">
-        {/* Header */}
-        <header className="text-center space-y-2">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white">
-            {pseudo_minecraft}
-          </h1>
-          <p className="text-gray-400 italic">{description}</p>
-        </header>
-
-        {/* Grille Principale */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_3fr_1.2fr] gap-6 items-start">
-          {/* Discord */}
-          <aside className="bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col items-center">
-            {discordInfo?.discord_id ? (
-              <>
-                <img
-                  src={`https://cdn.discordapp.com/avatars/${discordInfo.discord_id}/${discordInfo.discord_avatar}.png`}
-                  alt="Avatar Discord"
-                  className="w-16 h-16 rounded-full mb-4"
-                />
-                <p className="flex items-center gap-2 text-white font-medium mb-4">
-                  <FaDiscord className="text-indigo-400" />
-                  {discordInfo.discord_username}
-                </p>
-                <button
-                  onClick={handleUnlinkDiscord}
-                  className="mt-auto flex items-center gap-2 bg-red-600 hover:bg-red-500 px-4 py-2 rounded"
-                >
-                  Délier Discord
-                </button>
-                <p className="mt-4 text-gray-300 text-sm">
-                  En ligne :{" "}
-                  {onlineMembers.length > 0
-                    ? onlineMembers.join(", ")
-                    : "Aucun membre"}
-                </p>
-              </>
-            ) : (
-              <>
-                <FaDiscord className="text-4xl text-indigo-400 mb-2" />
-                <p className="text-white font-semibold mb-4">Discord</p>
-                <p className="text-gray-400 mb-6">Aucun compte lié</p>
-                <button
-                  onClick={handleLinkDiscord}
-                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded"
-                >
-                  Lier à Discord
-                </button>
-              </>
-            )}
-          </aside>
-
-          {/* Profil & Stats */}
-          <main className="space-y-8">
-            {/* Identité & Ressources */}
-            <div className="bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
-                  👤 {name} {surname}
-                </h2>
-                <p className="text-gray-400 italic">{rank}</p>
+    <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+      {/* --- HERO HEADER --- */}
+      <div className="relative bg-gray-800 border-b border-gray-700 shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-purple-900/20 pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 py-8 md:py-12 relative z-10">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+            {/* Avatar */}
+            <div className="relative group">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-gray-700 overflow-hidden shadow-xl bg-gray-900">
+                {discordInfo?.discord_id ? (
+                  <img
+                    src={`https://cdn.discordapp.com/avatars/${discordInfo.discord_id}/${discordInfo.discord_avatar}.png`}
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-600">
+                    <FaUserCircle size={80} />
+                  </div>
+                )}
               </div>
-              <div className="flex flex-wrap gap-6 text-white text-lg">
-                <div className="flex items-center gap-2">
+              {/* Discord Status Badge */}
+              <div className={`absolute bottom-2 right-2 w-6 h-6 rounded-full border-2 border-gray-800 ${discordInfo?.discord_id ? 'bg-green-500' : 'bg-gray-500'}`} title={discordInfo?.discord_id ? "Discord Lié" : "Discord Non Lié"} />
+            </div>
+
+            {/* Info Principales */}
+            <div className="flex-1 text-center md:text-left space-y-3">
+              <div>
+                <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+                  {name} <span className="text-yellow-500">{surname}</span>
+                </h1>
+                <p className="text-xl text-blue-300 font-medium mt-1 flex items-center justify-center md:justify-start gap-2">
+                  <span className="bg-blue-900/30 px-3 py-1 rounded-full border border-blue-500/30">{rank}</span>
+                  <span className="text-gray-500">•</span>
+                  <span className="italic text-gray-400">{pseudo_minecraft}</span>
+                </p>
+              </div>
+              
+              <p className="text-gray-400 max-w-2xl mx-auto md:mx-0 leading-relaxed italic">
+                "{description || "Un aventurier mystérieux..."}"
+              </p>
+
+              {/* Ressources */}
+              <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
+                <div className="bg-gray-900/80 px-4 py-2 rounded-lg border border-gray-600 flex items-center gap-2 shadow-sm">
                   <MoneyDisplay value={money} />
                 </div>
-                <div className="flex items-center gap-2">
-                  🔮 <span>{divin}</span>
+                <div className="bg-purple-900/30 px-4 py-2 rounded-lg border border-purple-500/30 flex items-center gap-2 text-purple-200 shadow-sm">
+                  <FaMagic /> <span>{divin || "Aucune divinité"}</span>
                 </div>
               </div>
             </div>
 
-            {/* Statistiques */}
-            <section className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl sm:text-2xl font-semibold text-white">
-                  📊 Statistiques
-                </h3>
+            {/* Actions Rapides */}
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleReloadStats}
+                className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow-md"
+              >
+                <FaSync className={loading ? "animate-spin" : ""} /> Actualiser
+              </button>
+              {discordInfo?.discord_id ? (
                 <button
-                  onClick={handleReloadStats}
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded"
+                  onClick={handleUnlinkDiscord}
+                  className="flex items-center gap-2 bg-red-900/50 hover:bg-red-800/50 text-red-200 border border-red-800 px-4 py-2 rounded-lg transition text-sm"
                 >
-                  <FaSync className="animate-spin duration-500" />
-                  Recharger
+                  <FaUnlink /> Délier Discord
                 </button>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {CHARACTERISTICS.map(({ key, icon, label }) => {
-                  const base = player[key] || 0;
-                  const bonuses = Array.isArray(real_charact[key])
-                    ? real_charact[key]
-                    : real_charact[key]
-                    ? [real_charact[key]]
-                    : [];
-                  const totalBonus = bonuses.reduce((s, b) => s + b.count, 0);
-                  const total = base + totalBonus;
-
-                  const getBonusLabel = (b) => {
-                    if (b.type.startsWith("talent_tree_")) {
-                      return formatTypeLabel(b.type.replace("talent_tree_", ""));
-                    }
-                    if (b.type.startsWith("trait_")) {
-                      const id = Number(b.type.split("_")[1]);
-                      const t = traits.find((t) => t.id === id);
-                      return t?.Name || "Trait";
-                    }
-                    return b.type;
-                  };
-
-                  const tooltipText =
-                    `Base : ${base}` +
-                    bonuses
-                      .map((b) => `, +${b.count} (${getBonusLabel(b)})`)
-                      .join("");
-
-                  return (
-                    <div
-                      key={key}
-                      className="bg-gray-700 p-4 rounded-xl text-center hover:bg-gray-600 transition"
-                    >
-                      <div className="text-2xl flex justify-center">{icon}</div>
-                      <p className="mt-2 text-white font-semibold">{label}</p>
-                      <p className="mt-1 flex justify-center items-center text-white text-lg gap-1">
-                        {total}
-                        {bonuses.length > 0 && (
-                          <ToolTip text={tooltipText}>
-                            <span className="text-sm text-green-300">
-                              +{totalBonus}
-                            </span>
-                          </ToolTip>
-                        )}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* Expériences métiers */}
-            <section className="space-y-4">
-              <h3 className="text-xl sm:text-2xl font-semibold text-white text-center">
-                📜 Expériences
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                {Object.entries(experiences.jobs || {}).map(
-                  ([jobKey, job]) => {
-                    const label = jobNameMap[jobKey] || jobKey;
-                    const xp = job.xp;
-                    const lvl = job.level;
-                    let tip = "";
-
-                    if (xp === -1) {
-                      tip = "Métier non débloqué";
-                    } else {
-                      // défaut : max 10 pour les non-exceptions
-                      const isException = EXCEPTIONS.has(jobKey);
-                      const maxLevel = isException ? Infinity : 10;
-
-                      if (lvl >= maxLevel) {
-                        tip = "Métier complété à 100%";
-                      } else {
-                        const next = xpForLevel(lvl + 1, jobKey);
-                        if (next != null) {
-                          const missing = next - xp;
-                          tip = `${missing} XP avant le niveau ${lvl + 1}`;
-                        }
-                      }
-                    }
-
-                    return (
-                      <ToolTip key={jobKey} text={tip}>
-                        <div className="bg-gray-700 p-4 rounded-xl hover:bg-gray-600 transition cursor-pointer">
-                          <p className="font-bold text-white">{label}</p>
-                          <p className="text-gray-300 mt-1">
-                            Niveau : {lvl}
-                          </p>
-                          <p className="text-gray-300">
-                            XP : {xp === -1 ? "🔒" : xp}
-                          </p>
-                        </div>
-                      </ToolTip>
-                    );
-                  }
-                )}
-              </div>
-            </section>
-
-            {/* Traits & Actions */}
-            <section className="space-y-4">
-              <h3 className="text-xl sm:text-2xl font-semibold text-white text-center">
-                🧬 Traits & Actions
-              </h3>
-              <div className="flex flex-wrap gap-3 justify-center">
-                {traits.map((t) => (
-                  <span
-                    key={t.id}
-                    className="bg-green-500 px-3 py-1 rounded-full text-white hover:bg-green-600 transition"
-                  >
-                    {t.Name}
-                  </span>
-                ))}
-                {actions.map((a) => (
-                  <span
-                    key={a.id}
-                    className="bg-blue-500 px-3 py-1 rounded-full text-white hover:bg-blue-600 transition"
-                  >
-                    {a.Name}
-                  </span>
-                ))}
-              </div>
-            </section>
-
-            {/* Licences */}
-            <section className="space-y-4">
-              <h3 className="text-xl sm:text-2xl font-semibold text-white text-center flex items-center justify-center gap-2">
-                <FaFileContract /> Licences
-              </h3>
-              {(!licences || licences.length === 0) ? (
-                <p className="text-gray-400 text-center italic">Aucune licence active.</p>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {licences.map((lic) => (
-                    <div
-                      key={lic.id}
-                      onClick={() => setSelectedLicence(lic)}
-                      className="bg-gray-700 p-4 rounded-xl shadow-md border border-gray-600 cursor-pointer hover:bg-gray-600 transition flex flex-col items-center justify-center min-h-[6rem] h-full"
-                    >
-                      <FaFileContract className="text-2xl text-blue-400 mb-2 flex-shrink-0" />
-                      <h4 className="text-lg font-bold text-white text-center break-words w-full">{lic.name}</h4>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </main>
-
-          {/* Profil Firebase */}
-          {authUser && (
-            <aside className="bg-gray-800 rounded-2xl shadow-lg p-6">
-              <div className="flex items-center gap-4 mb-4">
-                {authUser.photoURL ? (
-                  <img
-                    src={authUser.photoURL}
-                    alt="Avatar"
-                    className="w-16 h-16 rounded-full border-2 border-gray-600"
-                  />
-                ) : (
-                  <FaUserCircle className="w-16 h-16 text-gray-400" />
-                )}
-                <div>
-                  <h3 className="text-xl font-semibold text-white">
-                    {authUser.displayName || "Utilisateur"}
-                  </h3>
-                  <p className="text-gray-400 text-sm break-all">
-                    {authUser.email}
-                  </p>
-                </div>
-              </div>
-              <dl className="space-y-2 text-gray-200 text-sm">
-                <div className="flex justify-between">
-                  <dt>UID :</dt>
-                  <dd className="break-all">{authUser.uid}</dd>
-                </div>
-                {authUser.phoneNumber && (
-                  <div className="flex justify-between">
-                    <dt>Téléphone :</dt>
-                    <dd>{authUser.phoneNumber}</dd>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <dt>Créé le :</dt>
-                  <dd>
-                    {new Date(
-                      authUser.metadata.creationTime
-                    ).toLocaleDateString("fr-FR", {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt>Dernière connexion :</dt>
-                  <dd>
-                    {new Date(
-                      authUser.metadata.lastSignInTime
-                    ).toLocaleDateString("fr-FR", {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </dd>
-                </div>
-              </dl>
-            </aside>
-          )}
-        </div>
-      </div>
-
-      {/* Modal Licence */}
-      {selectedLicence && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          onClick={() => setSelectedLicence(null)}
-        >
-          <div
-            className="bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-md w-full border border-gray-600 relative animate-fadeIn"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedLicence(null)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-white transition"
-            >
-              <FaTimes size={20} />
-            </button>
-            <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 border-b border-gray-700 pb-4">
-              <FaFileContract className="text-blue-400" />
-              {selectedLicence.name}
-            </h3>
-            <div className="space-y-4 text-gray-200">
-              <div className="flex justify-between border-b border-gray-700 pb-2">
-                <span className="font-semibold text-gray-400">Propriétaire</span>
-                <span>{selectedLicence.owner_name}</span>
-              </div>
-              <div className="flex justify-between border-b border-gray-700 pb-2">
-                <span className="font-semibold text-gray-400">Exploitant</span>
-                <span>{selectedLicence.exploitant_name}</span>
-              </div>
-              <div className="flex justify-between border-b border-gray-700 pb-2">
-                <span className="font-semibold text-gray-400">Prix</span>
-                <MoneyDisplay value={selectedLicence.price} />
-              </div>
-              <div className="flex justify-between border-b border-gray-700 pb-2">
-                <span className="font-semibold text-gray-400">Validité</span>
-                <span className="text-sm">{selectedLicence.start_date} - {selectedLicence.end_date}</span>
-              </div>
-              {selectedLicence.details && (
-                <div className="mt-4 p-4 bg-gray-700/50 rounded-lg border border-gray-600/50">
-                  <p className="text-sm italic text-gray-300">{selectedLicence.details}</p>
-                </div>
+                <button
+                  onClick={handleLinkDiscord}
+                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition shadow-md"
+                >
+                  <FaLink /> Lier Discord
+                </button>
               )}
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* --- MAIN CONTENT --- */}
+      <div className="max-w-7xl mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* COLONNE GAUCHE : STATS */}
+        <div className="lg:col-span-2 space-y-8">
+          
+          {/* Section Stats */}
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+              <FaBolt className="text-yellow-500" /> Caractéristiques
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {Object.entries(STAT_GROUPS).map(([groupKey, group]) => (
+                <div key={groupKey} className={`bg-gray-800 rounded-xl p-5 border ${group.border} shadow-lg`}>
+                  <h3 className={`text-lg font-bold mb-4 ${group.color} border-b border-gray-700 pb-2`}>
+                    {group.label}
+                  </h3>
+                  <div className="space-y-3">
+                    {group.stats.map(({ key, icon, label }) => {
+                      const base = player[key] || 0;
+                      const bonuses = Array.isArray(real_charact[key])
+                        ? real_charact[key]
+                        : real_charact[key]
+                        ? [real_charact[key]]
+                        : [];
+                      const totalBonus = bonuses.reduce((s, b) => s + b.count, 0);
+                      const total = base + totalBonus;
+
+                      const getBonusLabel = (b) => {
+                        if (b.type.startsWith("talent_tree_")) return formatTypeLabel(b.type.replace("talent_tree_", ""));
+                        if (b.type.startsWith("trait_")) {
+                          const id = Number(b.type.split("_")[1]);
+                          const t = traits.find((t) => t.id === id);
+                          return t?.Name || "Trait";
+                        }
+                        return b.type;
+                      };
+
+                      const tooltipText = `Base : ${base}` + bonuses.map((b) => `, +${b.count} (${getBonusLabel(b)})`).join("");
+
+                      return (
+                        <StatCard 
+                          key={key} 
+                          icon={icon} 
+                          label={label} 
+                          value={total} 
+                          bonus={totalBonus} 
+                          tooltip={tooltipText} 
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Section Métiers */}
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+              <FaStar className="text-yellow-500" /> Métiers & Expérience
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.entries(experiences.jobs || {}).map(([jobKey, job]) => {
+                const meta = jobMetaMap[jobKey] || { name: jobKey, image: null };
+                const xp = job.xp;
+                const lvl = job.level;
+                
+                if (xp === -1) return null; // On cache les métiers non débloqués pour épurer
+
+                const isException = EXCEPTIONS.has(jobKey);
+                const maxLevel = isException ? 20 : 10; // 20 arbitraire pour exception si pas défini
+                const nextXp = xpForLevel(lvl + 1) || xp;
+
+                return (
+                  <JobCard 
+                    key={jobKey}
+                    label={meta.name}
+                    xp={xp}
+                    level={lvl}
+                    maxLevel={maxLevel}
+                    nextXp={nextXp}
+                    image={meta.image}
+                  />
+                );
+              })}
+            </div>
+          </section>
+        </div>
+
+        {/* COLONNE DROITE : SIDEBAR (Traits, Actions, Licences) */}
+        <div className="space-y-8">
+          
+          {/* Traits & Actions */}
+          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              🧬 Traits & Actions
+            </h3>
+            
+            <div className="mb-6">
+              <h4 className="text-sm font-bold text-gray-400 uppercase mb-2">Traits</h4>
+              <div className="flex flex-wrap gap-2">
+                {traits.length > 0 ? traits.map((t) => (
+                  <span key={t.id} className="bg-green-900/40 text-green-300 border border-green-700/50 px-3 py-1 rounded-full text-sm">
+                    {t.Name}
+                  </span>
+                )) : <span className="text-gray-500 italic text-sm">Aucun trait</span>}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-gray-400 uppercase mb-2">Actions</h4>
+              <div className="flex flex-wrap gap-2">
+                {actions.length > 0 ? actions.map((a) => (
+                  <span key={a.id} className="bg-blue-900/40 text-blue-300 border border-blue-700/50 px-3 py-1 rounded-full text-sm">
+                    {a.Name}
+                  </span>
+                )) : <span className="text-gray-500 italic text-sm">Aucune action</span>}
+              </div>
+            </div>
+          </div>
+
+          {/* Licences */}
+          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <FaFileContract className="text-yellow-500" /> Licences
+            </h3>
+            
+            <div className="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+              {licences.length === 0 ? (
+                <p className="text-gray-500 italic text-center py-4">Aucune licence active.</p>
+              ) : (
+                licences.map((lic) => (
+                  <div
+                    key={lic.id}
+                    onClick={() => setSelectedLicence(lic)}
+                    className="bg-gray-700/50 p-3 rounded-lg border border-gray-600 hover:bg-gray-700 hover:border-yellow-500/50 cursor-pointer transition flex items-center gap-3"
+                  >
+                    <div className="bg-gray-800 p-2 rounded-full text-blue-400">
+                      <FaFileContract />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-white font-bold text-sm truncate">{lic.name}</h4>
+                      <p className="text-xs text-gray-400 truncate">Prop: {lic.owner_name}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Modal Licence */}
+      <AnimatePresence>
+        {selectedLicence && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            onClick={() => setSelectedLicence(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-md w-full border border-gray-600 relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedLicence(null)}
+                className="absolute top-3 right-3 text-gray-400 hover:text-white transition"
+              >
+                <FaTimes size={20} />
+              </button>
+              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 border-b border-gray-700 pb-4">
+                <FaFileContract className="text-blue-400" />
+                {selectedLicence.name}
+              </h3>
+              <div className="space-y-4 text-gray-200">
+                <div className="flex justify-between border-b border-gray-700 pb-2">
+                  <span className="font-semibold text-gray-400">Propriétaire</span>
+                  <span>{selectedLicence.owner_name}</span>
+                </div>
+                <div className="flex justify-between border-b border-gray-700 pb-2">
+                  <span className="font-semibold text-gray-400">Exploitant</span>
+                  <span>{selectedLicence.exploitant_name}</span>
+                </div>
+                <div className="flex justify-between border-b border-gray-700 pb-2">
+                  <span className="font-semibold text-gray-400">Prix</span>
+                  <MoneyDisplay value={selectedLicence.price} />
+                </div>
+                <div className="flex justify-between border-b border-gray-700 pb-2">
+                  <span className="font-semibold text-gray-400">Validité</span>
+                  <span className="text-sm">{selectedLicence.start_date} - {selectedLicence.end_date}</span>
+                </div>
+                {selectedLicence.details && (
+                  <div className="mt-4 p-4 bg-gray-700/50 rounded-lg border border-gray-600/50">
+                    <p className="text-sm italic text-gray-300">{selectedLicence.details}</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Toast status={toast.status} message={toast.message} />
     </div>

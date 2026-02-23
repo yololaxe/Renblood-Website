@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiSearch, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { listenToAuthChanges } from '../../data/firebaseConfig';
 import { getPlayerJobs } from '../../services/api';
-import ToolTip from '../../components/Tooltip'; // Assure-toi que le chemin est correct
+import { FaHammer, FaLeaf, FaGem, FaUtensils, FaConciergeBell, FaStar } from "react-icons/fa";
 
 // Utility to normalize string: lowercase & remove accents
 const normalizeString = str =>
@@ -16,7 +16,7 @@ const normalizeString = str =>
 
 function Badge({ children }) {
     return (
-        <span className="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-medium px-2 py-1 rounded-full">
+        <span className="inline-block bg-gray-900/50 text-gray-300 text-xs font-medium px-2 py-1 rounded border border-gray-600">
             {children}
         </span>
     );
@@ -31,43 +31,45 @@ function JobCard({ job, level, xp }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            whileHover={{ scale: 1.03 }}
-            className="flex flex-col h-full rounded-2xl shadow-xl overflow-hidden cursor-pointer bg-gray-800"
+            whileHover={{ y: -5 }}
+            className="flex flex-col h-full rounded-xl shadow-lg overflow-hidden cursor-pointer bg-gray-800 border border-gray-700 hover:border-teal-500/50 transition-all group"
         >
-            {/* Niveau du joueur, si > 0, avec tooltip XP */}
-            {/* test avec title natif */}
+            {/* Niveau du joueur, si > 0 */}
             {level > 0 && (
                 <div
                     title={`${xp} XP`}
-                    className="absolute top-2 right-2 bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold z-10"
+                    className="absolute top-3 right-3 bg-teal-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold z-20 shadow-lg border border-teal-400"
                 >
                     {level}
                 </div>
             )}
 
-
             <button
-                className="w-full text-left focus:outline-none"
+                className="w-full text-left focus:outline-none relative"
                 onClick={() => setOpen(o => !o)}
             >
-                <div className="relative group">
+                <div className="relative h-48 overflow-hidden">
                     <img
                         src={job.image}
                         alt={job.name}
                         loading="lazy"
-                        className="w-full aspect-video object-cover block rounded-t-2xl"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute bottom-0 left-0 bg-gradient-to-t from-black via-black/50 to-transparent p-4">
-                        <h3 className="text-white text-lg font-semibold drop-shadow-md">{job.name}</h3>
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-90" />
+                    
+                    <div className="absolute bottom-0 left-0 p-4 w-full">
+                        <h3 className="text-white text-xl font-bold drop-shadow-md group-hover:text-teal-400 transition-colors">{job.name}</h3>
                         <div className="mt-2 flex flex-wrap gap-1">
                             {job.mods.length > 0
-                                ? job.mods.map(mod => <Badge key={mod}>{mod}</Badge>)
+                                ? job.mods.slice(0, 3).map(mod => <Badge key={mod}>{mod}</Badge>)
                                 : <Badge>Aucun mod</Badge>
                             }
+                            {job.mods.length > 3 && <Badge>+{job.mods.length - 3}</Badge>}
                         </div>
                     </div>
+
                     <motion.div
-                        className="absolute inset-0 flex items-center justify-center text-white text-3xl font-bold opacity-0 transition-opacity"
+                        className="absolute inset-0 flex items-center justify-center text-white text-4xl opacity-0 transition-opacity bg-black/30 backdrop-blur-sm"
                         initial={{ opacity: 0 }}
                         whileHover={{ opacity: 1 }}
                     >
@@ -83,15 +85,21 @@ function JobCard({ job, level, xp }) {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="flex-1 px-4 pb-4 bg-gray-700 text-gray-200 space-y-2"
+                        className="p-5 bg-gray-800 border-t border-gray-700 text-sm text-gray-300 space-y-3"
                     >
-                        <p>{job.description}</p>
-                        <p>
-                            Difficulté : <strong>{job.difficulty}</strong>
-                        </p>
-                        <p>
-                            Gain potentiel : <strong>{job.potentialGain}</strong>
-                        </p>
+                        <p className="italic border-l-2 border-teal-500 pl-3">{job.description}</p>
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                            <div className="bg-gray-900/50 p-2 rounded border border-gray-700">
+                                <span className="block text-xs text-gray-500 uppercase font-bold">Difficulté</span>
+                                <span className={`font-medium ${job.difficulty === 'Facile' ? 'text-green-400' : job.difficulty === 'Moyenne' ? 'text-yellow-400' : 'text-red-400'}`}>
+                                    {job.difficulty}
+                                </span>
+                            </div>
+                            <div className="bg-gray-900/50 p-2 rounded border border-gray-700">
+                                <span className="block text-xs text-gray-500 uppercase font-bold">Gain</span>
+                                <span className="text-white truncate" title={job.potentialGain}>{job.potentialGain}</span>
+                            </div>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -103,15 +111,21 @@ export default function Metier() {
     const [activeTab, setActiveTab] = useState(categories[0].name);
     const [query, setQuery] = useState('');
     const [user, setUser] = useState(null);
-    const [jobStats, setJobStats] = useState({}); // stocke { jobId: { level, xp } }
+    const [jobStats, setJobStats] = useState({});
 
-    // Prépare les onglets
     const tabs = useMemo(
         () => [...categories, { name: 'Spéciaux', jobs: specials }],
         []
     );
 
-    // Filtrage par onglet ou global
+    const icons = {
+        "Bois": <FaLeaf />,
+        "Pierre": <FaGem />,
+        "Nourriture": <FaUtensils />,
+        "Services": <FaConciergeBell />,
+        "Spéciaux": <FaStar />,
+    };
+
     const filteredTabs = useMemo(
         () =>
             tabs.map(tab => ({
@@ -122,10 +136,12 @@ export default function Metier() {
             })),
         [tabs, query]
     );
+    
     const allJobs = useMemo(
         () => [...categories.flatMap(cat => cat.jobs), ...specials],
         []
     );
+    
     const filteredJobs = useMemo(
         () =>
             allJobs.filter(job =>
@@ -134,14 +150,12 @@ export default function Metier() {
         [allJobs, query]
     );
 
-    // Écoute l'auth et charge niveaux + XP
     useEffect(() => {
         const unsubscribe = listenToAuthChanges(async firebaseUser => {
             setUser(firebaseUser);
             if (firebaseUser) {
                 const resp = await getPlayerJobs(firebaseUser.uid);
-                const jobObj = resp.jobs.jobs; // l'objet { lumberjack: {...}, ... }
-                // transforme en { jobId: { level, xp } }
+                const jobObj = resp?.jobs?.jobs || {};
                 const stats = Object.fromEntries(
                     Object.entries(jobObj).map(([key, val]) => [
                         key,
@@ -157,43 +171,62 @@ export default function Metier() {
     }, []);
 
     return (
-        <div className="px-8 md:px-16 bg-gray-900 min-h-screen mt-8">
-            <div className="max-w-5xl mx-auto">
+        <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+            
+            {/* Hero Header */}
+            <div className="relative bg-gray-800 border-b border-gray-700 py-16 px-4 mb-12 text-center overflow-hidden">
+                <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-5 pointer-events-none" />
+                <motion.h1 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-500 to-blue-600 mb-4 relative z-10"
+                >
+                    Artisanat & Métiers
+                </motion.h1>
+                <p className="text-gray-400 max-w-2xl mx-auto relative z-10 text-lg">
+                    Explorez les carrières disponibles, apprenez les ficelles du métier et devenez un maître artisan.
+                </p>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6">
                 {/* Search */}
-                <div className="max-w-md mx-auto mb-8">
-                    <div className="relative text-gray-400 focus-within:text-gray-200">
-                        <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <div className="max-w-md mx-auto mb-10">
+                    <div className="relative text-gray-400 focus-within:text-teal-400 transition-colors">
+                        <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl" />
                         <input
                             type="text"
                             placeholder="Rechercher un métier..."
                             value={query}
                             onChange={e => setQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white"
+                            className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-white shadow-lg transition"
                         />
                     </div>
                 </div>
 
-                {/* Tabs (si pas de recherche) */}
+                {/* Tabs */}
                 {query.length === 0 && (
-                    <div className="flex flex-wrap justify-center space-x-4 mb-8">
+                    <div className="flex flex-wrap justify-center gap-3 mb-10">
                         {tabs.map(tab => (
                             <button
                                 key={tab.name}
-                                className={`px-4 py-2 font-medium ${activeTab === tab.name
-                                        ? 'border-b-2 border-indigo-500 text-white'
-                                        : 'text-gray-400 hover:text-gray-200'
-                                    }`}
                                 onClick={() => setActiveTab(tab.name)}
+                                className={`
+                                    px-5 py-2 rounded-full font-bold transition-all transform hover:scale-105 flex items-center gap-2
+                                    ${activeTab === tab.name
+                                        ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30"
+                                        : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white border border-gray-700"
+                                    }
+                                `}
                             >
-                                {tab.name}
+                                {icons[tab.name] || <FaHammer />} {tab.name}
                             </button>
                         ))}
                     </div>
                 )}
 
-                {/* Grid 2x2 */}
-                <div className="grid grid-cols-2 gap-6 mb-16 items-stretch">
-                    <AnimatePresence>
+                {/* Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <AnimatePresence mode="popLayout">
                         {(query.length > 0 ? filteredJobs : filteredTabs.find(t => t.name === activeTab)?.jobs || [])
                             .map(job => {
                                 const stats = jobStats[job.id] || {level: 0, xp: 0};

@@ -6,7 +6,7 @@ import {
   advanceToNextSeason,
   retreatToPreviousSeason,
 } from "../../../services/api.js";
-import { FaChevronLeft, FaChevronRight, FaCircle } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaCircle, FaCalendarAlt, FaClock, FaEdit } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
 const SEASON_LABELS = {
@@ -23,7 +23,6 @@ export default function GlobalWidget() {
   const [futureModif, setFutureModif] = useState(false);
   const [status, setStatus] = useState("");
 
-  // charge au montage
   useEffect(() => {
     (async () => {
       try {
@@ -72,115 +71,78 @@ export default function GlobalWidget() {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* En-tête */}
-      <div className="flex items-center space-x-2 mb-4">
-        <FaCircle className={`text-sm ${oneSession ? "text-green-400 animate-pulse" : "text-gray-600"}`} />
-        <h3 className="text-lg font-semibold text-white">Configuration Globale</h3>
-      </div>
-
-      {/* Contenu scrollable */}
-      <div className="flex-1 overflow-y-auto pr-1 space-y-6">
-        {/* Toggles en grille */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Session de jeu */}
-          <div className="bg-gray-700 p-4 rounded-lg flex flex-col justify-between">
-            <div>
-              <p className="font-medium text-white">Session de jeu active</p>
-              <p className="text-gray-400 text-sm mt-1">
-                Indique si une session de jeu est en cours.
-              </p>
-            </div>
-            <label className="self-end mt-4 inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only"
-                checked={oneSession}
-                onChange={() =>
-                  toggleFlag(
-                    "one_session_state",
-                    oneSession,
-                    setOneSession,
-                    "Session de jeu active"
-                  )
-                }
-              />
-              <span className="w-10 h-5 bg-gray-600 rounded-full relative transition-colors peer-checked:bg-green-400">
-                <span
-                  className={`block w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
-                    oneSession ? "translate-x-5" : "translate-x-0"
-                  }`}
-                />
-              </span>
-            </label>
+    <div className="h-full flex flex-col gap-6">
+      
+      {/* --- SAISON ACTUELLE --- */}
+      <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="bg-blue-600 p-3 rounded-lg text-white">
+            <FaCalendarAlt size={20} />
           </div>
-
-          {/* Future modifs */}
-          <div className="bg-gray-700 p-4 rounded-lg flex flex-col justify-between">
-            <div>
-              <p className="font-medium text-white">Autoriser modifs futurs</p>
-              <p className="text-gray-400 text-sm mt-1">
-                Permet aux joueurs de proposer ou modifier des futurs.
-              </p>
-            </div>
-            <label className="self-end mt-4 inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only"
-                checked={futureModif}
-                onChange={() =>
-                  toggleFlag(
-                    "future_modif_add_state",
-                    futureModif,
-                    setFutureModif,
-                    "Autoriser modifs futurs"
-                  )
-                }
-              />
-              <span className="w-10 h-5 bg-gray-600 rounded-full relative transition-colors peer-checked:bg-green-400">
-                <span
-                  className={`block w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
-                    futureModif ? "translate-x-5" : "translate-x-0"
-                  }`}
-                />
-              </span>
-            </label>
+          <div>
+            <p className="text-xs text-gray-400 uppercase font-bold">Date Actuelle</p>
+            <p className="text-xl font-bold text-white">
+              {season && year ? `${SEASON_LABELS[season]} ${year}` : "Chargement..."}
+            </p>
           </div>
+        </div>
+        <div className="flex gap-1">
+          <button onClick={() => changeSeason("prev")} className="p-2 bg-gray-600 hover:bg-gray-500 rounded-lg text-white transition" title="Saison précédente">
+            <FaChevronLeft />
+          </button>
+          <button onClick={() => changeSeason("next")} className="p-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition" title="Saison suivante">
+            <FaChevronRight />
+          </button>
         </div>
       </div>
 
-      {/* Pied de card : saison */}
-      <div className="mt-4 flex items-center justify-between">
-        <p className="text-white font-medium">
-          Saison :{" "}
-          <span className="text-green-300">
-            {season && year ? `${SEASON_LABELS[season]} ${year}` : "…"}
-          </span>
-        </p>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => changeSeason("prev")}
-            className="flex items-center space-x-1 px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-sm transition"
-          >
-            <FaChevronLeft /> <span>Précédent</span>
-          </button>
-          <button
-            onClick={() => changeSeason("next")}
-            className="flex items-center space-x-1 px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded text-sm transition"
-          >
-            <span>Suivant</span> <FaChevronRight />
-          </button>
+      {/* --- TOGGLES --- */}
+      <div className="grid grid-cols-1 gap-4 flex-1">
+        
+        {/* Session Active */}
+        <div className={`p-4 rounded-xl border transition-all flex items-center justify-between ${oneSession ? "bg-green-900/20 border-green-500/50" : "bg-gray-700/30 border-gray-600"}`}>
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-full ${oneSession ? "bg-green-500 text-white" : "bg-gray-600 text-gray-400"}`}>
+              <FaClock />
+            </div>
+            <div>
+              <p className="font-bold text-white text-sm">Session de Jeu</p>
+              <p className="text-xs text-gray-400">{oneSession ? "En cours" : "Arrêtée"}</p>
+            </div>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" className="sr-only peer" checked={oneSession} onChange={() => toggleFlag("one_session_state", oneSession, setOneSession, "Session de jeu")} />
+            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+          </label>
         </div>
+
+        {/* Futures Modifs */}
+        <div className={`p-4 rounded-xl border transition-all flex items-center justify-between ${futureModif ? "bg-yellow-900/20 border-yellow-500/50" : "bg-gray-700/30 border-gray-600"}`}>
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-full ${futureModif ? "bg-yellow-500 text-black" : "bg-gray-600 text-gray-400"}`}>
+              <FaEdit />
+            </div>
+            <div>
+              <p className="font-bold text-white text-sm">Modifs Futures</p>
+              <p className="text-xs text-gray-400">{futureModif ? "Autorisées" : "Bloquées"}</p>
+            </div>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" className="sr-only peer" checked={futureModif} onChange={() => toggleFlag("future_modif_add_state", futureModif, setFutureModif, "Modifs Futures")} />
+            <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+          </label>
+        </div>
+
       </div>
 
       {/* Message de retour */}
       <AnimatePresence>
         {status && (
           <motion.div
-            className="mt-3 p-2 bg-green-700 text-white rounded text-center text-sm"
-            initial={{ opacity: 0, y: -5 }}
+            className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-green-600 text-white rounded-full shadow-lg text-sm font-bold z-50"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
+            exit={{ opacity: 0, y: 20 }}
           >
             {status}
           </motion.div>

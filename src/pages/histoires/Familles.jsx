@@ -1,6 +1,8 @@
-import React,{ useState } from "react";
+// src/pages/histoires/Familles.jsx
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { FaMapMarkerAlt, FaCity, FaShieldAlt, FaHorse, FaDragon, FaHome, FaHatWizard, FaShip, FaCoins, FaCrown, FaFire, FaTimes, FaSitemap } from "react-icons/fa";
 
 // 📜 Liste des familles avec leurs détails
 const familles = [
@@ -177,133 +179,133 @@ const familles = [
   },
 ];
 
-
 export default function Familles() {
   const navigate = useNavigate();
   const [selected, setSelected] = useState(null);
 
   return (
-    <div className="min-h-screen bg-gray-900 px-6 py-12 text-gray-200">
-      {/* Page title */}
-      <header className="max-w-4xl mx-auto text-center mb-12">
-        <h1
-          className="
-            inline-block px-4 py-2
-            text-4xl md:text-5xl font-extrabold
-            bg-gradient-to-r from-green-300 to-blue-400
-            text-transparent bg-clip-text
-          "
+    <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+      
+      {/* Hero Header */}
+      <div className="relative bg-gray-800 border-b border-gray-700 py-16 px-4 mb-12 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-5 pointer-events-none" />
+        <motion.h1 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-indigo-400 to-purple-600 mb-4 relative z-10"
         >
-          🏰 Grandes Familles
-        </h1>
-        <p className="mt-4 text-lg text-gray-400">
-          Découvrez l’histoire et la puissance des dynasties de Renblood
+          Grandes Familles
+        </motion.h1>
+        <p className="text-gray-400 max-w-2xl mx-auto relative z-10 text-lg">
+          Découvrez l’histoire, la puissance et les alliances des dynasties qui façonnent Renblood.
         </p>
-      </header>
+      </div>
 
-      {/* Family cards */}
-      <div className={`grid gap-8 max-w-6xl mx-auto ${selected ? "opacity-30 pointer-events-none" : ""}`}
-           style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px,1fr))" }}>
-        {familles.map(f => (
+      {/* Grid */}
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {familles.map((f, index) => (
           <motion.div
             key={f.id}
-            onClick={() => setSelected(f.id)}
-            className="
-              flex flex-col items-center
-              bg-gray-800 rounded-2xl p-6 cursor-pointer
-              shadow-lg hover:shadow-2xl transition
-            "
-            whileHover={{ scale: 1.03 }}
+            layoutId={`family-${f.id}`}
+            onClick={() => setSelected(f)}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            whileHover={{ y: -5 }}
+            className="group cursor-pointer bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-purple-500/50 shadow-lg hover:shadow-2xl transition-all flex flex-col items-center text-center"
           >
-            <img
-              src={f.blason}
-              alt={`${f.nom} blason`}
-              className="w-24 h-24 object-cover rounded-full border-2 border-gray-700"
-            />
-            <h2 className="mt-4 text-2xl font-bold">{f.nom}</h2>
-            <p className="mt-1 text-sm text-gray-400">{f.comté}, {f.ville}</p>
+            <div className="w-24 h-24 rounded-full bg-gray-700 p-1 border-2 border-gray-600 group-hover:border-purple-500 transition-colors mb-4">
+              <img
+                src={f.blason}
+                alt={f.nom}
+                className="w-full h-full object-contain rounded-full"
+              />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">{f.nom}</h2>
+            <p className="text-sm text-gray-400 flex items-center gap-2 justify-center mb-4">
+              <FaMapMarkerAlt /> {f.comté}, {f.ville}
+            </p>
+            <div className="w-full h-px bg-gray-700 mb-4" />
+            <div className="grid grid-cols-2 gap-2 text-xs text-gray-400 w-full">
+              <div className="flex items-center gap-1 justify-center bg-gray-900/50 py-1 rounded"><FaShieldAlt /> {f.armee}</div>
+              <div className="flex items-center gap-1 justify-center bg-gray-900/50 py-1 rounded"><FaCoins /> {f.argent}</div>
+            </div>
           </motion.div>
         ))}
       </div>
 
-      {/* Detail Modal */}
+      {/* Modal Détails */}
       <AnimatePresence>
         {selected && (
           <motion.div
-            className="
-              fixed inset-0 z-50 flex items-center justify-center
-              bg-black bg-opacity-50 backdrop-blur-sm
-            "
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
             onClick={() => setSelected(null)}
           >
             <motion.div
-              className="
-                bg-gray-800 rounded-2xl max-w-xl w-full p-8
-                shadow-2xl relative text-gray-200
-              "
-              initial={{ scale: 0.8, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.8, y: 20 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              onClick={e => e.stopPropagation()}
+              layoutId={`family-${selected.id}`}
+              className="bg-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-600 overflow-hidden relative flex flex-col"
+              onClick={(e) => e.stopPropagation()}
             >
-              <button
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-100 text-3xl"
-                onClick={() => setSelected(null)}
-              >
-                &times;
-              </button>
+              {/* Header Modal */}
+              <div className="relative bg-gradient-to-r from-purple-900 to-indigo-900 p-8 text-center">
+                <button
+                  onClick={() => setSelected(null)}
+                  className="absolute top-4 right-4 p-2 bg-black/30 hover:bg-black/50 rounded-full text-white transition"
+                >
+                  <FaTimes />
+                </button>
+                <img
+                  src={selected.blason}
+                  alt={selected.nom}
+                  className="w-32 h-32 object-contain mx-auto mb-4 drop-shadow-xl"
+                />
+                <h2 className="text-4xl font-bold text-white">{selected.nom}</h2>
+                <p className="text-purple-200 mt-2 flex items-center justify-center gap-2">
+                  <FaMapMarkerAlt /> {selected.comté} • {selected.ville}
+                </p>
+              </div>
 
-              {(() => {
-                const f = familles.find(x => x.id === selected);
-                return (
-                  <>
-                    <div className="flex flex-col items-center mb-6">
-                      <img
-                        src={f.blason}
-                        alt={f.nom}
-                        className="w-32 h-32 rounded-full border-4 border-gray-700 mb-4"
-                      />
-                      <h2 className="text-3xl font-bold">{f.nom}</h2>
-                      <p className="mt-2 text-gray-400 text-center">
-                        {f.description}
-                      </p>
-                    </div>
+              {/* Content */}
+              <div className="p-8">
+                <p className="text-gray-300 mb-8 text-center italic leading-relaxed border-l-4 border-purple-500 pl-4 bg-gray-900/30 py-4 rounded-r-lg">
+                  "{selected.description}"
+                </p>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-left mb-6">
-                      <div><strong>📍 Comté:</strong> {f.comté}</div>
-                      <div><strong>🏙 Ville:</strong> {f.ville}</div>
-                      <div><strong>⚔ Armée:</strong> {f.armee.toLocaleString()}</div>
-                      <div><strong>🐎 Chevaux:</strong> {f.chevaux.toLocaleString()}</div>
-                      <div><strong>🐉 Dragons:</strong> {f.dragons}</div>
-                      <div><strong>🏰 Bâtiments:</strong> {f.batiments}</div>
-                      <div><strong>🔮 Magiciens:</strong> {f.magiciens}</div>
-                      <div><strong>⛵ Navires:</strong> {f.navires}</div>
-                      <div><strong>💰 Argent:</strong> {f.argent} or</div>
-                      <div><strong>👑 Relation Royale:</strong> {f.relationRoyale}%</div>
-                      <div className="sm:col-span-2"><strong>🔥 Puissance:</strong> {f.puissance.toLocaleString()}</div>
-                    </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+                  <StatItem icon={<FaShieldAlt className="text-red-400"/>} label="Armée" value={selected.armee} />
+                  <StatItem icon={<FaHorse className="text-yellow-600"/>} label="Chevaux" value={selected.chevaux} />
+                  <StatItem icon={<FaDragon className="text-green-500"/>} label="Dragons" value={selected.dragons} />
+                  <StatItem icon={<FaHome className="text-blue-400"/>} label="Bâtiments" value={selected.batiments} />
+                  <StatItem icon={<FaHatWizard className="text-purple-400"/>} label="Magiciens" value={selected.magiciens} />
+                  <StatItem icon={<FaShip className="text-cyan-400"/>} label="Navires" value={selected.navires} />
+                  <StatItem icon={<FaCoins className="text-yellow-400"/>} label="Argent" value={selected.argent} />
+                  <StatItem icon={<FaCrown className="text-yellow-500"/>} label="Relation" value={`${selected.relationRoyale}%`} />
+                  <StatItem icon={<FaFire className="text-orange-500"/>} label="Puissance" value={selected.puissance} colSpan />
+                </div>
 
-                    <button
-                      onClick={() => navigate(`/histoires/arbre/${f.nom.toLowerCase()}`)}
-                      className="
-                        w-full py-3 bg-green-500 hover:bg-green-400
-                        rounded-full text-lg font-semibold
-                        transition transform hover:scale-102
-                      "
-                    >
-                      🌳 Voir l’Arbre Généalogique
-                    </button>
-                  </>
-                );
-              })()}
+                <button
+                  onClick={() => navigate(`/histoires/arbre/${selected.nom.toLowerCase()}`)}
+                  className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl shadow-lg transition transform hover:scale-105 flex items-center justify-center gap-2"
+                >
+                  <FaSitemap /> Voir l’Arbre Généalogique
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 }
+
+const StatItem = ({ icon, label, value, colSpan }) => (
+  <div className={`bg-gray-900/50 p-3 rounded-lg border border-gray-700 flex flex-col items-center ${colSpan ? "sm:col-span-3 bg-gradient-to-r from-orange-900/20 to-red-900/20 border-orange-500/30" : ""}`}>
+    <div className="text-xl mb-1">{icon}</div>
+    <span className="text-xs text-gray-500 uppercase font-bold">{label}</span>
+    <span className="text-white font-mono font-bold">{typeof value === 'number' ? value.toLocaleString() : value}</span>
+  </div>
+);

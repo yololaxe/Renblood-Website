@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import DatePicker, { registerLocale } from "react-datepicker";
-import { FaSyncAlt, FaCalendarAlt, FaUserPlus, FaUserMinus, FaClipboardList } from "react-icons/fa";
+import { FaSyncAlt, FaCalendarAlt, FaUserPlus, FaUserMinus, FaClipboardList, FaPlus, FaTrash, FaEye } from "react-icons/fa";
 import fr from "date-fns/locale/fr";
 import "react-datepicker/dist/react-datepicker.css";
 import {
@@ -78,7 +78,7 @@ export default function SessionManagerWidget() {
 
   const openAddModal = async () => {
     try {
-      const list = await getPlayers("Admin");
+      const list = await getPlayers("Admin"); // TODO: Récupérer tous les joueurs, pas juste Admin
       setAllPlayers(list || []);
       setShowAddModal(true);
     } catch {
@@ -126,65 +126,58 @@ export default function SessionManagerWidget() {
     });
   };
 
-  if (loading) return <p className="text-gray-400">Chargement…</p>;
-  if (error)   return <p className="text-red-500">{error}</p>;
+  if (loading) return <p className="text-gray-400 text-center py-10">Chargement…</p>;
+  if (error)   return <p className="text-red-500 text-center py-10">{error}</p>;
 
   return (
-    <motion.div
-      className="relative bg-gray-800 p-6 rounded-lg shadow-lg space-y-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
+    <div className="h-full flex flex-col gap-6 relative">
       {/* ▷ rafraîchir */}
       <button
         onClick={loadData}
-        className="absolute top-4 right-4 text-gray-500 hover:text-gray-200"
+        className="absolute top-0 right-0 text-gray-500 hover:text-gray-200 transition"
         aria-label="Rafraîchir"
       >
         <FaSyncAlt />
       </button>
 
-      <h2 className="flex items-center text-2xl font-semibold text-white space-x-2">
-        <FaClipboardList /> <span>Gestion de session</span>
-      </h2>
-
       {session ? (
         <>
           {/*  ▷ Saison & année */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-gray-700 p-4 rounded flex items-center space-x-3">
-              <FaCalendarAlt className="text-green-300 text-xl" />
+          <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-green-600 p-3 rounded-lg text-white">
+                <FaCalendarAlt size={20} />
+              </div>
               <div>
-                <p className="text-gray-300 text-sm">Session active</p>
-                <p className="text-white font-medium">
+                <p className="text-xs text-gray-400 uppercase font-bold">Session Active</p>
+                <p className="text-xl font-bold text-white">
                   {SEASON_LABELS[session.season]} {session.year}
                 </p>
               </div>
             </div>
+          </div>
 
-            {/*  ▷ Date de session */}
-            <div className="bg-gray-700 p-4 rounded flex items-center justify-between">
-              <div>
-                <p className="text-gray-300 text-sm">Date de session</p>
-                <p className="text-white font-medium">
-                  {session.session_date ? formatDateFR(session.session_date) : "Non définie"}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowDateEdit(!showDateEdit)}
-                className="text-gray-400 hover:text-gray-200"
-                aria-label="Modifier la date"
-              >
-                <FaCalendarAlt />
-              </button>
+          {/*  ▷ Date de session */}
+          <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-400 uppercase font-bold">Date Prévue</p>
+              <p className="text-white font-medium">
+                {session.session_date ? formatDateFR(session.session_date) : "Non définie"}
+              </p>
             </div>
+            <button
+              onClick={() => setShowDateEdit(!showDateEdit)}
+              className="p-2 bg-gray-600 hover:bg-gray-500 rounded-lg text-white transition"
+            >
+              <FaCalendarAlt />
+            </button>
           </div>
 
           {/*  ▷ Édition de la date */}
           <AnimatePresence>
             {showDateEdit && (
               <motion.div
-                className="mt-2 p-4 bg-gray-700 rounded flex items-center space-x-3"
+                className="p-4 bg-gray-700 rounded-xl flex items-center gap-2 border border-gray-600"
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
@@ -195,81 +188,61 @@ export default function SessionManagerWidget() {
                   showTimeSelect
                   locale="fr"
                   dateFormat="dd/MM/yyyy 'à' HH:mm"
-                  className="w-full bg-gray-600 text-white p-2 rounded"
+                  className="w-full bg-gray-800 text-white p-2 rounded border border-gray-600 focus:border-blue-500 outline-none"
                 />
-                <button
-                  onClick={handleSaveDate}
-                  className="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded"
-                  aria-label="Sauvegarder la date"
-                >
-                  💾
-                </button>
-                <button
-                  onClick={() => setShowDateEdit(false)}
-                  className="text-gray-400 hover:text-gray-200 px-2"
-                  aria-label="Annuler"
-                >
-                  ✖
-                </button>
+                <button onClick={handleSaveDate} className="bg-blue-600 hover:bg-blue-500 p-2 rounded text-white"><FaCheck /></button>
+                <button onClick={() => setShowDateEdit(false)} className="bg-gray-600 hover:bg-gray-500 p-2 rounded text-white"><FaTimes /></button>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/*  ▷ Statistiques joueurs / futures */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Tooltip text={session.players.map(p => p.pseudo_minecraft || p.name).join(", ") || "Aucun"}>
-              <div className="bg-gray-700 p-4 rounded flex items-center space-x-3 cursor-help">
-                <FaUserPlus className="text-blue-400 text-xl" />
-                <div>
-                  <p className="text-gray-300 text-sm">Joueurs inscrits</p>
-                  <p className="text-white font-medium">{session.players_count}</p>
-                </div>
-              </div>
-            </Tooltip>
-            <Tooltip text={session.futures_players.join(", ") || "Aucune"}>
-              <div className="bg-gray-700 p-4 rounded flex items-center space-x-3 cursor-help">
-                <FaUserMinus className="text-yellow-400 text-xl" />
-                <div>
-                  <p className="text-gray-300 text-sm">Futures liées</p>
-                  <p className="text-white font-medium">{session.futures_count}</p>
-                </div>
-              </div>
-            </Tooltip>
+          {/*  ▷ Statistiques */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-gray-700/30 p-3 rounded-lg border border-gray-600 text-center">
+              <p className="text-2xl font-bold text-blue-400">{session.players_count}</p>
+              <p className="text-xs text-gray-400 uppercase">Inscrits</p>
+            </div>
+            <div className="bg-gray-700/30 p-3 rounded-lg border border-gray-600 text-center">
+              <p className="text-2xl font-bold text-yellow-400">{session.futures_count}</p>
+              <p className="text-xs text-gray-400 uppercase">Futures</p>
+            </div>
           </div>
 
           {/*  ▷ Actions principales */}
-          <div className="flex flex-wrap gap-3 mt-4">
+          <div className="grid grid-cols-1 gap-2 mt-auto">
             <button
               onClick={() => navigate(`/admin/sessions/${session.id}/players-futures`)}
-              className="flex-1 bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded text-white transition"
+              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 py-2 rounded-lg text-white font-bold transition"
             >
-              Voir le récap
+              <FaEye /> Voir le récapitulatif
             </button>
-            <button
-              onClick={openAddModal}
-              className="flex-1 bg-yellow-500 hover:bg-yellow-400 px-4 py-2 rounded text-gray-900 transition"
-            >
-              Ajouter un joueur
-            </button>
-            <button
-              onClick={openRemoveModal}
-              className="flex-1 bg-red-600 hover:bg-red-500 px-4 py-2 rounded text-white transition"
-            >
-              Retirer un joueur
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={openAddModal}
+                className="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-green-400 font-bold border border-gray-600 transition"
+              >
+                <FaPlus /> Joueur
+              </button>
+              <button
+                onClick={openRemoveModal}
+                className="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-red-400 font-bold border border-gray-600 transition"
+              >
+                <FaTrash /> Joueur
+              </button>
+            </div>
           </div>
         </>
       ) : (
-        <div className="space-y-4 text-center">
+        <div className="flex flex-col items-center justify-center h-full text-center space-y-4 py-10">
           <p className="text-gray-400">
-            Pas de session pour{" "}
-            <strong className="text-white">
-              {SEASON_LABELS[global.season]} {global.year}
+            Pas de session pour <br/>
+            <strong className="text-white text-lg">
+              {SEASON_LABELS[global?.season]} {global?.year}
             </strong>
           </p>
           <button
             onClick={handleCreate}
-            className="bg-green-600 hover:bg-green-500 px-6 py-2 rounded text-white transition"
+            className="bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-white font-bold shadow-lg transition transform hover:scale-105"
           >
             Créer la session
           </button>
@@ -279,21 +252,12 @@ export default function SessionManagerWidget() {
       {/* ───────── Modals ───────── */}
       <AnimatePresence>
         {showAddModal && (
-          <Modal onClose={() => setShowAddModal(false)}>
-            <h3 className="text-xl mb-4">Ajouter un joueur</h3>
-            <ul className="divide-y divide-gray-600">
+          <Modal onClose={() => setShowAddModal(false)} title="Ajouter un joueur">
+            <ul className="divide-y divide-gray-700 max-h-60 overflow-y-auto">
               {allPlayers.map((p) => (
-                <li
-                  key={p.id}
-                  className="py-2 flex justify-between items-center hover:bg-gray-700 px-3 rounded"
-                >
-                  <span>{p.pseudo_minecraft || p.name}</span>
-                  <button
-                    onClick={() => handleAddPlayer(p.id)}
-                    className="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white"
-                  >
-                    ＋
-                  </button>
+                <li key={p.id} className="py-3 flex justify-between items-center hover:bg-gray-700/50 px-2 rounded transition">
+                  <span className="text-gray-200">{p.pseudo_minecraft || p.name}</span>
+                  <button onClick={() => handleAddPlayer(p.id)} className="bg-green-600 hover:bg-green-500 p-1.5 rounded text-white text-xs"><FaPlus /></button>
                 </li>
               ))}
             </ul>
@@ -301,56 +265,53 @@ export default function SessionManagerWidget() {
         )}
 
         {showRemoveModal && (
-          <Modal onClose={() => setShowRemoveModal(false)}>
-            <h3 className="text-xl mb-4">Retirer un joueur</h3>
-            <ul className="divide-y divide-gray-600">
+          <Modal onClose={() => setShowRemoveModal(false)} title="Retirer un joueur">
+            <ul className="divide-y divide-gray-700 max-h-60 overflow-y-auto">
               {session.players.length > 0 ? (
                 session.players.map((p) => (
-                  <li
-                    key={p.id}
-                    className="py-2 flex justify-between items-center hover:bg-gray-700 px-3 rounded"
-                  >
-                    <span>{p.pseudo_minecraft || p.name}</span>
-                    <button
-                      onClick={() => handleRemovePlayer(p.id)}
-                      className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white"
-                    >
-                      －
-                    </button>
+                  <li key={p.id} className="py-3 flex justify-between items-center hover:bg-gray-700/50 px-2 rounded transition">
+                    <span className="text-gray-200">{p.pseudo_minecraft || p.name}</span>
+                    <button onClick={() => handleRemovePlayer(p.id)} className="bg-red-600 hover:bg-red-500 p-1.5 rounded text-white text-xs"><FaTrash /></button>
                   </li>
                 ))
               ) : (
-                <p className="text-gray-400">Aucun joueur à retirer.</p>
+                <p className="text-gray-500 text-center py-4">Aucun joueur à retirer.</p>
               )}
             </ul>
           </Modal>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
 
-/**
- * Petit composant Modal pour factoriser le fond et l'animation
- */
-function Modal({ children, onClose }) {
+function Modal({ children, onClose, title }) {
   return (
     <motion.div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+      className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
     >
       <motion.div
-        className="bg-gray-800 text-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[80vh] overflow-auto"
-        initial={{ scale: 0.8 }}
-        animate={{ scale: 1 }}
-        exit={{ scale: 0.8 }}
+        className="bg-gray-800 text-white rounded-xl shadow-2xl w-full max-w-md border border-gray-700 overflow-hidden"
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
         onClick={(e) => e.stopPropagation()}
       >
-        {children}
+        <div className="bg-gray-900 p-4 border-b border-gray-700 flex justify-between items-center">
+          <h3 className="font-bold text-lg">{title}</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white"><FaTimes /></button>
+        </div>
+        <div className="p-4">
+          {children}
+        </div>
       </motion.div>
     </motion.div>
   );
 }
+
+// Icônes manquantes pour le fix
+import { FaCheck, FaTimes } from "react-icons/fa";

@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { getPlayerJobs, getJobDetails } from "../../services/api.js";
 import { useUser } from "../../context/UserContext.jsx";
 import ToolTip from "../../components/Tooltip";
+import { motion } from "framer-motion";
+import { FaHammer, FaLock, FaCheckCircle, FaSync } from "react-icons/fa";
 
 // Définitions françaises des métiers
 import { categories, specials } from "../../data/metiers";
@@ -11,10 +13,10 @@ import { categories, specials } from "../../data/metiers";
 function SkeletonGrid() {
   return (
     <div className="p-10 bg-gray-900 min-h-screen">
-      <h1 className="h-8 bg-gray-700 rounded w-1/3 mx-auto animate-pulse mb-8" />
-      <div className="grid grid-cols-4 gap-8">
+      <div className="h-12 bg-gray-800 rounded w-1/3 mx-auto animate-pulse mb-8" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {Array(8).fill(0).map((_, i) => (
-          <div key={i} className="h-48 bg-gray-700 rounded-lg animate-pulse" />
+          <div key={i} className="h-64 bg-gray-800 rounded-xl animate-pulse" />
         ))}
       </div>
     </div>
@@ -26,6 +28,7 @@ export default function TalentSelection() {
   const [jobs, setJobs] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filter, setFilter] = useState("Tous");
   const navigate = useNavigate();
 
   const cacheKey = `mcJobs_${userId}`;
@@ -36,14 +39,16 @@ export default function TalentSelection() {
     []
   );
 
-  // Map id → nom FR
-  const jobNameMap = useMemo(() => {
-    const all = [...categories.flatMap(c => c.jobs), ...specials];
+  // Map id → nom FR & Catégorie
+  const jobMetaMap = useMemo(() => {
+    const all = [...categories.flatMap(c => c.jobs.map(j => ({ ...j, category: c.name }))), ...specials.map(s => ({ ...s, category: "Spécial" }))];
     return all.reduce((m, j) => {
-      m[j.id] = j.name;
+      m[j.id] = { name: j.name, category: j.category, image: j.image, description: j.description, difficulty: j.difficulty };
       return m;
     }, {});
   }, []);
+
+  const categoriesList = ["Tous", ...new Set(Object.values(jobMetaMap).map(j => j.category))];
 
   // Seuils XP → niveau
   const LEVEL_THRESHOLDS = [
@@ -101,46 +106,63 @@ export default function TalentSelection() {
     }
   }, [userId, navigate, cacheKey, loadJobs]);
 
-  if (!userId)
-    return (
-      <p className="text-center text-red-400 mt-10">
-        ❌ Utilisateur non connecté !
-      </p>
-    );
+  if (!userId) return <p className="text-center text-red-400 mt-10">❌ Utilisateur non connecté !</p>;
   if (loading) return <SkeletonGrid />;
-  if (error)
-    return (
-      <p className="text-center text-red-400 mt-10">{error}</p>
-    );
+  if (error) return <p className="text-center text-red-400 mt-10">{error}</p>;
 
-  const entries = Object.entries(jobs);
-  if (entries.length === 0)
-    return (
-      <p className="text-center text-gray-400 mt-10">
-        Aucun métier trouvé.
-      </p>
-    );
+  const entries = Object.entries(jobs).filter(([key]) => {
+    if (filter === "Tous") return true;
+    return jobMetaMap[key]?.category === filter;
+  });
 
   return (
-    <div className="p-10 bg-gray-900 min-h-screen">
-      {/* Titre */}
-      <h1 className="text-5xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-blue-400 mb-6 text-center">
-        ⚒️ Sélectionnez un métier
-      </h1>
+    <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+      
+      {/* --- HERO HEADER --- */}
+      <div className="relative bg-gray-800 border-b border-gray-700 py-12 px-4 mb-8 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-5 pointer-events-none" />
+        <motion.h1 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-4 relative z-10"
+        >
+          Maîtrise & Artisanat
+        </motion.h1>
+        <p className="text-gray-400 max-w-2xl mx-auto relative z-10">
+          Choisissez votre voie et développez vos compétences pour façonner le monde de Renblood.
+        </p>
+      </div>
 
-      {/* Bouton Rafraîchir */}
-      <div className="flex justify-end mb-6">
+      {/* --- FILTRES & ACTIONS --- */}
+      <div className="max-w-7xl mx-auto px-4 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex flex-wrap justify-center gap-2">
+          {categoriesList.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setFilter(cat)}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                filter === cat 
+                  ? "bg-yellow-500 text-gray-900 shadow-lg scale-105" 
+                  : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+        
         <button
           onClick={() => { sessionStorage.removeItem(cacheKey); loadJobs(); }}
-          className="text-sm bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded transition"
+          className="flex items-center gap-2 text-sm bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition shadow-md"
         >
-          🔄 Rafraîchir les métiers
+          <FaSync className={loading ? "animate-spin" : ""} /> Rafraîchir
         </button>
       </div>
 
-      {/* Grille des métiers */}
-      <div className="grid grid-cols-4 gap-8">
-        {entries.map(([key, job]) => {
+      {/* --- GRILLE DES MÉTIERS --- */}
+      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {entries.map(([key, job], index) => {
+          const meta = jobMetaMap[key] || { name: key, image: null, description: "", difficulty: "Moyenne" };
           const isLocked = job.xp === -1;
           const maxLevel = EXCEPTIONS.has(key) ? 15 : 10;
           const isCompleted = job.level >= maxLevel;
@@ -156,17 +178,6 @@ export default function TalentSelection() {
             pct = Math.round((xpCurrent / xpNeeded) * 100);
           }
 
-          // Tooltip
-          let tooltipText = "";
-          if (isLocked) tooltipText = "Métier non débloqué";
-          else if (isCompleted) tooltipText = "Métier complété";
-          else tooltipText = `${xpCurrent}/${xpNeeded} (${pct}%)`;
-
-          // Nom FR
-          const displayName =
-            jobNameMap[key] ||
-            key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-
           const handleClick = async () => {
             if (isLocked) return;
             try {
@@ -180,66 +191,73 @@ export default function TalentSelection() {
             }
           };
 
-          const card = (
-            <div
+          return (
+            <motion.div
+              key={key}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
               onClick={handleClick}
-              className={`relative rounded-lg overflow-hidden transition-opacity duration-200 ${
-                isLocked
-                  ? "opacity-60 cursor-not-allowed"
-                  : "cursor-pointer hover:opacity-80"
+              className={`relative bg-gray-800 rounded-xl overflow-hidden border border-gray-700 shadow-lg group transition-all duration-300 ${
+                isLocked ? "opacity-60 cursor-not-allowed grayscale" : "cursor-pointer hover:border-yellow-500/50 hover:shadow-2xl hover:-translate-y-1"
               }`}
             >
-              {/* Pastille de niveau */}
-              {!isLocked && (
-                <div className="absolute top-2 right-2 bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold z-10 shadow-lg">
-                  {displayLevel}
-                </div>
-              )}
-
-              <img
-                src={`/metiers/${key}.png`}
-                alt={displayName}
-                loading="lazy"
-                className="w-full h-48 object-cover"
-              />
-              <div className="absolute inset-0 bg-black/50 pointer-events-none" />
-              <div className="absolute inset-0 flex flex-col justify-between p-4">
-                <h2 className="text-white text-xl font-bold drop-shadow">
-                  {displayName}
-                </h2>
-                <span
-                  className={`self-start px-2 py-1 rounded ${
-                    isLocked
-                      ? "bg-red-600 text-white"
-                      : isCompleted
-                      ? "bg-green-600 text-white"
-                      : "bg-white/30 text-white"
-                  }`}
-                >
-                  {isLocked
-                    ? "Verrouillé"
-                    : isCompleted
-                    ? `Max`
-                    : `XP : ${job.xp}`}
-                </span>
+              {/* Image de fond */}
+              <div className="h-40 w-full overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent z-10" />
+                <img
+                  src={meta.image || `/metiers/${key}.png`}
+                  alt={meta.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  onError={(e) => e.target.src = "/metiers/default.png"} 
+                />
+                
+                {/* Badge Niveau */}
+                {!isLocked && (
+                  <div className="absolute top-3 right-3 z-20 bg-gray-900/90 backdrop-blur text-yellow-500 px-3 py-1 rounded-full text-xs font-bold border border-yellow-500/30 shadow-lg">
+                    Lvl {displayLevel}
+                  </div>
+                )}
               </div>
 
-              {/* Barre de progression */}
-              {!isLocked && !isCompleted && (
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-white/30">
-                  <div
-                    className="h-full bg-green-400/50"
-                    style={{ width: `${pct}%` }}
-                  />
+              {/* Contenu */}
+              <div className="p-5 relative z-20 -mt-6">
+                <div className="flex justify-between items-start mb-2">
+                  <h2 className="text-xl font-bold text-white group-hover:text-yellow-400 transition-colors">
+                    {meta.name}
+                  </h2>
+                  {isCompleted && <FaCheckCircle className="text-green-500 mt-1" />}
+                  {isLocked && <FaLock className="text-red-500 mt-1" />}
                 </div>
-              )}
-            </div>
-          );
 
-          return (
-            <ToolTip key={key} text={tooltipText}>
-              {card}
-            </ToolTip>
+                <p className="text-sm text-gray-400 line-clamp-2 mb-4 h-10">
+                  {meta.description || "Aucune description disponible."}
+                </p>
+
+                {/* Barre XP */}
+                {!isLocked && !isCompleted && (
+                  <div className="w-full bg-gray-700 rounded-full h-2 mb-2 overflow-hidden">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-cyan-400 h-full rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center text-xs font-medium">
+                  <span className={`px-2 py-0.5 rounded ${
+                    meta.difficulty === "Facile" ? "bg-green-900/30 text-green-400" :
+                    meta.difficulty === "Moyenne" ? "bg-yellow-900/30 text-yellow-400" :
+                    "bg-red-900/30 text-red-400"
+                  }`}>
+                    {meta.difficulty}
+                  </span>
+                  <span className="text-gray-500">
+                    {isLocked ? "Verrouillé" : isCompleted ? "Maître" : `${xpCurrent}/${xpNeeded} XP`}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
           );
         })}
       </div>

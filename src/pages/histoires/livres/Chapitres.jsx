@@ -1,17 +1,18 @@
-import React from "react";
+// src/pages/histoires/livres/Chapitres.jsx
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import livre1Img from "../../../../public/livres/livre1.png";
-import livre2Img from "../../../../public/livres/livre2.png";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaArrowLeft, FaArrowRight, FaBookOpen, FaListUl } from "react-icons/fa";
 
+// Images (assurez-vous qu'elles sont dans public/livres/)
 const livres = {
   1: {
-    titre: "📜 Information du Royaume de Renblood (0 - 321)",
-    image: livre1Img,
+    titre: "Chroniques de Renblood",
+    image: "/livres/livre1.png",
     chapitres: [
       {
         id: 1,
-        titre: "Année 0-133 | Premier âge : Hommes, elfes et nains",
+        titre: "Premier âge : Hommes, elfes et nains",
         sections: [
           {
             id: 1,
@@ -47,7 +48,7 @@ const livres = {
       },
       {
         id: 2,
-        titre: "Année 134-224 | Deuxième âge : Des créatures pour la guerre !",
+        titre: "Deuxième âge : Des créatures pour la guerre !",
         sections: [
           {
             id: 1,
@@ -71,7 +72,7 @@ const livres = {
       },
       {
         id: 3,
-        titre: "Année 225-321 | Troisième âge : Le royaume de Renblood",
+        titre: "Troisième âge : Le royaume de Renblood",
         sections: [
           {
             id: 1,
@@ -96,8 +97,8 @@ const livres = {
     ],
   },
   2: {
-    titre: "📜 Les Voies de la Connaissance et de l'Éveil",
-    image: livre2Img,
+    titre: "Voies de la Connaissance",
+    image: "/livres/livre2.png",
     chapitres: [
       {
         id: 1,
@@ -234,120 +235,123 @@ export default function Chapitres() {
   const navigate = useNavigate();
   const livre = livres[livreId];
   const chapitreIndex = Number(chapitreId) - 1;
-  const total = livre.chapitres.length;
-  const chapitre = livre.chapitres[chapitreIndex];
+  const total = livre?.chapitres.length || 0;
+  const chapitre = livre?.chapitres[chapitreIndex];
 
-  // ← ici on divise par (total - 1), pour que le dernier chapitre donne 100%
-  const progress =
-    total > 1
-      ? (chapitreIndex / (total - 1)) * 100
-      : 100;
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [chapitreId]);
+
+  if (!livre || !chapitre) return <div className="text-center text-white mt-20">Livre ou chapitre introuvable.</div>;
+
+  const progress = total > 1 ? (chapitreIndex / (total - 1)) * 100 : 100;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200">
-      {/* HEADER */}
-      <header className="max-w-4xl mx-auto px-6 py-12 text-center">
-        <h1 className="text-4xl sm:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-blue-400 mb-2">
-          {livre.titre}
-        </h1>
-        <p className="text-gray-400">
-          Chapitre {chapitreId} sur {total}
-        </p>
-      </header>
-
-      {/* COVER IMAGE */}
-      <motion.div
-        className="max-w-md mx-auto mb-12 overflow-hidden rounded-2xl shadow-2xl"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <img
-          src={livre.image}
-          alt={livre.titre}
-          className="w-full h-80 object-cover"
-        />
-      </motion.div>
-
-      {/* PROGRESS BAR */}
-      <div className="max-w-3xl mx-auto px-6 mb-16">
-        <div className="w-full bg-gray-700 rounded-full h-4">
-          <motion.div
-            className="bg-green-400 h-4 rounded-full"
-            initial={{ width: "0%" }}
+    <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+      
+      {/* Header Flottant */}
+      <div className="sticky top-0 z-40 bg-gray-900/95 backdrop-blur-md border-b border-gray-700 shadow-lg">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-center">
+          <h1 className="text-lg font-bold text-white truncate max-w-xs sm:max-w-md text-center">
+            {livre.titre}
+          </h1>
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="h-1 bg-gray-800 w-full">
+          <motion.div 
+            className="h-full bg-yellow-500"
+            initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
           />
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 flex flex-col lg:flex-row gap-8">
-        {/* STICKY NAV (desktop) */}
-        <nav className="hidden lg:block flex-shrink-0 w-48 sticky top-28 self-start">
-          <ul className="space-y-2">
-            {livre.chapitres.map((c, idx) => (
-              <li key={c.id}>
-                <button
-                  onClick={() =>
-                    navigate(
-                      `/histoires/livres/${livreId}/chapitre/${c.id}`
-                    )
-                  }
-                  className={`block w-full text-left px-4 py-2 rounded-lg transition ${
-                    idx === chapitreIndex
-                      ? "bg-blue-500 text-white font-semibold shadow"
-                      : "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
-                  }`}
-                >
-                  {c.id}. {c.titre.split("|")[0].trim()}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+      <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col lg:flex-row gap-10">
+        
+        {/* Sidebar Navigation (Desktop) */}
+        <aside className="hidden lg:block w-64 flex-shrink-0">
+          <div className="sticky top-24 bg-gray-800 rounded-xl border border-gray-700 p-4 shadow-lg">
+            <h3 className="text-sm font-bold text-gray-400 uppercase mb-4 flex items-center gap-2">
+              <FaListUl /> Sommaire
+            </h3>
+            <ul className="space-y-1">
+              {livre.chapitres.map((c, idx) => (
+                <li key={c.id}>
+                  <button
+                    onClick={() => navigate(`/histoires/livres/${livreId}/chapitre/${c.id}`)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                      idx === chapitreIndex
+                        ? "bg-yellow-600 text-white font-semibold"
+                        : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                    }`}
+                  >
+                    {idx + 1}. {c.titre.split("|")[0].trim()}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
 
-        {/* SECTIONS */}
-        <div className="flex-1 space-y-6">
-          {chapitre.sections.map((section) => (
-            <motion.article
-              key={section.id}
-              className="bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transform transition"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: section.id * 0.1 }}
-            >
-              <h2 className="text-2xl font-semibold text-white mb-3">
-                {section.titre}
-              </h2>
-              <p className="text-gray-300 leading-relaxed">
-                {section.contenu}
-              </p>
-            </motion.article>
-          ))}
-        </div>
-      </div>
+        {/* Contenu Principal */}
+        <main className="flex-1 max-w-3xl">
+          <motion.div
+            key={chapitre.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-2">
+              {chapitre.titre.split("|")[1] || chapitre.titre}
+            </h2>
+            <p className="text-yellow-500 font-mono text-sm mb-8 uppercase tracking-widest">
+              {chapitre.titre.split("|")[0]}
+            </p>
 
-      {/* BOTTOM NAV (mobile) */}
-      <div className="lg:hidden fixed bottom-4 left-0 right-0 px-4">
-        <div className="overflow-x-auto flex space-x-3 bg-gray-800 bg-opacity-90 p-2 rounded-xl shadow-lg">
-          {livre.chapitres.map((c, idx) => (
-            <button
-              key={c.id}
-              onClick={() =>
-                navigate(
-                  `/histoires/livres/${livreId}/chapitre/${c.id}`
-                )
-              }
-              className={`flex-shrink-0 px-3 py-2 rounded-full text-sm transition ${
-                idx === chapitreIndex
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
-            >
-              {c.id}
-            </button>
-          ))}
-        </div>
+            <div className="space-y-12">
+              {chapitre.sections.map((section) => (
+                <section key={section.id} className="relative pl-6 border-l-2 border-gray-700 hover:border-yellow-500/50 transition-colors">
+                  <h3 className="text-xl font-bold text-gray-200 mb-3 flex items-center gap-2">
+                    <span className="text-yellow-500 text-sm">§</span> {section.titre}
+                  </h3>
+                  <p className="text-gray-300 leading-relaxed text-lg font-serif text-justify">
+                    {section.contenu}
+                  </p>
+                </section>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Navigation Footer */}
+          <div className="mt-16 pt-8 border-t border-gray-700 flex justify-between items-center">
+            {chapitreIndex > 0 ? (
+              <button
+                onClick={() => navigate(`/histoires/livres/${livreId}/chapitre/${chapitreIndex}`)}
+                className="flex items-center gap-3 px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-white transition shadow-md"
+              >
+                <FaArrowLeft /> Précédent
+              </button>
+            ) : <div />}
+
+            {chapitreIndex < total - 1 ? (
+              <button
+                onClick={() => navigate(`/histoires/livres/${livreId}/chapitre/${chapitreIndex + 2}`)}
+                className="flex items-center gap-3 px-6 py-3 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold transition shadow-lg"
+              >
+                Suivant <FaArrowRight />
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/histoires/livres")}
+                className="flex items-center gap-3 px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold transition shadow-lg"
+              >
+                Terminer <FaBookOpen />
+              </button>
+            )}
+          </div>
+        </main>
       </div>
     </div>
   );

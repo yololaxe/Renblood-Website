@@ -1,6 +1,6 @@
 // src/pages/admin/PlayerEdit.jsx
 import React, { useState } from "react";
-import { FaEdit, FaSave, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaEdit, FaSave, FaChevronDown, FaChevronUp, FaUser, FaBolt, FaMagic, FaScroll } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { updatePlayer, updateJobLevel } from "../../services/api";
 import ToolTip from "../../components/Tooltip";
@@ -60,13 +60,14 @@ export default function PlayerEdit({
   const { editing, editedData, startEdit, changeField, saveAll } =
     useEditingState();
   const id = player.id;
-  const [openSection, setOpenSection] = useState(null);
+  const [openSection, setOpenSection] = useState("Identité"); // Open first by default
   const toggleSection = (label) =>
     setOpenSection(openSection === label ? null : label);
 
   const STAT_BLOCKS = [
     {
-      label: "👤 Identité",
+      label: "Identité",
+      icon: <FaUser />,
       fields: [
         { key: "pseudo_minecraft", icon: "🎮", label: "Pseudo", type: "text" },
         { key: "name", icon: "📛", label: "Prénom", type: "text" },
@@ -124,7 +125,8 @@ export default function PlayerEdit({
       ],
     },
     {
-      label: "💪 Attributs de base",
+      label: "Attributs de base",
+      icon: <FaBolt />,
       fields: [
         { key: "life", icon: "❤️", label: "Vie", type: "number" },
         { key: "strength", icon: "💪", label: "Force", type: "number" },
@@ -137,7 +139,8 @@ export default function PlayerEdit({
       ],
     },
     {
-      label: "🔮 Compétences",
+      label: "Compétences",
+      icon: <FaMagic />,
       fields: [
         { key: "mana", icon: "🔮", label: "Mana", type: "number" },
         { key: "dodge", icon: "🏃", label: "Esquive", type: "number" },
@@ -162,7 +165,7 @@ export default function PlayerEdit({
       initialValue: job.xp,
     })
   );
-  const STAT_EXPERIENCE = [{ label: "📜 Expériences métiers", fields: experienceFields }];
+  const STAT_EXPERIENCE = [{ label: "Expériences métiers", icon: <FaScroll />, fields: experienceFields }];
 
   const handleSaveClick = async () => {
     const payload = await saveAll(id, setPlayers);
@@ -183,31 +186,33 @@ export default function PlayerEdit({
   return (
     <div className="space-y-6">
       {/* Save Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-end sticky top-0 z-10 bg-gray-800/90 backdrop-blur-sm py-2 border-b border-gray-700">
         <motion.button
           whileHover={{ scale: 1.03 }}
-          className="inline-flex items-center space-x-2 bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-white font-semibold shadow"
+          className="inline-flex items-center space-x-2 bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-white font-semibold shadow-lg"
           onClick={handleSaveClick}
         >
-          <FaSave /> <span>Enregistrer</span>
+          <FaSave /> <span>Enregistrer les modifications</span>
         </motion.button>
       </div>
 
       {/* Editable Panels */}
-      {[...STAT_BLOCKS, ...STAT_EXPERIENCE].map(({ label, fields }) => (
+      {[...STAT_BLOCKS, ...STAT_EXPERIENCE].map(({ label, icon, fields }) => (
         <motion.div
           key={label}
           layout
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-gray-800 rounded-2xl shadow-lg overflow-hidden"
+          className="bg-gray-800 rounded-xl shadow-md border border-gray-700 overflow-hidden"
         >
           <button
-            className="w-full flex justify-between items-center bg-gray-700 px-6 py-3 hover:bg-gray-600 transition"
+            className="w-full flex justify-between items-center bg-gray-750 px-6 py-4 hover:bg-gray-700 transition"
             onClick={() => toggleSection(label)}
           >
-            <h3 className="text-xl font-bold text-white">{label}</h3>
-            <span className="text-xl text-gray-300">
+            <h3 className="text-lg font-bold text-white flex items-center gap-3">
+              <span className="text-blue-400">{icon}</span> {label}
+            </h3>
+            <span className="text-gray-400">
               {openSection === label ? <FaChevronUp /> : <FaChevronDown />}
             </span>
           </button>
@@ -219,26 +224,26 @@ export default function PlayerEdit({
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-gray-800"
               >
-                {fields.map(({ key, icon, label: lbl, type, options, rows, initialValue }) => {
+                {fields.map(({ key, icon: fieldIcon, label: lbl, type, options, rows, initialValue }) => {
                   const val = editedData[id]?.[key] ?? initialValue ?? player[key] ?? "";
                   const isEd = editing[id]?.[key];
                   return (
                     <div
                       key={key}
-                      className="flex items-start bg-gray-700 rounded-lg p-3 hover:bg-gray-600 transition cursor-pointer"
+                      className={`flex items-start rounded-lg p-3 transition cursor-pointer border ${isEd ? 'bg-gray-700 border-blue-500/50' : 'bg-gray-700/50 border-transparent hover:border-gray-600'}`}
                       onClick={() => !isEd && startEdit(id, key, val)}
                     >
-                      <span className="text-2xl mr-3">{icon}</span>
-                      <div className="flex-1">
-                        <label className="block text-gray-200 mb-1 font-medium">{lbl}</label>
+                      <span className="text-xl mr-3 mt-1">{fieldIcon}</span>
+                      <div className="flex-1 min-w-0">
+                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">{lbl}</label>
                         {isEd ? (
                           type === "textarea" ? (
                             <textarea
                               rows={rows}
                               autoFocus
-                              className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                              className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none text-sm"
                               value={val}
                               onChange={(e) => changeField(id, key, e.target.value)}
                               onClick={(e) => e.stopPropagation()}
@@ -246,7 +251,7 @@ export default function PlayerEdit({
                           ) : type === "select" ? (
                             <select
                               autoFocus
-                              className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                              className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none text-sm"
                               value={val}
                               onChange={(e) => changeField(id, key, e.target.value)}
                               onClick={(e) => e.stopPropagation()}
@@ -261,7 +266,7 @@ export default function PlayerEdit({
                             <input
                               autoFocus
                               type={type}
-                              className="w-full bg-gray-800 text-white p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                              className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none text-sm"
                               value={val}
                               onChange={(e) =>
                                 changeField(id, key, type === "number" ? Number(e.target.value) : e.target.value)
@@ -270,12 +275,12 @@ export default function PlayerEdit({
                             />
                           )
                         ) : (
-                          <p className="text-gray-200">{val}</p>
+                          <p className="text-white text-sm truncate">{val !== "" ? val : <span className="text-gray-500 italic">Vide</span>}</p>
                         )}
                       </div>
                       {!isEd && (
                         <button
-                          className="ml-3 text-gray-400 hover:text-white"
+                          className="ml-2 text-gray-500 hover:text-blue-400 transition"
                           onClick={(e) => {
                             e.stopPropagation();
                             startEdit(id, key, val);
@@ -294,9 +299,11 @@ export default function PlayerEdit({
       ))}
 
       {/* Bonus résumé */}
-      <div className="bg-gray-800 rounded-2xl shadow-lg p-6">
-        <h3 className="text-xl font-bold text-white mb-4">Bonus résumé</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="bg-gray-800 rounded-xl shadow-md border border-gray-700 p-6">
+        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <FaMagic className="text-purple-400" /> Bonus actifs
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {Object.entries(player.real_charact || {}).map(([statKey, bonusArr]) => {
             const base = player[statKey] ?? 0;
             const arr = Array.isArray(bonusArr) ? bonusArr : bonusArr ? [bonusArr] : [];
@@ -307,31 +314,16 @@ export default function PlayerEdit({
                 .flatMap((b) => b.fields)
                 .find((f) => f.key === statKey)?.label || formatTypeLabel(statKey);
 
+            if (totalBonus === 0) return null;
+
             return (
               <div
                 key={statKey}
-                className="bg-gray-700 rounded-xl p-4 flex flex-col items-center text-center gap-y-2 hover:bg-gray-600 transition"
+                className="bg-gray-700/50 rounded-lg p-3 border border-gray-600 flex flex-col items-center text-center"
               >
-                <p className="text-white font-semibold">{label}</p>
-                <p className="text-white text-lg flex items-center gap-2 justify-center">
-                  {total}
-                  {arr.length > 0 && (
-                    <ToolTip
-                      text={
-                        `Base: ${base}` +
-                        arr.map((b) => {
-                          const typeLabel = formatTypeLabel(
-                            b.type.replace(/^talent_tree_/, "")
-                          );
-                          return `, +${b.count} (${typeLabel})`;
-                        }).join("")
-                      }
-                    >
-                      <span className="text-sm text-green-300">
-                        {arr.map((b) => `+${b.count}`).join(" ")}
-                      </span>
-                    </ToolTip>
-                  )}
+                <p className="text-gray-400 text-xs uppercase font-bold mb-1">{label}</p>
+                <p className="text-white font-mono text-lg">
+                  {total} <span className="text-green-400 text-sm">(+{totalBonus})</span>
                 </p>
               </div>
             );
