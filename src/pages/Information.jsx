@@ -1,7 +1,7 @@
 // src/pages/Information.jsx
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaBook, FaLandmark, FaBalanceScale, FaChessRook, FaShieldAlt, FaMedal, FaUsers, FaHammer } from "react-icons/fa";
+import { FaBook, FaLandmark, FaBalanceScale, FaChessRook, FaShieldAlt, FaMedal, FaUsers, FaHammer, FaUserTie } from "react-icons/fa";
 
 const sections = [
   { to: "livres", icon: <FaBook />, label: "Les Livres", desc: "Chroniques et légendes anciennes.", color: "from-amber-500 to-orange-600" },
@@ -12,6 +12,7 @@ const sections = [
   { to: "titres", icon: <FaMedal />, label: "Les Titres", desc: "Rangs et distinctions.", color: "from-yellow-400 to-amber-500" },
   { to: "guildes", icon: <FaUsers />, label: "Les Guildes", desc: "Organisations et confréries.", color: "from-green-500 to-emerald-600" },
   { to: "metiers", icon: <FaHammer />, label: "Les Métiers", desc: "Savoir-faire et artisanat.", color: "from-teal-500 to-cyan-600" },
+  { to: "npcs", icon: <FaUserTie />, label: "Les PNJ", desc: "Habitants et figures locales.", color: "from-pink-500 to-rose-600" },
 ];
 
 const container = {

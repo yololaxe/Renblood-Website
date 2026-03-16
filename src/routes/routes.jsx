@@ -27,6 +27,7 @@ import Unauthorized from "../pages/Unauthorized.jsx";
 import Arbre from "../pages/histoires/Arbre.jsx";
 import DicePage from "../pages/dice/DicePage.jsx";
 import Metiers from "../pages/histoires/Metiers.jsx";
+import Npcs from "../pages/histoires/Npcs.jsx";
 import AdminDashboard from "../pages/adminDashboard/AdminDashboard.jsx";
 import CreateFuturePage from "../pages/player/CreateFuture.jsx";
 import EditFuturePage from "../pages/player/EditFuturePage.jsx";
@@ -71,6 +72,7 @@ const routes = [
   { path: "/histoires/titres", element: <Titres />},
   { path: "/histoires/guildes", element: <Guildes />},
   { path: "/histoires/metiers", element: <Metiers />},
+  { path: "/histoires/npcs", element: <Npcs />},
   { path: "/futures/edit/:id", element: <EditFuturePage />,   private: true, requiredRole: "Esclave" },
 
 

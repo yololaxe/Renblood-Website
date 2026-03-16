@@ -92,7 +92,7 @@ export default function TalentTree() {
   const displayName = (code) => {
     const { base, lvl } = strip(code);
     const name = itemMap[base]?.fr_name || base;
-    return lvl != null ? `${name}${lvl}` : name;
+    return lvl != null ? `${name} ${lvl}` : name;
   };
 
   const updateProg = (tal, mastery) => {
@@ -178,7 +178,7 @@ export default function TalentTree() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-8 text-white">
+    <div className="max-w-5xl mx-auto p-8 text-white">
       <h1 className="text-4xl font-extrabold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-blue-400">
         🌳 Arbre des Talents – {talentData.name}
       </h1>

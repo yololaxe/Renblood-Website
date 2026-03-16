@@ -873,3 +873,60 @@ export const getAllPlayerQuestStates = async () => {
     return [];
   }
 };
+
+////////////////////////// NPCS /////////////////////////
+
+export const getNpcsList = async () => {
+  try {
+    console.log(`🔄 GET /npcs/list/`);
+    const { data } = await axiosInstance.get(`/npcs/list/`);
+    return data;
+  } catch (error) {
+    console.error("❌ getNpcsList :", error.response?.data || error.message);
+    return [];
+  }
+};
+
+export const createNpc = async (npcData) => {
+  try {
+    console.log(`🔄 POST /npcs/create/`, npcData);
+    const { data } = await axiosInstance.post(`/npcs/create/`, npcData);
+    return data;
+  } catch (error) {
+    console.error("❌ createNpc :", error.response?.data || error.message);
+    return null;
+  }
+};
+
+export const updateNpc = async (npcId, updates) => {
+  try {
+    console.log(`🔄 PUT /npcs/${npcId}/`, updates);
+    const { data } = await axiosInstance.put(`/npcs/${npcId}/`, updates);
+    return data;
+  } catch (error) {
+    console.error("❌ updateNpc :", error.response?.data || error.message);
+    return null;
+  }
+};
+
+export const deleteNpc = async (npcId) => {
+  try {
+    console.log(`🔄 DELETE /npcs/${npcId}/`);
+    const { data } = await axiosInstance.delete(`/npcs/${npcId}/`);
+    return data;
+  } catch (error) {
+    console.error("❌ deleteNpc :", error.response?.data || error.message);
+    return null;
+  }
+};
+
+export const meetNpc = async (npcId) => {
+  try {
+    console.log(`🔄 POST /npcs/${npcId}/meet/`);
+    const { data } = await axiosInstance.post(`/npcs/${npcId}/meet/`);
+    return data;
+  } catch (error) {
+    console.error("❌ meetNpc :", error.response?.data || error.message);
+    return null;
+  }
+};

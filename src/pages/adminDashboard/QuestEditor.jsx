@@ -3,10 +3,10 @@ import Tree from "react-d3-tree";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FaPlus, FaSave, FaTrash, FaTimes, FaSearchPlus, FaSearchMinus, FaCompress, 
-  FaEdit, FaUserAstronaut, FaCheckCircle, FaRunning, FaDiscord, FaCube, FaMapMarkerAlt, FaUserTie, FaHammer, FaTheaterMasks 
+  FaEdit, FaUserAstronaut, FaCheckCircle, FaRunning, FaDiscord, FaCube, FaMapMarkerAlt, FaUserTie, FaHammer, FaTheaterMasks, FaSearch 
 } from "react-icons/fa";
 import { 
-  getQuestsList, createQuest, updateQuest, deleteQuest, getPlayers, getAllPlayerQuestStates 
+  getQuestsList, createQuest, updateQuest, deleteQuest, getPlayers, getAllPlayerQuestStates, getNpcsList 
 } from "../../services/api";
 
 const DEFAULT_QUEST = {
@@ -84,6 +84,112 @@ const ItemListEditor = ({ items, onChange, label }) => {
         ))}
         {items.length === 0 && <p className="text-xs text-gray-500 italic">Aucun item.</p>}
       </div>
+    </div>
+  );
+};
+
+const NpcSelector = ({ value, onChange, npcs }) => {
+  const [search, setSearch] = useState("");
+  const [showList, setShowList] = useState(false);
+  const [isDummy, setIsDummy] = useState(value?.startsWith("dummy-") || false);
+  const [dummyName, setDummyName] = useState(value?.replace("dummy-", "") || "");
+
+  const filteredNpcs = npcs.filter(npc => 
+    npc.name.toLowerCase().includes(search.toLowerCase()) || 
+    (npc.region && npc.region.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const handleSelect = (npc) => {
+    onChange(npc.name); // On stocke le nom ou l'ID selon le besoin, ici le nom pour l'affichage
+    setShowList(false);
+    setIsDummy(false);
+  };
+
+  const handleDummyChange = (e) => {
+    const val = e.target.value;
+    setDummyName(val);
+    onChange(`dummy-${val}`);
+  };
+
+  const toggleDummy = () => {
+    if (!isDummy) {
+      setIsDummy(true);
+      onChange(`dummy-${dummyName}`);
+    } else {
+      setIsDummy(false);
+      onChange("");
+    }
+  };
+
+  return (
+    <div className="relative">
+      <div className="flex justify-between items-center mb-1">
+        <label className="block text-xs font-bold text-gray-400 uppercase">PNJ Donneur</label>
+        <button 
+          onClick={toggleDummy}
+          className={`text-xs px-2 py-0.5 rounded border ${isDummy ? "bg-yellow-600 border-yellow-500 text-white" : "bg-gray-700 border-gray-600 text-gray-400"}`}
+        >
+          {isDummy ? "Mode Dummy Actif" : "Utiliser Dummy"}
+        </button>
+      </div>
+
+      {isDummy ? (
+        <div className="flex items-center gap-2">
+          <span className="text-gray-400 text-sm">dummy-</span>
+          <input 
+            type="text" 
+            value={dummyName} 
+            onChange={handleDummyChange}
+            placeholder="Nom du futur PNJ"
+            className="flex-1 bg-gray-700 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
+          />
+        </div>
+      ) : (
+        <>
+          <div 
+            className="flex items-center bg-gray-700 border border-gray-600 rounded p-2 cursor-pointer"
+            onClick={() => setShowList(!showList)}
+          >
+            <FaUserTie className="text-gray-400 mr-2" />
+            <span className="flex-1 text-white">{value || "Sélectionner un PNJ..."}</span>
+            <FaSearch className="text-gray-500" />
+          </div>
+
+          {showList && (
+            <div className="absolute z-50 mt-1 w-full bg-gray-800 border border-gray-600 rounded shadow-xl max-h-60 overflow-y-auto">
+              <input 
+                type="text" 
+                placeholder="Rechercher (nom, région)..." 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full p-2 bg-gray-900 border-b border-gray-700 text-white focus:outline-none sticky top-0"
+                autoFocus
+              />
+              {filteredNpcs.map(npc => (
+                <div 
+                  key={npc.npc_id} 
+                  onClick={() => handleSelect(npc)}
+                  className="p-2 hover:bg-gray-700 cursor-pointer flex items-center gap-3 border-b border-gray-700/50 last:border-0"
+                >
+                  <img 
+                    src={npc.profile_image || "/assets/NPCdefault.png"} 
+                    alt={npc.name} 
+                    className="w-8 h-8 rounded-full object-cover bg-gray-900"
+                    onError={(e) => e.target.src = "/assets/NPCdefault.png"}
+                  />
+                  <div>
+                    <p className="text-sm font-bold text-white">{npc.name}</p>
+                    <p className="text-xs text-gray-400">{npc.region}</p>
+                  </div>
+                </div>
+              ))}
+              {filteredNpcs.length === 0 && (
+                <div className="p-3 text-center text-gray-500 text-sm">Aucun PNJ trouvé.</div>
+              )}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
@@ -205,6 +311,7 @@ const ObjectivesEditor = ({ objectives, onChange }) => {
 
 export default function QuestEditor() {
   const [quests, setQuests] = useState([]);
+  const [npcs, setNpcs] = useState([]); // Liste des NPCs
   const [loading, setLoading] = useState(true);
   const [selectedQuest, setSelectedQuest] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -229,7 +336,11 @@ export default function QuestEditor() {
       const questsData = await getQuestsList();
       setQuests(questsData || []);
 
-      // 2. Récupérer tous les états de quêtes
+      // 2. Récupérer les NPCs
+      const npcsData = await getNpcsList();
+      setNpcs(npcsData || []);
+
+      // 3. Récupérer tous les états de quêtes
       const allStates = await getAllPlayerQuestStates();
       
       // Transformer la liste plate en map par questId
@@ -247,7 +358,7 @@ export default function QuestEditor() {
       }
       setQuestTracking(trackingMap);
 
-      // 3. Récupérer les joueurs
+      // 4. Récupérer les joueurs
       const ranksToFetch = ["Citoyen", "Admin", "Etranger", "Villageois", "Noble"]; 
       const playersPromises = ranksToFetch.map(r => getPlayers(r));
       const playersResults = await Promise.all(playersPromises);
@@ -324,6 +435,15 @@ export default function QuestEditor() {
     // Simple comma-separated string to array
     const val = e.target.value.split(",").map(s => s.trim()).filter(Boolean);
     setFormData(prev => ({ ...prev, [field]: val }));
+  };
+
+  const handleJsonChange = (e) => {
+    const { name, value } = e.target;
+    try {
+      setFormData(prev => ({ ...prev, [name]: JSON.parse(value) }));
+    } catch (err) {
+      console.warn("Invalid JSON");
+    }
   };
 
   const handleSave = async () => {
@@ -629,10 +749,11 @@ export default function QuestEditor() {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase mb-1">PNJ Donneur</label>
-                      <input type="text" name="npc" value={formData.npc || ""} onChange={handleFormChange} className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white" />
-                    </div>
+                    <NpcSelector 
+                      value={formData.npc} 
+                      onChange={(val) => setFormData(prev => ({ ...prev, npc: val }))} 
+                      npcs={npcs} 
+                    />
                   </>
                 )}
 
