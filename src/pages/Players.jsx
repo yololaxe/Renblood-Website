@@ -1,7 +1,7 @@
 // src/pages/Players.jsx
 import { useEffect, useState } from "react";
 import { getPlayers } from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import { MoneyDisplay } from "../components/MoneyDisplay";
 import { motion } from "framer-motion";
@@ -10,10 +10,15 @@ import { FaUserCircle, FaSearch, FaFilter, FaCog, FaPlus } from "react-icons/fa"
 export default function Players() {
   const [players, setPlayers] = useState([]);
   const [filteredPlayers, setFilteredPlayers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get("search") || "");
   const [loading, setLoading] = useState(true);
   const { userRank } = useUser();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setSearchTerm(searchParams.get("search") || "");
+  }, [searchParams]);
 
   useEffect(() => {
     async function fetchPlayers() {

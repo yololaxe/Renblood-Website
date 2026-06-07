@@ -15,6 +15,8 @@ import {
 import { MoneyDisplay } from "../components/MoneyDisplay";
 import ToolTip from "../components/Tooltip";
 import Toast from "../components/Toast";
+import LoadingButton from "../components/LoadingButton";
+import StatCard from "../components/character/StatCard";
 import {
   FaSync,
   FaUserCircle,
@@ -85,15 +87,6 @@ const STAT_GROUPS = {
       { key: "influence", icon: <FaCrown />, label: "Influence" },
       { key: "discretion", icon: <FaUserNinja />, label: "Discrétion" },
     ]
-  },
-  other: {
-    label: "Divers",
-    color: "text-gray-400",
-    border: "border-gray-500/30",
-    bg: "bg-gray-500/10",
-    stats: [
-      { key: "place", icon: <FaBoxOpen />, label: "Inventaire" },
-    ]
   }
 };
 
@@ -131,25 +124,6 @@ function xpForLevel(targetLevel) {
 }
 
 // --- COMPOSANTS UI ---
-
-const StatCard = ({ icon, label, value, bonus, tooltip }) => (
-  <div className="flex items-center justify-between bg-gray-800/50 p-2 rounded-lg border border-gray-700 hover:border-gray-500 transition-colors">
-    <div className="flex items-center gap-3">
-      <span className="text-xl text-gray-400">{icon}</span>
-      <span className="text-sm font-medium text-gray-300">{label}</span>
-    </div>
-    <div className="flex items-center gap-1">
-      <span className="text-lg font-bold text-white">{value}</span>
-      {bonus > 0 && (
-        <ToolTip text={tooltip}>
-          <span className="text-xs font-bold text-green-400 bg-green-900/30 px-1.5 py-0.5 rounded">
-            +{bonus}
-          </span>
-        </ToolTip>
-      )}
-    </div>
-  </div>
-);
 
 const JobCard = ({ label, xp, level, maxLevel, nextXp, image }) => {
   const isMaxed = level >= maxLevel;
@@ -204,6 +178,7 @@ export default function Character() {
   const [licences, setLicences] = useState([]);
   const [selectedLicence, setSelectedLicence] = useState(null);
   const [toast, setToast] = useState({ status: null, message: "" });
+  const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
 
   // Map jobId → nom français & image
@@ -270,7 +245,7 @@ export default function Character() {
 
   const handleReloadStats = async () => {
     if (!userId) return;
-    setLoading(true);
+    setRefreshing(true);
     await initializeStatsBonus(userId);
     try {
       const full = await getPlayerFullProfile(userId);
@@ -284,7 +259,7 @@ export default function Character() {
     } catch {
       setError("Erreur lors du rafraîchissement.");
     } finally {
-      setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -325,6 +300,34 @@ export default function Character() {
     real_charact = {},
     experiences = {},
   } = player;
+
+  const getStatDetails = (key) => {
+    const base = player[key] || 0;
+    const bonuses = Array.isArray(real_charact[key])
+      ? real_charact[key]
+      : real_charact[key]
+      ? [real_charact[key]]
+      : [];
+    const totalBonus = bonuses.reduce((sum, bonus) => sum + bonus.count, 0);
+
+    const getBonusLabel = (bonus) => {
+      if (bonus.type.startsWith("talent_tree_")) return formatTypeLabel(bonus.type.replace("talent_tree_", ""));
+      if (bonus.type.startsWith("trait_")) {
+        const id = Number(bonus.type.split("_")[1]);
+        return traits.find((trait) => trait.id === id)?.Name || "Trait";
+      }
+      return bonus.type;
+    };
+
+    return {
+      totalBonus,
+      total: base + totalBonus,
+      tooltip: `Base : ${base}` + bonuses.map((bonus) => `, +${bonus.count} (${getBonusLabel(bonus)})`).join("")
+    };
+  };
+
+  const inventoryStat = getStatDetails("place");
+  const unlockedJobsCount = Object.values(experiences.jobs || {}).filter(job => job.xp !== -1).length;
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
@@ -377,17 +380,26 @@ export default function Character() {
                 <div className="bg-purple-900/30 px-4 py-2 rounded-lg border border-purple-500/30 flex items-center gap-2 text-purple-200 shadow-sm">
                   <FaMagic /> <span>{divin || "Aucune divinité"}</span>
                 </div>
+                <ToolTip text={inventoryStat.tooltip}>
+                  <div className="bg-gray-900/80 px-4 py-2 rounded-lg border border-gray-600 flex items-center gap-2 shadow-sm">
+                    <FaBoxOpen className="text-yellow-500" />
+                    <span>Inventaire : <strong className="text-white">{inventoryStat.total}</strong></span>
+                    {inventoryStat.totalBonus > 0 && <span className="text-xs text-green-400">+{inventoryStat.totalBonus}</span>}
+                  </div>
+                </ToolTip>
               </div>
             </div>
 
             {/* Actions Rapides */}
             <div className="flex flex-col gap-3">
-              <button
+              <LoadingButton
+                loading={refreshing}
+                loadingLabel="Actualisation..."
                 onClick={handleReloadStats}
                 className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow-md"
               >
-                <FaSync className={loading ? "animate-spin" : ""} /> Actualiser
-              </button>
+                <FaSync /> Actualiser
+              </LoadingButton>
               {discordInfo?.discord_id ? (
                 <button
                   onClick={handleUnlinkDiscord}
@@ -408,8 +420,27 @@ export default function Character() {
         </div>
       </div>
 
+      <div className="max-w-7xl mx-auto px-4 mt-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { label: "Métiers actifs", value: unlockedJobsCount, icon: <FaStar />, color: "text-yellow-400" },
+            { label: "Traits", value: traits.length, icon: <FaHeartbeat />, color: "text-green-400" },
+            { label: "Actions", value: actions.length, icon: <FaBolt />, color: "text-blue-400" },
+            { label: "Licences", value: licences.length, icon: <FaFileContract />, color: "text-purple-400" },
+          ].map(item => (
+            <div key={item.label} className="bg-gray-800/70 border border-gray-700 rounded-xl px-4 py-3 flex items-center gap-3 shadow-sm">
+              <span className={`text-xl ${item.color}`}>{item.icon}</span>
+              <div>
+                <p className="text-xl font-bold text-white leading-none">{item.value}</p>
+                <p className="text-xs text-gray-400 mt-1">{item.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* --- MAIN CONTENT --- */}
-      <div className="max-w-7xl mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* COLONNE GAUCHE : STATS */}
         <div className="lg:col-span-2 space-y-8">
@@ -419,7 +450,7 @@ export default function Character() {
             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
               <FaBolt className="text-yellow-500" /> Caractéristiques
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               {Object.entries(STAT_GROUPS).map(([groupKey, group]) => (
                 <div key={groupKey} className={`bg-gray-800 rounded-xl p-5 border ${group.border} shadow-lg`}>
                   <h3 className={`text-lg font-bold mb-4 ${group.color} border-b border-gray-700 pb-2`}>
@@ -427,35 +458,16 @@ export default function Character() {
                   </h3>
                   <div className="space-y-3">
                     {group.stats.map(({ key, icon, label }) => {
-                      const base = player[key] || 0;
-                      const bonuses = Array.isArray(real_charact[key])
-                        ? real_charact[key]
-                        : real_charact[key]
-                        ? [real_charact[key]]
-                        : [];
-                      const totalBonus = bonuses.reduce((s, b) => s + b.count, 0);
-                      const total = base + totalBonus;
-
-                      const getBonusLabel = (b) => {
-                        if (b.type.startsWith("talent_tree_")) return formatTypeLabel(b.type.replace("talent_tree_", ""));
-                        if (b.type.startsWith("trait_")) {
-                          const id = Number(b.type.split("_")[1]);
-                          const t = traits.find((t) => t.id === id);
-                          return t?.Name || "Trait";
-                        }
-                        return b.type;
-                      };
-
-                      const tooltipText = `Base : ${base}` + bonuses.map((b) => `, +${b.count} (${getBonusLabel(b)})`).join("");
+                      const stat = getStatDetails(key);
 
                       return (
                         <StatCard 
                           key={key} 
                           icon={icon} 
                           label={label} 
-                          value={total} 
-                          bonus={totalBonus} 
-                          tooltip={tooltipText} 
+                          value={stat.total}
+                          bonus={stat.totalBonus}
+                          tooltip={stat.tooltip}
                         />
                       );
                     })}
@@ -499,7 +511,7 @@ export default function Character() {
         </div>
 
         {/* COLONNE DROITE : SIDEBAR (Traits, Actions, Licences) */}
-        <div className="space-y-8">
+        <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
           
           {/* Traits & Actions */}
           <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg">
@@ -617,7 +629,11 @@ export default function Character() {
         )}
       </AnimatePresence>
 
-      <Toast status={toast.status} message={toast.message} />
+      <Toast
+        status={toast.status}
+        message={toast.message}
+        onClose={() => setToast({ status: null, message: "" })}
+      />
     </div>
   );
 }

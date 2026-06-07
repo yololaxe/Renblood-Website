@@ -4,7 +4,9 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import { auth, listenToAuthChanges, signOut } from "../data/firebaseConfig";
 import { useUser } from "../context/UserContext";
 import LiveSessionBanner from "./LiveSessionBanner";
+import GlobalSearch from "./GlobalSearch";
 import { HiMenu, HiX } from "react-icons/hi";
+import { FaSearch } from "react-icons/fa";
 
 const navItems = [
   { to: "/",         label: "Accueil" },
@@ -20,11 +22,23 @@ function Navbar() {
   const [user, setUser]       = useState(null);
   const [showNav, setShowNav] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const navigate               = useNavigate();
   const { setUserId, setUserRank, userRank } = useUser();
 
   useEffect(() => {
     listenToAuthChanges(setUser);
+  }, []);
+
+  useEffect(() => {
+    const handleShortcut = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
 
   useEffect(() => {
@@ -95,6 +109,15 @@ function Navbar() {
 
           {/* User actions + mobile toggle */}
           <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center gap-2 rounded-lg border border-gray-600 bg-gray-900/60 px-3 py-2 text-gray-300 hover:border-gray-500 hover:text-white"
+              title="Recherche globale (Ctrl+K)"
+            >
+              <FaSearch />
+              <span className="hidden xl:inline text-sm">Rechercher</span>
+              <span className="hidden xl:inline rounded border border-gray-600 px-1.5 py-0.5 text-[10px] text-gray-500">Ctrl K</span>
+            </button>
             {user ? (
               <>
                 {userRank === "Admin" && (
@@ -214,6 +237,7 @@ function Navbar() {
 
       {/* placeholder so page content isn't hidden */}
       <div className="h-16" />
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }

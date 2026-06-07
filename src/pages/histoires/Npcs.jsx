@@ -184,8 +184,11 @@ export default function Npcs() {
     }
   };
 
-  const handleDelete = async (npcId, npcName) => {
+  const handleDelete = async () => {
     try {
+      const npcId = formData.npc_id;
+      const npcName = formData.name;
+      
       // 1. Vérifier les quêtes liées
       const quests = await getQuestsList();
       const linkedQuests = quests.filter(q => q.npc === npcName || q.npc === npcId);
@@ -202,7 +205,7 @@ export default function Npcs() {
 
         // 2. Remplacer par dummy
         await Promise.all(linkedQuests.map(q => 
-          updateQuest(q.questId, { npc: dummyName })
+          updateQuest(q.questId, { ...q, npc: dummyName })
         ));
         
         alert(`✅ NPC remplacé par "${dummyName}" dans ${linkedQuests.length} quête(s).`);
@@ -213,6 +216,7 @@ export default function Npcs() {
       // 3. Supprimer le NPC
       await deleteNpc(npcId);
       fetchNpcs();
+      setIsEditing(false);
       if (selectedNpc?.npc_id === npcId) setSelectedNpc(null);
       
     } catch (error) {
@@ -361,7 +365,11 @@ export default function Npcs() {
                         <FaEdit size={12} />
                       </button>
                       <button 
-                        onClick={(e) => { e.stopPropagation(); handleDelete(npc.npc_id, npc.name); }}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setFormData(npc); // Set data before deleting so handleDelete knows what to check
+                          handleDelete(); 
+                        }}
                         className="p-2 bg-red-600 hover:bg-red-500 text-white rounded-full shadow-lg"
                       >
                         <FaTrash size={12} />
@@ -610,11 +618,16 @@ export default function Npcs() {
                 </div>
               </div>
 
-              <div className="p-6 border-t border-gray-700 bg-gray-900 flex justify-end gap-3">
-                <button onClick={() => setIsEditing(false)} className="px-4 py-2 text-gray-400 hover:text-white">Annuler</button>
-                <button onClick={handleSave} className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded font-bold shadow-lg">
-                  <FaSave /> Enregistrer
+              <div className="p-6 border-t border-gray-700 bg-gray-900 flex justify-between">
+                <button onClick={handleDelete} className="flex items-center gap-2 text-red-500 hover:text-red-400 font-bold">
+                    <FaTrash /> Supprimer
                 </button>
+                <div className="flex gap-3 ml-auto">
+                  <button onClick={() => setIsEditing(false)} className="px-4 py-2 text-gray-400 hover:text-white">Annuler</button>
+                  <button onClick={handleSave} className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded font-bold shadow-lg">
+                    <FaSave /> Enregistrer
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

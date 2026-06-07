@@ -3,11 +3,12 @@ import Tree from "react-d3-tree";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FaPlus, FaSave, FaTrash, FaTimes, FaSearchPlus, FaSearchMinus, FaCompress, 
-  FaEdit, FaUserAstronaut, FaCheckCircle, FaRunning, FaDiscord, FaCube, FaMapMarkerAlt, FaUserTie, FaHammer, FaTheaterMasks, FaSearch 
+  FaEdit, FaUserAstronaut, FaCheckCircle, FaRunning, FaDiscord, FaCube, FaMapMarkerAlt, FaUserTie, FaHammer, FaTheaterMasks, FaSearch, FaPlay, FaBroom 
 } from "react-icons/fa";
 import { 
-  getQuestsList, createQuest, updateQuest, deleteQuest, getPlayers, getAllPlayerQuestStates, getNpcsList 
+  getQuestsList, createQuest, updateQuest, deleteQuest, getPlayers, getAllPlayerQuestStates, getNpcsList, updatePlayerQuestStatus 
 } from "../../services/api";
+import { categories, specials } from "../../data/metiers";
 
 const DEFAULT_QUEST = {
   questId: "",
@@ -34,6 +35,46 @@ const getDiscordAvatarUrl = (discordId, avatarHash) => {
 };
 
 // --- Composants d'édition visuelle ---
+
+const MoneyInput = ({ value, onChange }) => {
+  const [parts, setParts] = useState({ or: 0, argent: 0, bronze: 0, fer: 0 });
+
+  useEffect(() => {
+    const or = Math.floor(value / 262144);
+    const remOr = value % 262144;
+    const argent = Math.floor(remOr / 4096);
+    const remArgent = remOr % 4096;
+    const bronze = Math.floor(remArgent / 64);
+    const fer = remArgent % 64;
+    setParts({ or, argent, bronze, fer });
+  }, [value]);
+
+  const handleChange = (part, val) => {
+    const newParts = { ...parts, [part]: Number(val) || 0 };
+    setParts(newParts);
+    const total = (newParts.or * 262144) + (newParts.argent * 4096) + (newParts.bronze * 64) + newParts.fer;
+    onChange(total);
+  };
+
+  return (
+    <div className="bg-gray-700/50 p-3 rounded-lg border border-gray-600">
+      <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Argent</label>
+      <div className="grid grid-cols-4 gap-2">
+        {Object.entries(parts).map(([part, val]) => (
+          <div key={part}>
+            <label className="text-xs text-gray-500 capitalize">{part}</label>
+            <input 
+              type="number" 
+              value={val} 
+              onChange={(e) => handleChange(part, e.target.value)}
+              className="w-full bg-gray-800 border border-gray-600 rounded p-1 text-white text-sm"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const ItemListEditor = ({ items, onChange, label }) => {
   const handleAddItem = () => {
@@ -311,22 +352,36 @@ const ObjectivesEditor = ({ objectives, onChange }) => {
 
 export default function QuestEditor() {
   const [quests, setQuests] = useState([]);
-  const [npcs, setNpcs] = useState([]); // Liste des NPCs
+  const [npcs, setNpcs] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [selectedQuest, setSelectedQuest] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [activeTab, setActiveTab] = useState("details"); // 'details' | 'texts' | 'logic' | 'players'
+  const [activeTab, setActiveTab] = useState("details"); 
 
   // Cache des joueurs pour affichage (id -> data)
   const [playersCache, setPlayersCache] = useState({});
+  const [allPlayersList, setAllPlayersList] = useState([]);
   
   // Suivi des quêtes (questId -> [ { playerId, status } ])
   const [questTracking, setQuestTracking] = useState({});
 
+  // États pour l'ajout d'un joueur à une quête
+  const [showAddPlayerModal, setShowAddPlayerModal] = useState(false);
+  const [selectedPlayerToAdd, setSelectedPlayerToAdd] = useState("");
+  const [playerSearch, setPlayerSearch] = useState("");
+
   // Form State
   const [formData, setFormData] = useState(DEFAULT_QUEST);
+
+  const jobCategories = useMemo(() => {
+    return [
+      { name: "Aventurier", jobs: [{ id: "aventurier", name: "Aventurier" }] },
+      ...categories,
+      { name: "Spécial", jobs: specials }
+    ];
+  }, []);
 
   // Chargement des données
   const fetchAllData = async () => {
@@ -363,12 +418,16 @@ export default function QuestEditor() {
       const playersPromises = ranksToFetch.map(r => getPlayers(r));
       const playersResults = await Promise.all(playersPromises);
       
-      const cache = {};
+      const playerMap = new Map();
       playersResults.flat().filter(Boolean).forEach(p => {
-        cache[p.id] = p;
+        if (p.id && !playerMap.has(p.id)) {
+          playerMap.set(p.id, p);
+        }
       });
       
-      setPlayersCache(cache);
+      const uniquePlayers = Array.from(playerMap.values());
+      setPlayersCache(Object.fromEntries(playerMap));
+      setAllPlayersList(uniquePlayers);
 
     } catch (err) {
       console.error("Erreur chargement:", err);
@@ -400,7 +459,7 @@ export default function QuestEditor() {
       description: quest.description || { fr: "", en: "" },
       beginText: quest.beginText || { fr: "", en: "" },
       endText: quest.endText || { fr: "", en: "" },
-      xp: quest.xp || { job: "", amount: 0 },
+      xp: quest.xp || { job: "aventurier", amount: 0 },
       prerequisitesAll: quest.prerequisitesAll || [],
       prerequisitesAny: quest.prerequisitesAny || [],
       objectives: quest.objectives || [],
@@ -417,6 +476,15 @@ export default function QuestEditor() {
       parentId: parentId || "",
       questId: suggestedId || `new.${Date.now()}` 
     });
+  };
+
+  const handleClearForm = () => {
+    if (window.confirm("Voulez-vous vraiment vider le formulaire ?")) {
+      setFormData({ 
+        ...DEFAULT_QUEST, 
+        questId: `new.${Date.now()}` 
+      });
+    }
   };
 
   const handleFormChange = (e) => {
@@ -464,9 +532,53 @@ export default function QuestEditor() {
   };
 
   const closeModal = () => {
-    setSelectedQuest(null);
-    setIsCreating(false);
+    // Ne ferme pas si on clique à côté pour éviter de perdre les données
+    // L'utilisateur doit explicitement cliquer sur Annuler ou la croix
   };
+
+  const handleForceClose = () => {
+    if (window.confirm("Quitter sans sauvegarder ? Vos modifications seront perdues.")) {
+      setSelectedQuest(null);
+      setIsCreating(false);
+    }
+  };
+
+  // --- Gestion des joueurs sur la quête ---
+  const handleAddPlayerToQuest = async () => {
+    if (!selectedPlayerToAdd || !formData.questId) return;
+
+    const hasParent = formData.parentId;
+    let canAdd = true;
+    
+    if (hasParent) {
+      const parentStatus = questTracking[hasParent]?.find(p => p.playerId === selectedPlayerToAdd)?.status;
+      if (parentStatus !== "COMPLETED") {
+        const confirmForce = window.confirm(`⚠️ Attention : Ce joueur n'a pas terminé la quête parente (${hasParent}). Voulez-vous forcer l'ajout et valider automatiquement la quête parente ?`);
+        if (confirmForce) {
+          // On valide la quête parente
+          await updatePlayerQuestStatus(selectedPlayerToAdd, hasParent, "COMPLETED");
+        } else {
+          canAdd = false;
+        }
+      }
+    }
+
+    if (canAdd) {
+      try {
+        await updatePlayerQuestStatus(selectedPlayerToAdd, formData.questId, "IN_PROGRESS");
+        await fetchAllData(); // Rafraîchir pour voir le joueur apparaître
+        setShowAddPlayerModal(false);
+        setSelectedPlayerToAdd("");
+      } catch (error) {
+        alert("Erreur lors de l'ajout du joueur à la quête.");
+      }
+    }
+  };
+
+  const filteredPlayersList = allPlayersList.filter(p => 
+    p.pseudo_minecraft?.toLowerCase().includes(playerSearch.toLowerCase()) ||
+    p.name?.toLowerCase().includes(playerSearch.toLowerCase())
+  );
 
   // --- Construction de l'arbre ---
   const treeData = useMemo(() => {
@@ -660,7 +772,7 @@ export default function QuestEditor() {
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex justify-end"
-            onClick={closeModal}
+            // Retrait du onClick={closeModal} ici pour éviter la fermeture accidentelle
           >
             <motion.div 
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
@@ -673,7 +785,14 @@ export default function QuestEditor() {
                   <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                     {isCreating ? <><FaPlus className="text-green-500"/> Créer une quête</> : <><FaEdit className="text-blue-500"/> Éditer la quête</>}
                   </h2>
-                  <button onClick={closeModal} className="text-gray-400 hover:text-white"><FaTimes size={24}/></button>
+                  <div className="flex items-center gap-4">
+                    {isCreating && (
+                      <button onClick={handleClearForm} className="text-xs flex items-center gap-1 text-orange-400 hover:text-orange-300">
+                        <FaBroom /> Vider
+                      </button>
+                    )}
+                    <button onClick={handleForceClose} className="text-gray-400 hover:text-white"><FaTimes size={24}/></button>
+                  </div>
                 </div>
                 
                 {/* Tabs */}
@@ -844,28 +963,41 @@ export default function QuestEditor() {
                     </div>
 
                     {/* Récompenses */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Argent</label>
-                        <input type="number" name="money" value={formData.money} onChange={handleFormChange} className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">XP Montant</label>
-                        <input 
-                          type="number" 
-                          value={formData.xp?.amount || 0} 
-                          onChange={(e) => handleNestedChange("xp", "amount", Number(e.target.value))}
-                          className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white" 
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">XP Métier</label>
-                        <input 
-                          type="text" 
-                          value={formData.xp?.job || ""} 
-                          onChange={(e) => handleNestedChange("xp", "job", e.target.value)}
-                          className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white" 
-                        />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <MoneyInput 
+                        value={formData.money} 
+                        onChange={(val) => setFormData(prev => ({ ...prev, money: val }))} 
+                      />
+                      <div className="bg-gray-700/50 p-3 rounded-lg border border-gray-600">
+                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Expérience</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-xs text-gray-500">Métier</label>
+                            <select 
+                              value={formData.xp?.job || "aventurier"} 
+                              onChange={(e) => handleNestedChange("xp", "job", e.target.value)}
+                              className="w-full bg-gray-800 border border-gray-600 rounded p-1 text-white text-sm"
+                            >
+                              <option value="aventurier">Aventurier</option>
+                              {jobCategories.map((cat, i) => (
+                                <optgroup key={i} label={cat.name}>
+                                  {cat.jobs.map(j => (
+                                    <option key={j.id} value={j.id}>{j.name}</option>
+                                  ))}
+                                </optgroup>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-500">Montant</label>
+                            <input 
+                              type="number" 
+                              value={formData.xp?.amount || 0} 
+                              onChange={(e) => handleNestedChange("xp", "amount", Number(e.target.value))}
+                              className="w-full bg-gray-800 border border-gray-600 rounded p-1 text-white text-sm" 
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -885,42 +1017,62 @@ export default function QuestEditor() {
 
                 {/* --- TAB: PLAYERS --- */}
                 {activeTab === "players" && !isCreating && (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                      <FaUserAstronaut /> Suivi des joueurs
-                    </h3>
-                    
-                    {(!questTracking[formData.questId] || questTracking[formData.questId].length === 0) ? (
-                      <p className="text-gray-400 italic">Aucun joueur n'a commencé cette quête.</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {questTracking[formData.questId].map((entry, idx) => {
-                          const player = playersCache[entry.playerId] || { pseudo_minecraft: "Inconnu", id: entry.playerId };
-                          const avatarUrl = getDiscordAvatarUrl(player.discord_id, player.discord_avatar);
-                          const isCompleted = entry.status === "COMPLETED";
+                  <div className="space-y-6">
+                    {/* Add Player Form */}
+                    <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600 flex flex-col gap-3">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                          <FaPlus className="text-green-400" /> Démarrer la quête pour un joueur
+                        </h3>
+                        <button 
+                          onClick={() => setShowAddPlayerModal(true)}
+                          className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded flex items-center gap-1 transition shadow-md"
+                        >
+                           Sélectionner un joueur
+                        </button>
+                      </div>
+                    </div>
 
-                          return (
-                            <div key={idx} className="flex items-center justify-between bg-gray-700 p-3 rounded-lg border border-gray-600">
-                              <div className="flex items-center gap-3">
-                                <img src={avatarUrl} alt="avatar" className="w-10 h-10 rounded-full border border-gray-500" />
-                                <div>
-                                  <p className="font-bold text-white">{player.pseudo_minecraft}</p>
-                                  <p className="text-xs text-gray-400 flex items-center gap-1">
-                                    {player.discord_id ? <><FaDiscord className="text-indigo-400"/> Connecté</> : "Pas de Discord"}
-                                  </p>
+                    {/* List of active players */}
+                    <div>
+                      <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
+                        <FaUserAstronaut /> Suivi des joueurs
+                      </h3>
+                      
+                      {(!questTracking[formData.questId] || questTracking[formData.questId].length === 0) ? (
+                        <p className="text-gray-400 italic bg-gray-800 p-4 rounded-lg border border-gray-700 text-center">Aucun joueur n'a commencé cette quête.</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {questTracking[formData.questId].map((entry, idx) => {
+                            const player = playersCache[entry.playerId] || { pseudo_minecraft: "Inconnu", id: entry.playerId };
+                            const avatarUrl = getDiscordAvatarUrl(player.discord_id, player.discord_avatar);
+                            const isCompleted = entry.status === "COMPLETED";
+
+                            return (
+                              <div key={idx} className="flex items-center justify-between bg-gray-700 p-3 rounded-lg border border-gray-600 hover:border-gray-500 transition-colors">
+                                <div className="flex items-center gap-3">
+                                  <img src={avatarUrl} alt="avatar" className="w-10 h-10 rounded-full border border-gray-500" />
+                                  <div>
+                                    <p className="font-bold text-white">{player.pseudo_minecraft}</p>
+                                    <p className="text-xs text-gray-400 flex items-center gap-1">
+                                      {player.discord_id ? <><FaDiscord className="text-indigo-400"/> Connecté</> : "Pas de Discord"}
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-3">
+                                  <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 ${
+                                    isCompleted ? "bg-green-900/50 text-green-400 border border-green-700" : "bg-blue-900/50 text-blue-400 border border-blue-700"
+                                  }`}>
+                                    {isCompleted ? <><FaCheckCircle /> Terminé</> : <><FaRunning /> En cours</>}
+                                  </div>
                                 </div>
                               </div>
-                              
-                              <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 ${
-                                isCompleted ? "bg-green-900/50 text-green-400 border border-green-700" : "bg-blue-900/50 text-blue-400 border border-blue-700"
-                              }`}>
-                                {isCompleted ? <><FaCheckCircle /> Terminé</> : <><FaRunning /> En cours</>}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -934,7 +1086,7 @@ export default function QuestEditor() {
                   </button>
                 )}
                 <div className="flex gap-3 ml-auto">
-                  <button onClick={closeModal} className="px-4 py-2 text-gray-400 hover:text-white">Annuler</button>
+                  <button onClick={handleForceClose} className="px-4 py-2 text-gray-400 hover:text-white">Annuler</button>
                   <button onClick={handleSave} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded font-bold shadow-lg">
                     <FaSave /> Enregistrer
                   </button>
@@ -942,6 +1094,73 @@ export default function QuestEditor() {
               </div>
 
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Sub-Modal pour sélectionner un joueur à ajouter */}
+      <AnimatePresence>
+        {showAddPlayerModal && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex justify-center items-center p-4"
+            onClick={() => setShowAddPlayerModal(false)}
+          >
+            <div className="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-600 w-full max-w-md flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-white">Ajouter un joueur</h3>
+                <button onClick={() => setShowAddPlayerModal(false)} className="text-gray-400 hover:text-white"><FaTimes /></button>
+              </div>
+              
+              <div className="relative mb-4">
+                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                <input 
+                  type="text" placeholder="Rechercher (pseudo, nom)..." 
+                  value={playerSearch} onChange={(e) => setPlayerSearch(e.target.value)}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 pl-10 pr-3 text-white focus:outline-none focus:border-blue-500"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex-grow overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                {filteredPlayersList.map(p => {
+                  const isAlreadyOnQuest = questTracking[formData.questId]?.some(t => t.playerId === p.id);
+                  
+                  return (
+                    <div 
+                      key={p.id} 
+                      onClick={() => !isAlreadyOnQuest && setSelectedPlayerToAdd(p.id)}
+                      className={`flex items-center justify-between p-3 rounded-lg border transition cursor-pointer ${
+                        isAlreadyOnQuest 
+                          ? "bg-gray-800 border-gray-700 opacity-50 cursor-not-allowed" 
+                          : selectedPlayerToAdd === p.id 
+                            ? "bg-blue-900/50 border-blue-500" 
+                            : "bg-gray-700 border-gray-600 hover:border-gray-500"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <img src={getDiscordAvatarUrl(p.discord_id, p.discord_avatar)} className="w-8 h-8 rounded-full" alt="av" />
+                        <span className="text-white font-medium">{p.pseudo_minecraft}</span>
+                      </div>
+                      {isAlreadyOnQuest && <span className="text-xs text-gray-500 uppercase">Déjà assigné</span>}
+                      {selectedPlayerToAdd === p.id && <FaCheckCircle className="text-blue-400" />}
+                    </div>
+                  );
+                })}
+                {filteredPlayersList.length === 0 && <p className="text-center text-gray-500 py-4">Aucun joueur trouvé.</p>}
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3 border-t border-gray-700 pt-4">
+                <button onClick={() => setShowAddPlayerModal(false)} className="px-4 py-2 text-gray-400 hover:text-white">Annuler</button>
+                <button 
+                  onClick={handleAddPlayerToQuest}
+                  disabled={!selectedPlayerToAdd}
+                  className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <FaPlay /> Démarrer la quête
+                </button>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

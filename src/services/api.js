@@ -863,6 +863,19 @@ export const updatePlayerQuestStatus = async (playerId, questId, status) => {
   }
 };
 
+export const cancelPlayerQuestState = async (playerId, questId) => {
+  try {
+    console.log(`POST /quests/player/${playerId}/cancel/`, { quest_id: questId });
+    const { data } = await axiosInstance.post(`/quests/player/${playerId}/cancel/`, {
+      quest_id: questId,
+    });
+    return data;
+  } catch (error) {
+    console.error("cancelPlayerQuestState :", error.response?.data || error.message);
+    return null;
+  }
+};
+
 export const getAllPlayerQuestStates = async () => {
   try {
     console.log(`🔄 GET /quests/all_player_states/`);
@@ -920,13 +933,28 @@ export const deleteNpc = async (npcId) => {
   }
 };
 
-export const meetNpc = async (npcId) => {
+export const meetNpc = async (npcId, playerId) => {
   try {
-    console.log(`🔄 POST /npcs/${npcId}/meet/`);
-    const { data } = await axiosInstance.post(`/npcs/${npcId}/meet/`);
+    console.log(`🔄 POST /npcs/${npcId}/meet/`, { player_id: playerId });
+    const { data } = await axiosInstance.post(`/npcs/${npcId}/meet/`, {
+      player_id: playerId,
+    });
     return data;
   } catch (error) {
     console.error("❌ meetNpc :", error.response?.data || error.message);
-    return null;
+    throw error;
+  }
+};
+
+export const unmeetNpc = async (npcId, playerId) => {
+  try {
+    console.log(`DELETE /npcs/${npcId}/meet/`, { player_id: playerId });
+    const { data } = await axiosInstance.delete(`/npcs/${npcId}/meet/`, {
+      data: { player_id: playerId },
+    });
+    return data;
+  } catch (error) {
+    console.error("unmeetNpc :", error.response?.data || error.message);
+    throw error;
   }
 };

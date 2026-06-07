@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Tree from "react-d3-tree";
 import { getQuestsList, getPlayerQuests, getPlayerFullProfile } from "../services/api";
@@ -14,6 +14,9 @@ const QUEST_TYPES = [
   { id: "FullRP", label: "Full-RP" },
   { id: "SemiRP", label: "Semi-RP" },
 ];
+
+const TREE_SEPARATION = { siblings: 2, nonSiblings: 2.5 };
+const TREE_NODE_SIZE = { x: 260, y: 180 };
 
 export default function Quests() {
   const { userId, userRank } = useUser();
@@ -60,10 +63,15 @@ export default function Quests() {
     }
   }, []);
 
-  const getQuestStatus = (questId) => {
-    const pq = playerQuests.find((p) => p.quest_id === questId);
-    return pq ? pq.status : null; // 'IN_PROGRESS', 'COMPLETED', or null
-  };
+  const questStatusById = useMemo(
+    () => Object.fromEntries(playerQuests.map(quest => [quest.quest_id, quest.status])),
+    [playerQuests]
+  );
+
+  const getQuestStatus = useCallback(
+    (questId) => questStatusById[questId] || null,
+    [questStatusById]
+  );
 
   const formatText = (text, quest) => {
     if (!text) return "";
@@ -116,7 +124,7 @@ export default function Quests() {
   }, [quests, selectedType]);
 
   // Rendu personnalisé des nœuds
-  const renderCustomNode = ({ nodeDatum, toggleNode }) => {
+  const renderCustomNode = useCallback(({ nodeDatum, toggleNode }) => {
     // Nœud racine virtuel
     if (nodeDatum.attributes?.isRoot) {
       return (
@@ -220,7 +228,7 @@ export default function Quests() {
         )}
       </g>
     );
-  };
+  }, [getQuestStatus, selectedQuest?.questId, userRank]);
 
   if (loading) {
     return (
@@ -270,10 +278,10 @@ export default function Quests() {
             renderCustomNodeElement={renderCustomNode}
             orientation="vertical"
             pathFunc="step" // Lignes coudées style circuit
-            separation={{ siblings: 2, nonSiblings: 2.5 }}
-            nodeSize={{ x: 260, y: 180 }} // Espacement entre les nœuds
-            enableLegacyTransitions={true}
-            transitionDuration={500}
+            separation={TREE_SEPARATION}
+            nodeSize={TREE_NODE_SIZE}
+            enableLegacyTransitions={false}
+            transitionDuration={0}
           />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-400">

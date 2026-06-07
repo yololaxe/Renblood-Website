@@ -216,10 +216,6 @@ export default function SessionPlayersFuturesPage() {
                 )}
               </div>
 
-              {/* Footer Actions (Placeholder pour futures actions admin) */}
-              {/* <div className="p-3 bg-gray-900/30 border-t border-gray-700 flex justify-end gap-2">
-                <button className="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-white transition">Détails</button>
-              </div> */}
             </motion.div>
           ))}
         </AnimatePresence>
