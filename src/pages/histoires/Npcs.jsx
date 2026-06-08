@@ -14,6 +14,7 @@ const DEFAULT_NPC = {
   profile_image: "",
   dialogue: [],
   tags: [],
+  quests: [],
   enabled: true,
   quest_giver: false,
   region: "Royaume de Renblood"
@@ -107,6 +108,7 @@ export default function Npcs() {
       ...DEFAULT_NPC,
       ...npc,
       dialogue: npc.dialogue || [],
+      quests: npc.quests || [],
       region: npc.region || "Royaume de Renblood"
     });
     setImagePreview(npc.profile_image);

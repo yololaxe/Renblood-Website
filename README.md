@@ -40,12 +40,17 @@ npm install
 
 🏃‍♂️ 3. Lancer le projet en local
 
-npm run dev
-
-To deploy : 
-
-npm run build
-
-Staging → npm run deploy:staging → https://renblood-staging.web.app
-
-Prod → npm run deploy:prod → https://renblood-website.web.app
+Scripts available in renblood-website@1.0.0 via `npm run`:
+  dev
+    vite
+  preview
+    vite preview
+  build:prod
+    vite build --mode production
+  build:staging
+    vite build --mode staging
+  deploy:prod
+    npm run build:prod && firebase deploy --only hosting:prod --project renblood-website
+  deploy:staging
+    npm run build:staging && firebase deploy --only hosting:staging --project renblood-website
+(base) PS D:\Projets\Projet\renblood-website\renblood-website> 

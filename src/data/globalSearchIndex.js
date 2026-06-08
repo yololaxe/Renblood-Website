@@ -98,6 +98,12 @@ const locationResults = Object.entries(comtes).flatMap(([county, cities]) => [
 ]);
 
 export const staticContentResults = [
+  {
+    label: "Zeubillage n'est plus : vive Shaleton !",
+    description: "Edition speciale du Conseil de l'an 336, par Paul Mortadelle",
+    path: "/histoires/journal",
+    type: "Journal",
+  },
   ...familyResults,
   ...guildResults,
   ...jobResults,

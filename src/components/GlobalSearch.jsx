@@ -31,6 +31,7 @@ const publicPages = [
   { label: "Guildes", description: "Guildes du royaume", path: "/histoires/guildes", type: "Page" },
   { label: "Lois", description: "Lois de Renblood", path: "/histoires/lois", type: "Page" },
   { label: "Livres", description: "Bibliothèque", path: "/histoires/livres", type: "Page" },
+  { label: "Journal de Shaleton", description: "Nouvelles et chroniques de Shaleton", path: "/histoires/journal", type: "Page" },
 ];
 
 const authenticatedPages = [

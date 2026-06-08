@@ -6,7 +6,7 @@ import {
   FaEdit, FaUserAstronaut, FaCheckCircle, FaRunning, FaDiscord, FaCube, FaMapMarkerAlt, FaUserTie, FaHammer, FaTheaterMasks, FaSearch, FaPlay, FaBroom 
 } from "react-icons/fa";
 import { 
-  getQuestsList, createQuest, updateQuest, deleteQuest, getPlayers, getAllPlayerQuestStates, getNpcsList, updatePlayerQuestStatus 
+  getQuestsList, createQuest, updateQuest, deleteQuest, getPlayers, getAllPlayerQuestStates, getNpcsList, updateNpc, updatePlayerQuestStatus 
 } from "../../services/api";
 import { categories, specials } from "../../data/metiers";
 
@@ -141,7 +141,7 @@ const NpcSelector = ({ value, onChange, npcs }) => {
   );
 
   const handleSelect = (npc) => {
-    onChange(npc.name); // On stocke le nom ou l'ID selon le besoin, ici le nom pour l'affichage
+    onChange(npc.npc_id);
     setShowList(false);
     setIsDummy(false);
   };
@@ -161,6 +161,12 @@ const NpcSelector = ({ value, onChange, npcs }) => {
       onChange("");
     }
   };
+  
+  const selectedNpcName = useMemo(() => {
+    if (!value || value.startsWith("dummy-")) return value;
+    const npc = npcs.find(n => n.npc_id === value);
+    return npc ? npc.name : value;
+  }, [value, npcs]);
 
   return (
     <div className="relative">
@@ -192,7 +198,7 @@ const NpcSelector = ({ value, onChange, npcs }) => {
             onClick={() => setShowList(!showList)}
           >
             <FaUserTie className="text-gray-400 mr-2" />
-            <span className="flex-1 text-white">{value || "Sélectionner un PNJ..."}</span>
+            <span className="flex-1 text-white">{selectedNpcName || "Sélectionner un PNJ..."}</span>
             <FaSearch className="text-gray-500" />
           </div>
 
@@ -514,11 +520,49 @@ export default function QuestEditor() {
     }
   };
 
+  const syncQuestNpcLink = async (questId, npcReference = "") => {
+    const linkedNpc = npcReference && !npcReference.startsWith("dummy-")
+      ? npcs.find(npc => npc.npc_id === npcReference || npc.name === npcReference)
+      : null;
+
+    const updates = npcs.flatMap(npc => {
+      const currentQuestIds = Array.isArray(npc.quests)
+        ? npc.quests
+            .map(quest => typeof quest === "string" ? quest : quest.questId || quest.quest_id || quest.id)
+            .filter(Boolean)
+        : [];
+      const shouldContainQuest = npc.npc_id === linkedNpc?.npc_id;
+      const nextQuestIds = shouldContainQuest
+        ? [...new Set([...currentQuestIds, questId])]
+        : currentQuestIds.filter(id => id !== questId);
+
+      if (
+        nextQuestIds.length === currentQuestIds.length &&
+        nextQuestIds.every((id, index) => id === currentQuestIds[index])
+      ) {
+        return [];
+      }
+
+      return [updateNpc(npc.npc_id, { ...npc, quests: nextQuestIds })];
+    });
+
+    const results = await Promise.all(updates);
+    return results.every(Boolean);
+  };
+
   const handleSave = async () => {
-    if (isCreating) {
-      await createQuest(formData);
-    } else {
-      await updateQuest(formData.questId, formData);
+    const savedQuest = isCreating
+      ? await createQuest(formData)
+      : await updateQuest(formData.questId, formData);
+
+    if (!savedQuest) {
+      alert("Erreur lors de l'enregistrement de la quête.");
+      return;
+    }
+
+    const npcSynced = await syncQuestNpcLink(formData.questId, formData.npc);
+    if (!npcSynced) {
+      alert("La quête est enregistrée, mais la liaison avec le PNJ n'a pas pu être mise à jour.");
     }
     await fetchAllData();
     closeModal();
@@ -526,7 +570,15 @@ export default function QuestEditor() {
 
   const handleDelete = async () => {
     if (!window.confirm(`Supprimer la quête ${formData.name} ?`)) return;
-    await deleteQuest(formData.questId);
+    const deletedQuest = await deleteQuest(formData.questId);
+    if (!deletedQuest) {
+      alert("Erreur lors de la suppression de la quête.");
+      return;
+    }
+    const npcSynced = await syncQuestNpcLink(formData.questId);
+    if (!npcSynced) {
+      alert("La quête est supprimée, mais sa liaison avec le PNJ n'a pas pu être retirée.");
+    }
     await fetchAllData();
     closeModal();
   };
@@ -1092,75 +1144,75 @@ export default function QuestEditor() {
                   </button>
                 </div>
               </div>
-
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* Sub-Modal pour sélectionner un joueur à ajouter */}
-      <AnimatePresence>
-        {showAddPlayerModal && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex justify-center items-center p-4"
-            onClick={() => setShowAddPlayerModal(false)}
-          >
-            <div className="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-600 w-full max-w-md flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-white">Ajouter un joueur</h3>
-                <button onClick={() => setShowAddPlayerModal(false)} className="text-gray-400 hover:text-white"><FaTimes /></button>
-              </div>
-              
-              <div className="relative mb-4">
-                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input 
-                  type="text" placeholder="Rechercher (pseudo, nom)..." 
-                  value={playerSearch} onChange={(e) => setPlayerSearch(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 pl-10 pr-3 text-white focus:outline-none focus:border-blue-500"
-                  autoFocus
-                />
-              </div>
-
-              <div className="flex-grow overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                {filteredPlayersList.map(p => {
-                  const isAlreadyOnQuest = questTracking[formData.questId]?.some(t => t.playerId === p.id);
-                  
-                  return (
-                    <div 
-                      key={p.id} 
-                      onClick={() => !isAlreadyOnQuest && setSelectedPlayerToAdd(p.id)}
-                      className={`flex items-center justify-between p-3 rounded-lg border transition cursor-pointer ${
-                        isAlreadyOnQuest 
-                          ? "bg-gray-800 border-gray-700 opacity-50 cursor-not-allowed" 
-                          : selectedPlayerToAdd === p.id 
-                            ? "bg-blue-900/50 border-blue-500" 
-                            : "bg-gray-700 border-gray-600 hover:border-gray-500"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <img src={getDiscordAvatarUrl(p.discord_id, p.discord_avatar)} className="w-8 h-8 rounded-full" alt="av" />
-                        <span className="text-white font-medium">{p.pseudo_minecraft}</span>
-                      </div>
-                      {isAlreadyOnQuest && <span className="text-xs text-gray-500 uppercase">Déjà assigné</span>}
-                      {selectedPlayerToAdd === p.id && <FaCheckCircle className="text-blue-400" />}
-                    </div>
-                  );
-                })}
-                {filteredPlayersList.length === 0 && <p className="text-center text-gray-500 py-4">Aucun joueur trouvé.</p>}
-              </div>
-
-              <div className="mt-6 flex justify-end gap-3 border-t border-gray-700 pt-4">
-                <button onClick={() => setShowAddPlayerModal(false)} className="px-4 py-2 text-gray-400 hover:text-white">Annuler</button>
-                <button 
-                  onClick={handleAddPlayerToQuest}
-                  disabled={!selectedPlayerToAdd}
-                  className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            {/* Sub-Modal pour sélectionner un joueur à ajouter */}
+            <AnimatePresence>
+              {showAddPlayerModal && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                  className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex justify-center items-center p-4"
+                  onClick={() => setShowAddPlayerModal(false)}
                 >
-                  <FaPlay /> Démarrer la quête
-                </button>
-              </div>
-            </div>
+                  <div className="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-600 w-full max-w-md flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xl font-bold text-white">Ajouter un joueur</h3>
+                      <button onClick={() => setShowAddPlayerModal(false)} className="text-gray-400 hover:text-white"><FaTimes /></button>
+                    </div>
+                    
+                    <div className="relative mb-4">
+                      <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                      <input 
+                        type="text" placeholder="Rechercher (pseudo, nom)..." 
+                        value={playerSearch} onChange={(e) => setPlayerSearch(e.target.value)}
+                        className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 pl-10 pr-3 text-white focus:outline-none focus:border-blue-500"
+                        autoFocus
+                      />
+                    </div>
+
+                    <div className="flex-grow overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                      {filteredPlayersList.map(p => {
+                        const isAlreadyOnQuest = questTracking[formData.questId]?.some(t => t.playerId === p.id);
+                        
+                        return (
+                          <div 
+                            key={p.id} 
+                            onClick={() => !isAlreadyOnQuest && setSelectedPlayerToAdd(p.id)}
+                            className={`flex items-center justify-between p-3 rounded-lg border transition cursor-pointer ${
+                              isAlreadyOnQuest 
+                                ? "bg-gray-800 border-gray-700 opacity-50 cursor-not-allowed" 
+                                : selectedPlayerToAdd === p.id 
+                                  ? "bg-blue-900/50 border-blue-500" 
+                                  : "bg-gray-700 border-gray-600 hover:border-gray-500"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <img src={getDiscordAvatarUrl(p.discord_id, p.discord_avatar)} className="w-8 h-8 rounded-full" alt="av" />
+                              <span className="text-white font-medium">{p.pseudo_minecraft}</span>
+                            </div>
+                            {isAlreadyOnQuest && <span className="text-xs text-gray-500 uppercase">Déjà assigné</span>}
+                            {selectedPlayerToAdd === p.id && <FaCheckCircle className="text-blue-400" />}
+                          </div>
+                        );
+                      })}
+                      {filteredPlayersList.length === 0 && <p className="text-center text-gray-500 py-4">Aucun joueur trouvé.</p>}
+                    </div>
+
+                    <div className="mt-6 flex justify-end gap-3 border-t border-gray-700 pt-4">
+                      <button onClick={() => setShowAddPlayerModal(false)} className="px-4 py-2 text-gray-400 hover:text-white">Annuler</button>
+                      <button 
+                        onClick={handleAddPlayerToQuest}
+                        disabled={!selectedPlayerToAdd}
+                        className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        <FaPlay /> Démarrer la quête
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
           </motion.div>
         )}
       </AnimatePresence>
