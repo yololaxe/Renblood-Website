@@ -1,12 +1,13 @@
 // src/components/Navbar.jsx
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { auth, listenToAuthChanges, signOut } from "../data/firebaseConfig";
 import { useUser } from "../context/UserContext";
 import LiveSessionBanner from "./LiveSessionBanner";
-import GlobalSearch from "./GlobalSearch";
 import { HiMenu, HiX } from "react-icons/hi";
 import { FaSearch } from "react-icons/fa";
+
+const GlobalSearch = lazy(() => import("./GlobalSearch"));
 
 const navItems = [
   { to: "/",         label: "Accueil" },
@@ -237,7 +238,11 @@ function Navbar() {
 
       {/* placeholder so page content isn't hidden */}
       <div className="h-16" />
-      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <GlobalSearch open onClose={() => setSearchOpen(false)} />
+        </Suspense>
+      )}
     </>
   );
 }

@@ -6,7 +6,7 @@ import {
   FaEdit, FaUserAstronaut, FaCheckCircle, FaRunning, FaDiscord, FaCube, FaMapMarkerAlt, FaUserTie, FaHammer, FaTheaterMasks, FaSearch, FaPlay, FaBroom 
 } from "react-icons/fa";
 import { 
-  getQuestsList, createQuest, updateQuest, deleteQuest, getPlayers, getAllPlayerQuestStates, getNpcsList, updateNpc, updatePlayerQuestStatus 
+  getQuestsList, createQuest, updateQuest, deleteQuest, getPlayers, getAllPlayerQuestStates, getNpcsList, updateNpc, updatePlayerQuestStatus, cancelPlayerQuestState
 } from "../../services/api";
 import { categories, specials } from "../../data/metiers";
 
@@ -376,6 +376,7 @@ export default function QuestEditor() {
   // États pour l'ajout d'un joueur à une quête
   const [showAddPlayerModal, setShowAddPlayerModal] = useState(false);
   const [selectedPlayerToAdd, setSelectedPlayerToAdd] = useState("");
+  const [cancellingPlayerId, setCancellingPlayerId] = useState(null);
   const [playerSearch, setPlayerSearch] = useState("");
 
   // Form State
@@ -625,6 +626,26 @@ export default function QuestEditor() {
         alert("Erreur lors de l'ajout du joueur à la quête.");
       }
     }
+  };
+
+  const handleCancelPlayerQuest = async (playerId, playerName) => {
+    if (!window.confirm(`Retirer ${playerName} de la quête "${formData.name}" ? Sa progression sur cette quête sera supprimée.`)) {
+      return;
+    }
+
+    setCancellingPlayerId(playerId);
+    const cancelled = await cancelPlayerQuestState(playerId, formData.questId);
+    setCancellingPlayerId(null);
+
+    if (!cancelled) {
+      alert("La quête n'a pas pu être annulée pour ce joueur.");
+      return;
+    }
+
+    setQuestTracking(current => ({
+      ...current,
+      [formData.questId]: (current[formData.questId] || []).filter(entry => entry.playerId !== playerId),
+    }));
   };
 
   const filteredPlayersList = allPlayersList.filter(p => 
@@ -1101,7 +1122,7 @@ export default function QuestEditor() {
                             const isCompleted = entry.status === "COMPLETED";
 
                             return (
-                              <div key={idx} className="flex items-center justify-between bg-gray-700 p-3 rounded-lg border border-gray-600 hover:border-gray-500 transition-colors">
+                              <div key={entry.playerId} className="flex items-center justify-between bg-gray-700 p-3 rounded-lg border border-gray-600 hover:border-gray-500 transition-colors">
                                 <div className="flex items-center gap-3">
                                   <img src={avatarUrl} alt="avatar" className="w-10 h-10 rounded-full border border-gray-500" />
                                   <div>
@@ -1118,6 +1139,15 @@ export default function QuestEditor() {
                                   }`}>
                                     {isCompleted ? <><FaCheckCircle /> Terminé</> : <><FaRunning /> En cours</>}
                                   </div>
+                                  <button
+                                    type="button"
+                                    disabled={cancellingPlayerId === entry.playerId}
+                                    onClick={() => handleCancelPlayerQuest(entry.playerId, player.pseudo_minecraft)}
+                                    className="flex items-center gap-2 rounded-lg border border-red-700/60 bg-red-900/30 px-3 py-1 text-xs font-bold text-red-400 hover:bg-red-900/60 disabled:cursor-wait disabled:opacity-50"
+                                  >
+                                    <FaTrash />
+                                    {cancellingPlayerId === entry.playerId ? "Annulation..." : "Retirer"}
+                                  </button>
                                 </div>
                               </div>
                             );

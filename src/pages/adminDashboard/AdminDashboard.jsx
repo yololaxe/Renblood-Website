@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
 import { motion } from "framer-motion";
-import { FaUsers, FaUserPlus, FaCogs, FaChartLine, FaGlobe, FaScroll, FaGamepad } from "react-icons/fa";
+import { FaUsers, FaUserPlus, FaCogs, FaChartLine, FaGlobe, FaScroll, FaGamepad, FaStore } from "react-icons/fa";
 
 import GlobalWidget from "./widgets/GlobalWidget.jsx";
 import SessionManagerWidget from "./widgets/SessionManagerWidget.jsx";
@@ -24,6 +24,7 @@ export default function AdminDashboard() {
   const quickActions = [
     { label: "Gérer les Joueurs", icon: <FaUsers />, path: "/players-admin", color: "bg-blue-600 hover:bg-blue-500" },
     { label: "Créer un Joueur", icon: <FaUserPlus />, path: "/create-player", color: "bg-green-600 hover:bg-green-500" },
+    { label: "Comptoirs marchands", icon: <FaStore />, path: "/admin/markets", color: "bg-amber-600 hover:bg-amber-500" },
   ];
 
   const widgets = [

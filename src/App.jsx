@@ -1,5 +1,6 @@
 // src/App.js
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Suspense } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import routes from "./routes/routes.jsx";
 import PrivateRoutes from "./routes/PrivateRoutes";
@@ -20,7 +21,13 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         {routes.map(({ path, element, private: isPrivate, requiredRole }, index) => {
-          const WrappedElement = <PageTransition>{element}</PageTransition>;
+          const WrappedElement = (
+            <PageTransition>
+              <Suspense fallback={<div className="text-center mt-12">Chargement...</div>}>
+                {element}
+              </Suspense>
+            </PageTransition>
+          );
 
           return (
             <Route

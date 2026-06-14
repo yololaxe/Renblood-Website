@@ -1,40 +1,81 @@
 // src/services/axiosInstance.js
 import axios from "axios";
-import { auth } from "../data/firebaseConfig"; // Importer l'instance d'auth
+import { auth } from "../data/firebaseConfig";
 
-// 🔐 API Key stockée dans .env.development (ex: VITE_API_KEY=ma-cle-secrete)
 const apiKey = import.meta.env.VITE_API_KEY;
-
-// 🌍 Base URL de l’API (ex: VITE_API_URL=http://127.0.0.1:8000)
 const baseURL = import.meta.env.VITE_API_URL;
 
-// 🔧 Création d'une instance Axios personnalisée
 const axiosInstance = axios.create({
   baseURL,
   headers: {
     "Content-Type": "application/json",
-    "X-API-KEY": apiKey, // 🔐 Appliqué à toutes les requêtes
+    "X-API-KEY": apiKey,
   },
   timeout: 15000,
 });
 
-// --- Intercepteur pour ajouter le token Firebase ---
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 axiosInstance.interceptors.request.use(
   async (config) => {
     const user = auth.currentUser;
-    
-    // Si l'utilisateur est connecté, on ajoute le token
-    if (user) {
-      try {
-        const idToken = await user.getIdToken(true); // true force le rafraîchissement
-        config.headers.Authorization = `Bearer ${idToken}`;
-      } catch (error) {
-        console.error("❌ Erreur récupération du token Firebase:", error);
-        // Optionnel : on pourrait annuler la requête ici si le token est crucial
-      }
+    if (!user) {
+      return config;
     }
-    
-    return config;
+
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({
+          resolve: (token) => {
+            config.headers["Authorization"] = "Bearer " + token;
+            resolve(config);
+          },
+          reject: (err) => {
+            reject(err);
+          },
+        });
+      });
+    }
+
+    try {
+      const idToken = await user.getIdToken(true);
+      config.headers["Authorization"] = "Bearer " + idToken;
+      return config;
+    } catch (error) {
+      isRefreshing = true;
+      return new Promise((resolve, reject) => {
+        failedQueue.push({
+          resolve: (token) => {
+            config.headers["Authorization"] = "Bearer " + token;
+            resolve(config);
+          },
+          reject: (err) => {
+            reject(err);
+          },
+        });
+
+        user.getIdToken(true).then(token => {
+          processQueue(null, token);
+          isRefreshing = false;
+        }).catch(err => {
+          processQueue(err, null);
+          isRefreshing = false;
+          reject(err);
+        });
+      });
+    }
   },
   (error) => {
     return Promise.reject(error);

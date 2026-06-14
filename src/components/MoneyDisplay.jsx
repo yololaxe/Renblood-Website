@@ -1,8 +1,9 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { formatMoney } from "../utils/money";
 
-export const MoneyDisplay = ({ value }) => {
+export const MoneyDisplay = ({ value, amount = value }) => {
   const triggerRef = useRef(null);
   const tooltipRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -72,7 +73,8 @@ export const MoneyDisplay = ({ value }) => {
     }
   }, [isHovered, position.left, position.top, position.offsetX]);
 
-  const { display, tooltip } = convertMoney(value);
+  const { display } = convertMoney(Math.max(0, Math.floor(Number(amount) || 0)));
+  const tooltip = formatMoney(amount);
   const tooltipElement = (
     <AnimatePresence>
       {isHovered && (

@@ -55,11 +55,12 @@ const comtes = {
             }
         },
         {
-            "ville": "Zeubillage", "type": "Village", "chef": "Carl SAND", "environnement": "Plaine, Plage, Forêt", "caracteristique": "Chemin portuaire", "guilde": "Aucune", "Coords": [435, 575], "habitant": 28, "soldat": 1, "intercomunalite": "Lone",
+            "ville": "Shaleton", "type": "Village", "chef": "Carl SAND", "environnement": "Plaine, Plage, Forêt", "caracteristique": "Chemin portuaire", "guilde": "Aucune", "Coords": [435, 575], "habitant": 28, "soldat": 1, "intercomunalite": "Lone",
             "conseil": {
-                "Maire": "",
-                "Médiateur": "",
-                "Régisseur": ""
+                "Maire": "Carl SAND",
+                "Médiateur": "Isaure LANDRY",
+                "Régisseur": "Elys DRAKON",
+                "Représentant": "Arthur MORGAN"
             }
         },
         {

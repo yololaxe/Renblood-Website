@@ -866,10 +866,10 @@ export const updatePlayerQuestStatus = async (playerId, questId, status) => {
 export const cancelPlayerQuestState = async (playerId, questId) => {
   try {
     console.log(`POST /quests/player/${playerId}/cancel/`, { quest_id: questId });
-    const { data } = await axiosInstance.post(`/quests/player/${playerId}/cancel/`, {
+    await axiosInstance.post(`/quests/player/${playerId}/cancel/`, {
       quest_id: questId,
     });
-    return data;
+    return true;
   } catch (error) {
     console.error("cancelPlayerQuestState :", error.response?.data || error.message);
     return null;

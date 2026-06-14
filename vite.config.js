@@ -78,7 +78,18 @@ export default defineConfig({
     assetsDir: 'assets',
     rollupOptions: {
       output: {
-        assetFileNames: 'assets/[name].[hash][extname]'
+        assetFileNames: 'assets/[name].[hash][extname]',
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+
+          if (id.includes('firebase')) return 'firebase';
+          if (id.includes('framer-motion')) return 'motion';
+          if (id.includes('react-icons')) return 'icons';
+          if (id.includes('react-datepicker') || id.includes('date-fns')) return 'dates';
+          if (id.includes('chart.js') || id.includes('react-chartjs-2')) return 'charts';
+          if (/node_modules\/(react|react-dom|react-router|react-router-dom|scheduler)\//.test(id)) return 'react';
+          if (id.includes('axios') || id.includes('socket.io') || id.includes('react-query')) return 'networking';
+        }
       }
     }
   }

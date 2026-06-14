@@ -1,7 +1,7 @@
 // src/pages/Information.jsx
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaBook, FaLandmark, FaBalanceScale, FaChessRook, FaShieldAlt, FaMedal, FaUsers, FaHammer, FaUserTie, FaNewspaper } from "react-icons/fa";
+import { FaBook, FaLandmark, FaBalanceScale, FaChessRook, FaShieldAlt, FaMedal, FaUsers, FaHammer, FaUserTie, FaNewspaper, FaStore } from "react-icons/fa";
 
 const sections = [
   { to: "livres", icon: <FaBook />, label: "Les Livres", desc: "Chroniques et légendes anciennes.", color: "from-amber-500 to-orange-600" },
@@ -14,6 +14,7 @@ const sections = [
   { to: "metiers", icon: <FaHammer />, label: "Les Métiers", desc: "Savoir-faire et artisanat.", color: "from-teal-500 to-cyan-600" },
   { to: "npcs", icon: <FaUserTie />, label: "Les PNJ", desc: "Habitants et figures locales.", color: "from-pink-500 to-rose-600" },
   { to: "journal", icon: <FaNewspaper />, label: "Le Journal", desc: "Nouvelles et chroniques de Shaleton.", color: "from-stone-400 to-amber-700" },
+  { to: "/market-prices", icon: <FaStore />, label: "Prix des marchés", desc: "Consultez les prix publics pratiqués dans les villes.", color: "from-amber-600 to-yellow-700" },
 ];
 
 const container = {
@@ -75,7 +76,7 @@ export default function Information() {
           {sections.map(({ to, icon, label, desc, color }) => (
             <motion.div key={to} variants={item}>
               <Link
-                to={`/histoires/${to}`}
+                to={to.startsWith("/") ? to : `/histoires/${to}`}
                 className="group block h-full bg-gray-800 rounded-xl overflow-hidden border border-gray-700 shadow-lg hover:shadow-2xl hover:border-gray-500 transition-all duration-300 transform hover:-translate-y-1"
               >
                 <div className={`h-2 bg-gradient-to-r ${color}`} />
