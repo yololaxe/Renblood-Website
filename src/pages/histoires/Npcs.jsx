@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getNpcsList, createNpc, updateNpc, deleteNpc, getQuestsList, updateQuest } from "../../services/api";
+import { getNpcsList, createNpc, updateNpc, deleteNpc } from "../../services/api";
 import { useUser } from "../../context/UserContext";
 import { FaMapMarkerAlt, FaUserTie, FaQuestionCircle, FaTimes, FaCommentDots, FaPlus, FaEdit, FaTrash, FaSave, FaImage, FaFilter, FaSortAlphaDown } from "react-icons/fa";
 import comtes from "../../data/comtes";
@@ -14,11 +14,25 @@ const DEFAULT_NPC = {
   profile_image: "",
   dialogue: [],
   tags: [],
-  quests: [],
   enabled: true,
-  quest_giver: false,
   region: "Royaume de Renblood"
 };
+
+const questRoleLabels = {
+  START: "Départ",
+  COMPLETION: "Validation",
+  OBJECTIVE: "Objectif"
+};
+
+const SKIN_MODES = {
+  PLAYER: "PLAYER",
+  REFERENCE: "REFERENCE"
+};
+
+const getQuestLinkRoles = (link) => link.roles || (link.role ? [link.role] : []);
+const getQuestLinkLabel = (link) => link.questName || link.quest_name || link.name || link.questId || link.quest_id;
+const getNpcPayload = ({ quest_ids, quest_giver, quest_validator, quests, quest_links, ...npc }) => npc;
+const isLikelySkinReference = (skin = "") => /[:/\\.]|textures\.minecraft\.net/i.test(skin);
 
 // Liste des régions/villes depuis comtes.js
 const getRegions = () => {
@@ -40,6 +54,7 @@ export default function Npcs() {
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState(DEFAULT_NPC);
+  const [skinMode, setSkinMode] = useState(SKIN_MODES.PLAYER);
   
   // États pour l'upload d'image
   const [imagePreview, setImagePreview] = useState(null);
@@ -108,9 +123,9 @@ export default function Npcs() {
       ...DEFAULT_NPC,
       ...npc,
       dialogue: npc.dialogue || [],
-      quests: npc.quests || [],
       region: npc.region || "Royaume de Renblood"
     });
+    setSkinMode(isLikelySkinReference(npc.skin) ? SKIN_MODES.REFERENCE : SKIN_MODES.PLAYER);
     setImagePreview(npc.profile_image);
     setIsEditing(true);
     setIsCreating(false);
@@ -118,6 +133,7 @@ export default function Npcs() {
 
   const handleCreateClick = () => {
     setFormData({ ...DEFAULT_NPC, npc_id: `npc_${Date.now()}` });
+    setSkinMode(SKIN_MODES.PLAYER);
     setImagePreview(null);
     setIsEditing(true);
     setIsCreating(true);
@@ -175,9 +191,9 @@ export default function Npcs() {
       }
 
       if (isCreating) {
-        await createNpc(formData);
+        await createNpc(getNpcPayload(formData));
       } else {
-        await updateNpc(formData.npc_id, formData);
+        await updateNpc(formData.npc_id, getNpcPayload(formData));
       }
       setIsEditing(false);
       fetchNpcs();
@@ -189,33 +205,12 @@ export default function Npcs() {
   const handleDelete = async () => {
     try {
       const npcId = formData.npc_id;
-      const npcName = formData.name;
-      
-      // 1. Vérifier les quêtes liées
-      const quests = await getQuestsList();
-      const linkedQuests = quests.filter(q => q.npc === npcName || q.npc === npcId);
+      const linkedQuests = formData.quest_links || [];
+      const linkedMessage = linkedQuests.length > 0
+        ? `\n\nCe PNJ est lié à ${linkedQuests.length} quête(s). Le backend peut refuser la suppression tant que ces liens existent.`
+        : "";
+      if (!window.confirm(`Supprimer ce NPC ?${linkedMessage}`)) return;
 
-      if (linkedQuests.length > 0) {
-        const questNames = linkedQuests.map(q => q.name).join(", ");
-        const dummyName = `dummy-${npcName}`;
-        
-        const confirmReplace = window.confirm(
-          `⚠️ Ce NPC est lié à ${linkedQuests.length} quête(s) :\n${questNames}\n\nVoulez-vous remplacer ce NPC par "${dummyName}" dans ces quêtes avant de le supprimer ?\n(Annuler pour ne rien faire)`
-        );
-
-        if (!confirmReplace) return;
-
-        // 2. Remplacer par dummy
-        await Promise.all(linkedQuests.map(q => 
-          updateQuest(q.questId, { ...q, npc: dummyName })
-        ));
-        
-        alert(`✅ NPC remplacé par "${dummyName}" dans ${linkedQuests.length} quête(s).`);
-      } else {
-        if (!window.confirm("Supprimer ce NPC ?")) return;
-      }
-
-      // 3. Supprimer le NPC
       await deleteNpc(npcId);
       fetchNpcs();
       setIsEditing(false);
@@ -393,9 +388,9 @@ export default function Npcs() {
                             {npc.type}
                           </span>
                         )}
-                        {npc.quest_giver && (
+                        {npc.quest_links?.length > 0 && (
                           <span className="px-2 py-1 bg-yellow-900/30 text-yellow-500 rounded text-xs font-bold border border-yellow-600/30">
-                            Quête
+                            {npc.quest_links.length} quête(s)
                           </span>
                         )}
                       </div>
@@ -480,17 +475,37 @@ export default function Npcs() {
                   </div>
                 )}
 
+                {selectedNpc.quest_links?.length > 0 && (
+                  <div className="bg-gray-900/50 p-4 rounded-xl border border-gray-700 mt-4">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Quêtes liées</h3>
+                    <ul className="space-y-2">
+                      {selectedNpc.quest_links.map((link, index) => (
+                        <li key={`${link.questId || link.quest_id || index}`} className="flex items-center justify-between gap-2 text-sm">
+                          <span className="text-gray-300">{getQuestLinkLabel(link)}</span>
+                          <span className="flex flex-wrap justify-end gap-1">
+                            {getQuestLinkRoles(link).map(role => (
+                              <span key={role} className="px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 text-xs font-bold">
+                                {questRoleLabels[role] || role}
+                              </span>
+                            ))}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 <div className="mt-auto pt-6 flex gap-2">
                   {selectedNpc.type && (
                     <span className="px-3 py-1 bg-gray-700 rounded-full text-xs font-bold text-white border border-gray-600">
                       {selectedNpc.type}
                     </span>
                   )}
-                  {selectedNpc.quest_giver && (
-                    <span className="px-3 py-1 bg-yellow-600/20 text-yellow-500 rounded-full text-xs font-bold border border-yellow-600/40">
-                      Donneur de quête
+                  {[...new Set((selectedNpc.quest_links || []).flatMap(getQuestLinkRoles))].map(role => (
+                    <span key={role} className="px-3 py-1 bg-yellow-600/20 text-yellow-500 rounded-full text-xs font-bold border border-yellow-600/40">
+                      {questRoleLabels[role] || role}
                     </span>
-                  )}
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -561,6 +576,47 @@ export default function Npcs() {
                   </div>
                 </div>
                 
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Skin Minecraft</label>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <button
+                      type="button"
+                      onClick={() => setSkinMode(SKIN_MODES.PLAYER)}
+                      className={`px-3 py-2 rounded text-sm font-bold border transition ${
+                        skinMode === SKIN_MODES.PLAYER
+                          ? "bg-purple-600 border-purple-400 text-white"
+                          : "bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
+                      }`}
+                    >
+                      Pseudo joueur
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSkinMode(SKIN_MODES.REFERENCE)}
+                      className={`px-3 py-2 rounded text-sm font-bold border transition ${
+                        skinMode === SKIN_MODES.REFERENCE
+                          ? "bg-purple-600 border-purple-400 text-white"
+                          : "bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
+                      }`}
+                    >
+                      Référence
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    name="skin"
+                    value={formData.skin || ""}
+                    onChange={handleFormChange}
+                    className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white focus:border-purple-500 outline-none"
+                    placeholder={skinMode === SKIN_MODES.PLAYER ? "Pseudo Minecraft du joueur" : "Référence skin, URL ou identifiant"}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {skinMode === SKIN_MODES.PLAYER
+                      ? "Le pseudo est envoyé comme valeur de skin pour reprendre l'apparence du joueur."
+                      : "Utilisez une référence existante si le skin ne vient pas d'un pseudo joueur."}
+                  </p>
+                </div>
+
                 {/* Upload Image */}
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Image de profil</label>
@@ -609,10 +665,6 @@ export default function Npcs() {
                   />
                 </div>
                 <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" name="quest_giver" checked={formData.quest_giver} onChange={handleFormChange} className="w-4 h-4" />
-                    <span className="text-sm text-gray-300">Donneur de quête</span>
-                  </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" name="enabled" checked={formData.enabled} onChange={handleFormChange} className="w-4 h-4" />
                     <span className="text-sm text-gray-300">Activé</span>

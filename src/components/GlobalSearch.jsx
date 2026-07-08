@@ -22,23 +22,25 @@ const roleHierarchy = {
 };
 
 const publicPages = [
-  { label: "Accueil", description: "Retour à l'accueil", path: "/", type: "Page" },
-  { label: "Informations", description: "Histoire et informations du royaume", path: "/histoire", type: "Page" },
-  { label: "Joueurs", description: "Citoyens de Renblood", path: "/players", type: "Page" },
-  { label: "Carte", description: "Carte du royaume", path: "/map", type: "Page" },
-  { label: "PNJ", description: "Personnages rencontrés", path: "/histoires/npcs", type: "Page" },
-  { label: "Métiers", description: "Découvrir les métiers", path: "/histoires/metiers", type: "Page" },
-  { label: "Guildes", description: "Guildes du royaume", path: "/histoires/guildes", type: "Page" },
-  { label: "Lois", description: "Lois de Renblood", path: "/histoires/lois", type: "Page" },
-  { label: "Livres", description: "Bibliothèque", path: "/histoires/livres", type: "Page" },
-  { label: "Journal de Shaleton", description: "Nouvelles et chroniques de Shaleton", path: "/histoires/journal", type: "Page" },
+  { label: "Accueil", description: "Retour à l'accueil", path: "/", type: "Page", keywords: "home début rejoindre discord" },
+  { label: "Guide", description: "Histoire, règles et informations du royaume", path: "/histoire", type: "Page", keywords: "information aide comment jouer débuter" },
+  { label: "Joueurs", description: "Citoyens de Renblood", path: "/players", type: "Joueur", keywords: "personnage citoyen liste" },
+  { label: "Carte", description: "Carte du royaume", path: "/map", type: "Lieu", keywords: "ville comté coordonnées chemin map" },
+  { label: "PNJ", description: "Personnages rencontrés", path: "/histoires/npcs", type: "PNJ", keywords: "parler interlocuteur npc personnage" },
+  { label: "Métiers", description: "Découvrir les métiers", path: "/histoires/metiers", type: "Métier", keywords: "travail xp argent gagner produire économie" },
+  { label: "Guildes", description: "Guildes du royaume", path: "/histoires/guildes", type: "Page", keywords: "organisation faction rejoindre" },
+  { label: "Lois", description: "Lois de Renblood", path: "/histoires/lois", type: "Règle", keywords: "règlement sanction amende prison crime justice interdit" },
+  { label: "Livres", description: "Bibliothèque et chroniques", path: "/histoires/livres", type: "Page", keywords: "lore histoire archive chronique" },
+  { label: "Journal de Shaleton", description: "Nouvelles, événements et patch notes", path: "/histoires/journal", type: "Journal", keywords: "actualité annonces nouveauté patch note changement" },
+  { label: "Prix des marchés", description: "Prix publics pratiqués dans les villes", path: "/market-prices", type: "Règle", keywords: "argent économie marché prix vendre acheter commerce" },
 ];
 
 const authenticatedPages = [
-  { label: "Mon personnage", description: "Profil et statistiques", path: "/character", type: "Page", minRole: "Esclave" },
-  { label: "Mes talents", description: "Arbre des talents", path: "/talents", type: "Page", minRole: "Esclave" },
-  { label: "Sessions", description: "Sessions et futurs", path: "/sessions", type: "Page", minRole: "Esclave" },
-  { label: "Quêtes", description: "Carte des quêtes", path: "/quests", type: "Page", minRole: "Etranger" },
+  { label: "Mon personnage", description: "Profil, statistiques, traits et licences", path: "/character", type: "Joueur", minRole: "Esclave", keywords: "stats fiche argent inventaire discord licence action trait" },
+  { label: "Mes talents", description: "Arbre des talents", path: "/talents", type: "Page", minRole: "Esclave", keywords: "compétence build progression" },
+  { label: "Sessions", description: "Sessions et futurs", path: "/sessions", type: "Page", minRole: "Esclave", keywords: "préparer session futur rp" },
+  { label: "Quêtes", description: "Carte des quêtes", path: "/quests", type: "Quête", minRole: "Etranger", keywords: "objectif mission progression récompense xp argent" },
+  { label: "Mes comptoirs", description: "Comptoirs marchands et historique", path: "/account/merchant-counters", type: "Règle", minRole: "Esclave", keywords: "marché commerce vendre retrait transaction économie" },
 ];
 
 const adminPages = [
@@ -47,12 +49,45 @@ const adminPages = [
   { label: "Créer un joueur", description: "Ajouter un nouveau joueur", path: "/create-player", type: "Admin" },
   { label: "Gérer les quêtes", description: "Éditeur de quêtes", path: "/admin/quests", type: "Admin" },
   { label: "Rapport monétaire", description: "Évolution de l'économie", path: "/reporting/money", type: "Admin" },
+  { label: "Gestion des marchés", description: "Administration des prix et comptoirs", path: "/admin/markets", type: "Admin" },
 ];
 
-const normalize = (value) => String(value || "")
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g, "")
-  .toLocaleLowerCase("fr");
+const shortcutResults = [
+  {
+    label: "Comment gagner de l'argent ?",
+    description: "Métiers, quêtes, marchés et économie",
+    path: "/histoires/metiers",
+    type: "Règle",
+    keywords: "argent gagner riche économie travail métier marché vendre quete récompense",
+  },
+  {
+    label: "Préparer ma session",
+    description: "Quêtes, carte, PNJ, métiers et lois",
+    path: "/histoire",
+    type: "Page",
+    keywords: "session préparer jouer objectif où aller quoi faire",
+  },
+  {
+    label: "Sanctions, amendes et prison",
+    description: "Consulter les lois et les règles importantes",
+    path: "/histoires/lois",
+    type: "Règle",
+    keywords: "sanction amende prison crime justice interdit punition règle loi",
+  },
+  {
+    label: "À qui parler ?",
+    description: "PNJ, guildes, autorités et interlocuteurs utiles",
+    path: "/histoires/npcs",
+    type: "PNJ",
+    keywords: "parler pnj npc chef guilde autorité quête interlocuteur",
+  },
+];
+
+const normalize = (value) =>
+  String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("fr");
 
 const ResultIcon = ({ type }) => {
   if (type === "Joueur") return <FaUser />;
@@ -99,36 +134,38 @@ export default function GlobalSearch({ open, onClose }) {
         const quests = questsResult.status === "fulfilled" ? questsResult.value : [];
         const playerQuests = playerQuestsResult.status === "fulfilled" ? playerQuestsResult.value : [];
 
-        const playerResults = (players || []).map(player => ({
+        const playerResults = (players || []).map((player) => ({
           label: player.pseudo_minecraft || `${player.name || ""} ${player.surname || ""}`.trim(),
           description: `${player.rank || "Joueur"}${player.name ? ` · ${player.name} ${player.surname || ""}` : ""}`,
           path: `${isAdmin ? "/players-admin" : "/players"}?search=${encodeURIComponent(player.pseudo_minecraft || player.name || "")}`,
           type: "Joueur",
+          keywords: "citoyen personnage joueur profil",
         }));
 
-        const visibleNpcs = isAdmin
-          ? (npcs || [])
-          : (npcs || []).filter(npc => npc.met_by?.includes(userId));
-        const npcResults = visibleNpcs.map(npc => ({
+        const visibleNpcs = isAdmin ? npcs || [] : (npcs || []).filter((npc) => npc.met_by?.includes(userId));
+        const npcResults = visibleNpcs.map((npc) => ({
           label: npc.name,
           description: npc.region || "Lieu inconnu",
           path: `/histoires/npcs?search=${encodeURIComponent(npc.name)}`,
           type: "PNJ",
+          keywords: `parler pnj npc ${npc.region || ""}`,
         }));
 
-        const statusByQuestId = Object.fromEntries((playerQuests || []).map(state => [state.quest_id, state.status]));
+        const statusByQuestId = Object.fromEntries((playerQuests || []).map((state) => [state.quest_id, state.status]));
         const visibleQuests = isAdmin
-          ? (quests || [])
-          : (quests || []).filter(quest =>
-              !quest.parentId ||
-              statusByQuestId[quest.questId] ||
-              statusByQuestId[quest.parentId] === "COMPLETED"
+          ? quests || []
+          : (quests || []).filter(
+              (quest) =>
+                !quest.parentId ||
+                statusByQuestId[quest.questId] ||
+                statusByQuestId[quest.parentId] === "COMPLETED"
             );
-        const questResults = visibleQuests.map(quest => ({
+        const questResults = visibleQuests.map((quest) => ({
           label: quest.name,
-          description: `${quest.category || "Quête"} · ${quest.npc || "PNJ inconnu"}`,
+          description: `${quest.category || "Quête"} · ${quest.startNpcName || quest.startNpcId || "PNJ inconnu"}`,
           path: isAdmin ? "/admin/quests" : "/quests",
           type: "Quête",
+          keywords: `mission objectif récompense xp argent ${quest.category || ""}`,
         }));
 
         setDynamicResults([...playerResults, ...npcResults, ...questResults]);
@@ -148,15 +185,17 @@ export default function GlobalSearch({ open, onClose }) {
 
   const results = useMemo(() => {
     const allowedAuthenticatedPages = userId
-      ? authenticatedPages.filter(page => roleHierarchy[userRank] >= roleHierarchy[page.minRole])
+      ? authenticatedPages.filter((page) => roleHierarchy[userRank] >= roleHierarchy[page.minRole])
       : [];
     const pages = [...publicPages, ...allowedAuthenticatedPages, ...(isAdmin ? adminPages : [])];
-    const allResults = [...pages, ...staticContentResults, ...dynamicResults];
+    const allResults = [...shortcutResults, ...pages, ...staticContentResults, ...dynamicResults];
     const search = normalize(query.trim());
     if (!search) return allResults.slice(0, 12);
-    return allResults.filter(result =>
-      normalize(`${result.label} ${result.description} ${result.type}`).includes(search)
-    ).slice(0, 20);
+    return allResults
+      .filter((result) =>
+        normalize(`${result.label} ${result.description} ${result.type} ${result.keywords || ""}`).includes(search)
+      )
+      .slice(0, 20);
   }, [dynamicResults, isAdmin, query, userId, userRank]);
 
   const selectResult = (result) => {
@@ -168,21 +207,26 @@ export default function GlobalSearch({ open, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm p-4 pt-20" onClick={onClose}>
-      <div className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-gray-600 bg-gray-800 shadow-2xl" onClick={event => event.stopPropagation()}>
+      <div
+        className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-gray-600 bg-gray-800 shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="flex items-center gap-3 border-b border-gray-700 bg-gray-900 px-4">
           <FaSearch className="text-gray-400" />
           <input
             ref={inputRef}
             value={query}
-            onChange={event => setQuery(event.target.value)}
-            onKeyDown={event => {
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
               if (event.key === "Escape") onClose();
               if (event.key === "Enter" && results[0]) selectResult(results[0]);
             }}
-            placeholder="Rechercher un joueur, PNJ, famille, métier, loi..."
+            placeholder="Rechercher une règle, un PNJ, un lieu, une quête, un métier..."
             className="flex-1 bg-transparent py-4 text-white outline-none placeholder:text-gray-500"
           />
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-white"><FaTimes /></button>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-white" aria-label="Fermer la recherche">
+            <FaTimes />
+          </button>
         </div>
 
         <div className="max-h-[65vh] overflow-y-auto p-2">
@@ -197,20 +241,30 @@ export default function GlobalSearch({ open, onClose }) {
                 onClick={() => selectResult(result)}
                 className="flex w-full items-center gap-4 rounded-xl p-3 text-left hover:bg-gray-700"
               >
-                <span className={`rounded-lg p-3 ${
-                  result.type === "Admin" ? "bg-yellow-900/40 text-yellow-400" :
-                  result.type === "Joueur" ? "bg-blue-900/40 text-blue-400" :
-                  result.type === "PNJ" ? "bg-purple-900/40 text-purple-400" :
-                  result.type === "Quête" ? "bg-green-900/40 text-green-400" :
-                  "bg-gray-700 text-gray-300"
-                }`}>
+                <span
+                  className={`rounded-lg p-3 ${
+                    result.type === "Admin"
+                      ? "bg-yellow-900/40 text-yellow-400"
+                      : result.type === "Joueur"
+                        ? "bg-blue-900/40 text-blue-400"
+                        : result.type === "PNJ"
+                          ? "bg-purple-900/40 text-purple-400"
+                          : result.type === "Quête"
+                            ? "bg-green-900/40 text-green-400"
+                            : result.type === "Règle"
+                              ? "bg-red-900/40 text-red-300"
+                              : "bg-gray-700 text-gray-300"
+                  }`}
+                >
                   <ResultIcon type={result.type} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-semibold text-white">{result.label}</span>
                   <span className="block truncate text-xs text-gray-400">{result.description}</span>
                 </span>
-                <span className="rounded-full border border-gray-600 px-2 py-1 text-[10px] uppercase text-gray-400">{result.type}</span>
+                <span className="rounded-full border border-gray-600 px-2 py-1 text-[10px] uppercase text-gray-400">
+                  {result.type}
+                </span>
               </button>
             ))
           )}

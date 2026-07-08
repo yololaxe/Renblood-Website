@@ -801,7 +801,7 @@ export const createQuest = async (questData) => {
     return data;
   } catch (error) {
     console.error("❌ createQuest :", error.response?.data || error.message);
-    return null;
+    throw error;
   }
 };
 
@@ -823,7 +823,7 @@ export const updateQuest = async (questId, updates) => {
     return data;
   } catch (error) {
     console.error("❌ updateQuest :", error.response?.data || error.message);
-    return null;
+    throw error;
   }
 };
 

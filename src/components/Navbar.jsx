@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import { lazy, Suspense, useEffect, useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { auth, listenToAuthChanges, signOut } from "../data/firebaseConfig";
@@ -10,21 +9,21 @@ import { FaSearch } from "react-icons/fa";
 const GlobalSearch = lazy(() => import("./GlobalSearch"));
 
 const navItems = [
-  { to: "/",         label: "Accueil" },
-  { to: "/histoire", label: "Information" },
-  { to: "/players",  label: "Joueurs" },
-  { to: "/map",      label: "Map" },
-  { to: "/talents",  label: "Arbre des talents", requiresAuth: true },
-  { to: "/sessions", label: "Sessions",         requiresAuth: true },
-  { to: "/quests",   label: "Quêtes",           requiresAuth: true },
+  { to: "/", label: "Accueil" },
+  { to: "/histoire", label: "Guide" },
+  { to: "/players", label: "Joueurs" },
+  { to: "/map", label: "Map" },
+  { to: "/talents", label: "Arbre des talents", requiresAuth: true },
+  { to: "/sessions", label: "Sessions", requiresAuth: true },
+  { to: "/quests", label: "Quêtes", requiresAuth: true },
 ];
 
 function Navbar() {
-  const [user, setUser]       = useState(null);
+  const [user, setUser] = useState(null);
   const [showNav, setShowNav] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const navigate               = useNavigate();
+  const navigate = useNavigate();
   const { setUserId, setUserRank, userRank } = useUser();
 
   useEffect(() => {
@@ -64,6 +63,11 @@ function Navbar() {
     navigate("/home");
   };
 
+  const openSearch = () => {
+    setMobileOpen(false);
+    setSearchOpen(true);
+  };
+
   const linkClass = ({ isActive }) =>
     isActive
       ? "pointer-events-none text-blue-400 font-semibold"
@@ -77,47 +81,43 @@ function Navbar() {
         }`}
       >
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          {/* Logo + Dice */}
           <div className="flex items-center space-x-4">
             <Link to="/" className="text-xl font-bold hover:text-gray-300">
               Renblood
             </Link>
-            <NavLink
-              to="/dice"
-              className="text-2xl hover:text-gray-300 transition"
-            >
+            <NavLink to="/dice" className="text-2xl hover:text-gray-300 transition" title="Dés">
               🎲
             </NavLink>
+            <button
+              onClick={openSearch}
+              className="hidden md:flex items-center gap-2 rounded-lg border border-yellow-500/40 bg-gray-900/80 px-3 py-2 text-sm text-gray-200 hover:border-yellow-400 hover:text-white"
+              title="Recherche globale (Ctrl+K)"
+            >
+              <FaSearch className="text-yellow-400" />
+              <span>Rechercher</span>
+              <span className="hidden lg:inline rounded border border-gray-600 px-1.5 py-0.5 text-[10px] text-gray-500">Ctrl K</span>
+            </button>
           </div>
 
-          {/* Desktop links */}
           <div className="hidden md:flex space-x-6">
             {navItems.map(({ to, label, requiresAuth, requiredRole }) => {
               if (requiresAuth && !user) return null;
               if (requiredRole && userRank !== requiredRole) return null;
               return (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={to === "/"}
-                  className={linkClass}
-                >
+                <NavLink key={to} to={to} end={to === "/"} className={linkClass}>
                   {label}
                 </NavLink>
               );
             })}
           </div>
 
-          {/* User actions + mobile toggle */}
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 rounded-lg border border-gray-600 bg-gray-900/60 px-3 py-2 text-gray-300 hover:border-gray-500 hover:text-white"
+              onClick={openSearch}
+              className="flex md:hidden items-center gap-2 rounded-lg border border-gray-600 bg-gray-900/60 px-3 py-2 text-gray-300 hover:border-gray-500 hover:text-white"
               title="Recherche globale (Ctrl+K)"
             >
               <FaSearch />
-              <span className="hidden xl:inline text-sm">Rechercher</span>
-              <span className="hidden xl:inline rounded border border-gray-600 px-1.5 py-0.5 text-[10px] text-gray-500">Ctrl K</span>
             </button>
             {user ? (
               <>
@@ -140,10 +140,7 @@ function Navbar() {
                     className="w-9 h-9 rounded-full border-2 border-gray-600 hover:opacity-80 transition"
                   />
                 </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="text-red-500 hover:text-red-400 transition"
-                >
+                <button onClick={handleSignOut} className="text-red-500 hover:text-red-400 transition">
                   Déconnexion
                 </button>
               </>
@@ -153,24 +150,16 @@ function Navbar() {
               </NavLink>
             )}
 
-            <button
-              className="md:hidden p-2 focus:outline-none"
-              onClick={() => setMobileOpen(o => !o)}
-            >
-              {mobileOpen ? (
-                <HiX className="w-6 h-6" />
-              ) : (
-                <HiMenu className="w-6 h-6" />
-              )}
+            <button className="md:hidden p-2 focus:outline-none" onClick={() => setMobileOpen((open) => !open)}>
+              {mobileOpen ? <HiX className="w-6 h-6" /> : <HiMenu className="w-6 h-6" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile menu */}
         {mobileOpen && (
           <div className="md:hidden bg-gray-800 border-t border-gray-700">
             <div className="px-4 pt-2 pb-4 space-y-1">
-              {[...navItems].map(({ to, label, requiresAuth, requiredRole }) => {
+              {navItems.map(({ to, label, requiresAuth, requiredRole }) => {
                 if (requiresAuth && !user) return null;
                 if (requiredRole && userRank !== requiredRole) return null;
                 return (
@@ -180,9 +169,7 @@ function Navbar() {
                     end={to === "/"}
                     className={({ isActive }) =>
                       `block px-3 py-2 rounded ${
-                        isActive
-                          ? "bg-gray-700 text-blue-400"
-                          : "hover:bg-gray-700 text-white"
+                        isActive ? "bg-gray-700 text-blue-400" : "hover:bg-gray-700 text-white"
                       }`
                     }
                     onClick={() => setMobileOpen(false)}
@@ -196,8 +183,14 @@ function Navbar() {
                 className="block px-3 py-2 rounded hover:bg-gray-700 text-white"
                 onClick={() => setMobileOpen(false)}
               >
-                🎲
+                🎲 Dés
               </NavLink>
+              <button
+                className="flex w-full items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 text-white"
+                onClick={openSearch}
+              >
+                <FaSearch /> Rechercher une info
+              </button>
               {user && (
                 <>
                   {userRank === "Admin" && (
@@ -236,7 +229,6 @@ function Navbar() {
         <LiveSessionBanner />
       </nav>
 
-      {/* placeholder so page content isn't hidden */}
       <div className="h-16" />
       {searchOpen && (
         <Suspense fallback={null}>

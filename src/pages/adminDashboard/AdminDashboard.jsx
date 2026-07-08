@@ -9,6 +9,7 @@ import GlobalWidget from "./widgets/GlobalWidget.jsx";
 import SessionManagerWidget from "./widgets/SessionManagerWidget.jsx";
 import ReportingWidget from "./widgets/ReportingWidget.jsx";
 import QuestsWidget from "./widgets/QuestsWidget.jsx";
+import MarketWidget from "./widgets/MarketWidget.jsx";
 
 export default function AdminDashboard() {
   const { userRank } = useUser();
@@ -32,6 +33,7 @@ export default function AdminDashboard() {
     { id: "sessions", title: "🕹️ Gestion des Sessions", component: <SessionManagerWidget />, colSpan: "lg:col-span-2" },
     { id: "quests", title: "📜 Éditeur de Quêtes", component: <QuestsWidget />, colSpan: "lg:col-span-1" },
     { id: "reporting", title: "📊 Reporting Économique", component: <ReportingWidget />, colSpan: "lg:col-span-2" },
+    { id: "markets", title: "Marchés & Comptoirs", component: <MarketWidget />, colSpan: "lg:col-span-2" },
   ];
 
   return (

@@ -1,12 +1,14 @@
 // src/pages/Home.jsx
-import { useEffect, useState, useRef } from "react";
+import { lazy, Suspense, useEffect, useState, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import YouTube from "react-youtube";
-import { FaVolumeMute, FaVolumeUp, FaDiscord, FaMapMarkedAlt, FaScroll, FaUsers } from "react-icons/fa";
+import { FaVolumeMute, FaVolumeUp, FaDiscord, FaMapMarkedAlt, FaScroll, FaUsers, FaUserCircle, FaSearch, FaTasks, FaBookOpen, FaNewspaper, FaStar } from "react-icons/fa";
 import AdBox from "../components/ads/AdBox.jsx";
 import { listenToAuthChanges } from "../data/firebaseConfig";
 import { getPlayerFullProfile, getPlayers, getQuestsList } from "../services/api";
 import { categories, specials } from "../data/metiers";
+
+const GlobalSearch = lazy(() => import("../components/GlobalSearch"));
 
 // --- COMPOSANTS UI ---
 
@@ -16,15 +18,16 @@ const FeatureCard = ({ icon, title, description, delay }) => (
     whileInView={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.6, delay }}
     viewport={{ once: true }}
-    className="bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl border border-gray-700 hover:border-yellow-500/50 hover:bg-gray-800 transition-all group"
+    className="group relative overflow-hidden rounded-xl border border-gray-700 bg-gray-800/50 p-6 shadow-lg backdrop-blur-sm transition-all hover:-translate-y-1 hover:border-yellow-500/50 hover:bg-gray-800"
   >
-    <div className="text-4xl text-yellow-500 mb-4 group-hover:scale-110 transition-transform duration-300">
+    <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent" />
+    <div className="mb-4 text-4xl text-yellow-500 transition-transform duration-300 group-hover:scale-110">
       {icon}
     </div>
-    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">
+    <h3 className="mb-2 text-xl font-bold text-white transition-colors group-hover:text-yellow-400">
       {title}
     </h3>
-    <p className="text-gray-400 text-sm leading-relaxed">
+    <p className="text-sm leading-relaxed text-gray-400">
       {description}
     </p>
   </motion.div>
@@ -53,19 +56,56 @@ const StatCounter = ({ end, label }) => {
 
   return (
     <div className="text-center">
-      <div className="text-4xl md:text-5xl font-extrabold text-white mb-1">
+      <div className="mb-1 text-4xl font-extrabold text-white md:text-5xl">
         {count}+
       </div>
-      <div className="text-sm text-gray-400 uppercase tracking-wider font-semibold">
+      <div className="text-sm font-semibold uppercase tracking-wider text-gray-400">
         {label}
       </div>
     </div>
   );
 };
 
+const QuickLinkCard = ({ icon, title, description, href, actionLabel, onClick, accent = "yellow" }) => {
+  const accentClasses = {
+    yellow: "text-yellow-400 bg-yellow-500/10 border-yellow-500/30",
+    blue: "text-blue-400 bg-blue-500/10 border-blue-500/30",
+    green: "text-green-400 bg-green-500/10 border-green-500/30",
+    purple: "text-purple-400 bg-purple-500/10 border-purple-500/30",
+  };
+  const content = (
+    <div className="relative h-full overflow-hidden rounded-xl border border-gray-700 bg-gray-800/80 p-5 text-left shadow-lg transition hover:-translate-y-1 hover:border-yellow-500/50 hover:bg-gray-800">
+      <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent" />
+      <div className={`mb-4 inline-flex h-11 w-11 items-center justify-center rounded-lg border ${accentClasses[accent]}`}>
+        {icon}
+      </div>
+      <h3 className="mb-2 text-xl font-bold text-white">{title}</h3>
+      <p className="mb-5 text-sm leading-relaxed text-gray-400">{description}</p>
+      <span className="inline-flex items-center rounded-lg bg-gray-900 px-3 py-2 text-sm font-semibold text-gray-200 transition group-hover:text-white">
+        {actionLabel}
+      </span>
+    </div>
+  );
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className="group h-full w-full">
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <a href={href} className="group block h-full">
+      {content}
+    </a>
+  );
+};
+
 export default function Home() {
   const [isMuted, setIsMuted] = useState(true);
   const [volume, setVolume] = useState(50);
+  const [searchOpen, setSearchOpen] = useState(false);
   const playerRef = useRef(null);
   const { scrollY } = useScroll();
   
@@ -178,7 +218,7 @@ export default function Home() {
   const adPatreonProp = authStatus === "unknown" ? undefined : authStatus === "guest" ? null : patreon;
 
   return (
-    <div className="bg-gray-900 min-h-screen overflow-x-hidden font-sans text-gray-200">
+    <div className="min-h-screen overflow-x-hidden bg-gray-900 font-sans text-gray-200">
       
       {/* --- HERO SECTION --- */}
       <div className="relative h-screen w-full overflow-hidden">
@@ -191,7 +231,7 @@ export default function Home() {
             className="absolute inset-0 w-full h-full scale-125" // Scale pour éviter les bandes noires
             iframeClassName="w-full h-full object-cover pointer-events-none"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-gray-900" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-gray-900" />
         </div>
 
         {/* Sound Control */}
@@ -220,7 +260,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
-            className="text-5xl md:text-7xl font-extrabold text-white mb-4 tracking-tight"
+            className="mb-4 text-5xl font-extrabold tracking-tight text-white md:text-7xl"
           >
             Forge ton <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-600">Destin</span>
           </motion.h1>
@@ -229,7 +269,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.8 }}
-            className="text-lg md:text-xl text-gray-300 max-w-2xl mb-10 font-light"
+            className="mb-10 max-w-2xl text-lg font-light text-gray-300 md:text-xl"
           >
             Plonge dans un univers médiéval-fantastique unique. 
             Commerce, politique, guerre ou artisanat : quelle voie choisiras-tu ?
@@ -245,13 +285,13 @@ export default function Home() {
               href="https://discord.gg/uwNy5tM8jU"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-lg shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2 rounded border border-indigo-300/30 bg-indigo-800/85 px-8 py-4 text-lg font-bold text-white shadow-lg shadow-indigo-950/40 transition-all hover:scale-105 hover:bg-indigo-700"
             >
               <FaDiscord /> Rejoindre le Discord
             </a>
             <a 
               href="/histoire"
-              className="px-8 py-4 bg-gray-800/80 hover:bg-gray-700 text-white rounded-lg font-bold text-lg backdrop-blur-sm border border-gray-600 transition-all hover:scale-105 flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2 rounded-lg border border-gray-600 bg-gray-800/80 px-8 py-4 text-lg font-bold text-white backdrop-blur-sm transition-all hover:scale-105 hover:border-yellow-500 hover:bg-gray-700"
             >
               <FaScroll /> Découvrir le Lore
             </a>
@@ -270,8 +310,8 @@ export default function Home() {
       </div>
 
       {/* --- STATS SECTION --- */}
-      <div className="bg-gray-900 border-b border-gray-800 relative z-20">
-        <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div className="relative z-20 border-b border-gray-800 bg-gray-900">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 py-12 md:grid-cols-4">
           <StatCounter end={stats.players} label="Joueurs Inscrits" />
           <StatCounter end={stats.cities} label="Villes Majeures" />
           <StatCounter end={stats.quests} label="Quêtes Uniques" />
@@ -279,12 +319,84 @@ export default function Home() {
         </div>
       </div>
 
+      {/* --- PLAYER HUB --- */}
+      <section className="relative z-20 overflow-hidden bg-gray-900 px-4 py-16">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-yellow-500/40 to-transparent" />
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-yellow-400">Table du voyageur</p>
+              <h2 className="text-3xl font-bold text-white">Reprendre la route sans consulter tout le royaume</h2>
+            </div>
+            <a
+              href="/histoire"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm font-semibold text-gray-200 transition hover:border-yellow-500 hover:text-white"
+            >
+              <FaBookOpen /> Ouvrir le guide complet
+            </a>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <QuickLinkCard
+              icon={<FaUserCircle />}
+              title="Continuer ma progression"
+              description="Accède à ton personnage, tes quêtes et tes talents pour reprendre exactement où tu t'es arrêté."
+              href={authStatus === "guest" ? "/auth" : "/character"}
+              actionLabel={authStatus === "guest" ? "Se connecter" : "Voir mon personnage"}
+              accent="yellow"
+            />
+            <QuickLinkCard
+              icon={<FaSearch />}
+              title="Trouver une info"
+              description="Cherche une règle, un PNJ, une ville, un métier, une famille, une quête ou un joueur."
+              onClick={() => setSearchOpen(true)}
+              actionLabel="Lancer la recherche"
+              accent="blue"
+            />
+            <QuickLinkCard
+              icon={<FaTasks />}
+              title="Préparer ma session"
+              description="Rassemble les infos utiles avant de jouer : quêtes, carte, PNJ, métiers et lois."
+              href="/histoire"
+              actionLabel="Préparer maintenant"
+              accent="green"
+            />
+            <QuickLinkCard
+              icon={<FaNewspaper />}
+              title="Dernières nouveautés"
+              description="Consulte le journal pour suivre les événements, annonces et changements récents."
+              href="/histoires/journal"
+              actionLabel="Lire le journal"
+              accent="purple"
+            />
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+            {[
+              { href: "/quests", label: "Quêtes", icon: <FaScroll /> },
+              { href: "/map", label: "Carte", icon: <FaMapMarkedAlt /> },
+              { href: "/histoires/metiers", label: "Métiers", icon: <FaStar /> },
+              { href: "/histoires/lois", label: "Lois", icon: <FaBookOpen /> },
+            ].map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="flex items-center justify-center gap-2 rounded-lg border border-gray-700 bg-gray-800/60 px-4 py-3 text-sm font-semibold text-gray-300 transition hover:border-yellow-500 hover:bg-gray-800 hover:text-white"
+              >
+                {item.icon} {item.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* --- FEATURES SECTION --- */}
-      <section className="py-20 px-4 relative z-20 bg-gray-900">
+      <section className="relative z-20 bg-gray-900 px-4 py-20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Un Monde Vivant</h2>
-            <div className="w-24 h-1 bg-yellow-500 mx-auto rounded-full" />
+            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-yellow-400">Chroniques de terrain</p>
+            <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">Un Monde Vivant</h2>
+            <div className="mx-auto h-1 w-24 rounded-full bg-yellow-500" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -316,18 +428,18 @@ export default function Home() {
           className="absolute inset-0 bg-fixed bg-cover bg-center z-0 opacity-30"
           style={{ backgroundImage: "url('/accueil/carte-renblood.png')" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-gray-900 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/10 to-gray-900 z-10" />
         
         <div className="relative z-20 max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">L'Histoire de Renblood</h2>
-          <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+          <h2 className="mb-6 text-4xl font-bold text-white">L'Histoire de Renblood</h2>
+          <p className="mb-8 text-xl leading-relaxed text-gray-300">
             "Depuis l'aube des temps, les factions se déchirent pour le contrôle des ressources magiques. 
             Aujourd'hui, une nouvelle ère commence. Serez-vous le héros qui unifiera les peuples, 
             ou le conquérant qui les asservira ?"
           </p>
           <a 
             href="/histoire"
-            className="inline-block px-8 py-3 border-2 border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-gray-900 font-bold rounded-full transition-all duration-300"
+            className="inline-block rounded-full border-2 border-yellow-500 px-8 py-3 font-bold text-yellow-500 transition-all duration-300 hover:bg-yellow-500 hover:text-gray-900"
           >
             Lire la suite
           </a>
@@ -335,15 +447,15 @@ export default function Home() {
       </section>
 
       {/* --- GALERIE --- */}
-      <section className="py-20 bg-gray-800">
+      <section className="bg-gray-800 py-20">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-white mb-12 text-center">Aperçu du Royaume</h2>
+          <h2 className="mb-12 text-center text-3xl font-bold text-white">Aperçu du Royaume</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {["screen1.png", "screen2.png", "screen3.png", "screen4.png", "screen5.png", "screen6.png", "screen7.png", "screen8.png"].map((img, i) => (
               <motion.div 
                 key={i}
                 whileHover={{ scale: 1.05, zIndex: 10 }}
-                className="aspect-video rounded-lg overflow-hidden shadow-lg cursor-pointer"
+                className="aspect-video cursor-pointer overflow-hidden rounded-lg shadow-lg ring-1 ring-white/5 transition hover:ring-yellow-500/40"
               >
                 <img 
                   src={`/accueil/${img}`} 
@@ -358,15 +470,15 @@ export default function Home() {
       </section>
 
       {/* --- CTA FINAL --- */}
-      <section className="py-24 bg-gradient-to-b from-gray-900 to-black text-center px-4">
-        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Prêt à écrire ta légende ?</h2>
-        <p className="text-gray-400 mb-10 max-w-xl mx-auto">
+      <section className="bg-gradient-to-b from-gray-900 to-black px-4 py-24 text-center">
+        <h2 className="mb-6 text-4xl font-bold text-white md:text-5xl">Prêt à écrire ta légende ?</h2>
+        <p className="mx-auto mb-10 max-w-xl text-gray-400">
           Rejoins des milliers d'autres joueurs et commence ton aventure dès aujourd'hui.
           Le royaume de Renblood t'attend.
         </p>
         <button
           onClick={() => (window.location.href = "https://discord.gg/uwNy5tM8jU")}
-          className="px-10 py-5 bg-green-600 hover:bg-green-500 text-white text-xl font-bold rounded-full shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:shadow-[0_0_50px_rgba(34,197,94,0.6)] transition-all transform hover:-translate-y-1"
+          className="transform rounded-full bg-green-600 px-10 py-5 text-xl font-bold text-white shadow-[0_0_30px_rgba(34,197,94,0.4)] transition-all hover:-translate-y-1 hover:bg-green-500 hover:shadow-[0_0_50px_rgba(34,197,94,0.6)]"
         >
           Rejoindre Maintenant
         </button>
@@ -382,6 +494,11 @@ export default function Home() {
       {/*      test={true}*/}
       {/*  />*/}
       {/*</div>*/}
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <GlobalSearch open onClose={() => setSearchOpen(false)} />
+        </Suspense>
+      )}
     </div>
   );
 }

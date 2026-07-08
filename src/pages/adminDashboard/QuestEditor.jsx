@@ -5,8 +5,8 @@ import {
   FaPlus, FaSave, FaTrash, FaTimes, FaSearchPlus, FaSearchMinus, FaCompress, 
   FaEdit, FaUserAstronaut, FaCheckCircle, FaRunning, FaDiscord, FaCube, FaMapMarkerAlt, FaUserTie, FaHammer, FaTheaterMasks, FaSearch, FaPlay, FaBroom 
 } from "react-icons/fa";
-import { 
-  getQuestsList, createQuest, updateQuest, deleteQuest, getPlayers, getAllPlayerQuestStates, getNpcsList, updateNpc, updatePlayerQuestStatus, cancelPlayerQuestState
+import {
+  getQuestsList, createQuest, updateQuest, deleteQuest, getPlayers, getAllPlayerQuestStates, getNpcsList, updatePlayerQuestStatus, cancelPlayerQuestState
 } from "../../services/api";
 import { categories, specials } from "../../data/metiers";
 
@@ -16,16 +16,97 @@ const DEFAULT_QUEST = {
   category: "Main",
   name: "Nouvelle Quête",
   type: "Solo",
-  npc: "",
+  startNpcId: "",
+  completionNpcId: "",
   description: { fr: "", en: "" },
   money: 0,
   xp: { job: "aventurier", amount: 0 },
   objectives: [],
+  implementation: {
+    status: "TODO",
+    summary: "",
+    tasks: []
+  },
   rewards: [],
   prerequisitesAll: [],
   prerequisitesAny: [],
   beginText: { fr: "", en: "" },
   endText: { fr: "", en: "" }
+};
+
+const normalizeObjective = (objective) => ({
+  ...objective,
+  target: {
+    ...(objective.target || {}),
+    ...(objective.npcId && !objective.target?.npcId ? { npcId: objective.npcId } : {}),
+    ...(objective.npcName && !objective.target?.npcName ? { npcName: objective.npcName } : {}),
+    ...(objective.coord && !objective.target?.coord ? { coord: objective.coord } : {}),
+    ...(objective.items && !objective.target?.items ? { items: objective.items } : {})
+  }
+});
+
+const normalizeQuest = (quest = {}) => ({
+  ...DEFAULT_QUEST,
+  ...quest,
+  startNpcId: quest.startNpcId || quest.quest_giver || quest.npc?.npc_id || quest.npc || "",
+  startNpcName: quest.startNpcName || quest.quest_giver_name || quest.npc?.name || "",
+  completionNpcId: quest.completionNpcId || quest.quest_validator || "",
+  completionNpcName: quest.completionNpcName || quest.quest_validator_name || "",
+  description: quest.description || { fr: "", en: "" },
+  beginText: quest.beginText || { fr: "", en: "" },
+  endText: quest.endText || { fr: "", en: "" },
+  xp: quest.xp || { job: "aventurier", amount: 0 },
+  prerequisitesAll: quest.prerequisitesAll || [],
+  prerequisitesAny: quest.prerequisitesAny || [],
+  objectives: (quest.objectives || []).map(normalizeObjective),
+  rewards: quest.rewards || [],
+  implementation: {
+    ...DEFAULT_QUEST.implementation,
+    ...(quest.implementation || {}),
+    tasks: quest.implementation?.tasks || []
+  }
+});
+
+const getObjectivePayload = ({ npcId, npcName, coord, items, target, ...objective }) => {
+  const { npcName: targetNpcName, ...cleanTarget } = target || {};
+  return {
+    ...objective,
+    target: cleanTarget
+  };
+};
+
+const getQuestPayload = ({
+  npc,
+  npcId,
+  npcName,
+  startNpcName,
+  completionNpcName,
+  quest_giver,
+  quest_giver_name,
+  quest_validator,
+  quest_validator_name,
+  ...quest
+}) => ({
+  ...quest,
+  objectives: (quest.objectives || []).map(getObjectivePayload)
+});
+
+const formatApiErrorValue = (value) => {
+  if (Array.isArray(value)) return value.map(formatApiErrorValue).join(", ");
+  if (value && typeof value === "object") {
+    return Object.entries(value).map(([field, detail]) => `${field}: ${formatApiErrorValue(detail)}`).join("; ");
+  }
+  return String(value);
+};
+
+const getApiErrorMessage = (error, fallback) => {
+  const data = error?.response?.data;
+  if (!data) return error?.message || fallback;
+  if (typeof data === "string") return data;
+  if (data.detail) return data.detail;
+  return Object.entries(data)
+    .map(([field, messages]) => `${field}: ${formatApiErrorValue(messages)}`)
+    .join("\n");
 };
 
 // Helper pour l'URL Discord
@@ -129,11 +210,17 @@ const ItemListEditor = ({ items, onChange, label }) => {
   );
 };
 
-const NpcSelector = ({ value, onChange, npcs }) => {
+const NpcSelector = ({ value, onChange, npcs, label = "PNJ Donneur", allowDummy = true }) => {
   const [search, setSearch] = useState("");
   const [showList, setShowList] = useState(false);
   const [isDummy, setIsDummy] = useState(value?.startsWith("dummy-") || false);
   const [dummyName, setDummyName] = useState(value?.replace("dummy-", "") || "");
+
+  useEffect(() => {
+    const nextIsDummy = allowDummy && value?.startsWith("dummy-");
+    setIsDummy(Boolean(nextIsDummy));
+    setDummyName(nextIsDummy ? value.replace("dummy-", "") : "");
+  }, [value, allowDummy]);
 
   const filteredNpcs = npcs.filter(npc => 
     npc.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -171,13 +258,20 @@ const NpcSelector = ({ value, onChange, npcs }) => {
   return (
     <div className="relative">
       <div className="flex justify-between items-center mb-1">
-        <label className="block text-xs font-bold text-gray-400 uppercase">PNJ Donneur</label>
-        <button 
-          onClick={toggleDummy}
-          className={`text-xs px-2 py-0.5 rounded border ${isDummy ? "bg-yellow-600 border-yellow-500 text-white" : "bg-gray-700 border-gray-600 text-gray-400"}`}
-        >
-          {isDummy ? "Mode Dummy Actif" : "Utiliser Dummy"}
-        </button>
+        <label className="block text-xs font-bold text-gray-400 uppercase">{label}</label>
+        {value && !isDummy && (
+          <button onClick={() => onChange("")} className="text-xs text-red-400 hover:text-red-300">
+            Retirer
+          </button>
+        )}
+        {allowDummy && (isDummy || !value) && (
+          <button
+            onClick={toggleDummy}
+            className={`text-xs px-2 py-0.5 rounded border ${isDummy ? "bg-yellow-600 border-yellow-500 text-white" : "bg-gray-700 border-gray-600 text-gray-400"}`}
+          >
+            {isDummy ? "Mode Dummy Actif" : "Utiliser Dummy"}
+          </button>
+        )}
       </div>
 
       {isDummy ? (
@@ -241,13 +335,13 @@ const NpcSelector = ({ value, onChange, npcs }) => {
   );
 };
 
-const ObjectivesEditor = ({ objectives, onChange }) => {
+const ObjectivesEditor = ({ objectives, onChange, npcs }) => {
   const handleAddObjective = (type) => {
-    let newObj = { type };
+    let newObj = { type, target: {} };
     switch (type) {
-      case "ITEM": newObj.items = []; break;
-      case "LOCATION": newObj.coord = "x:0 y:0 z:0 r:5"; break;
-      case "NPC": newObj.npcId = ""; break;
+      case "ITEM": newObj.target.items = []; break;
+      case "LOCATION": newObj.target.coord = "x:0 y:0 z:0 r:5"; break;
+      case "TALK": newObj.target.npcId = ""; break;
       case "CONSTRUCTION": newObj.validation = "ADMIN"; break;
       case "RP": newObj.validation = "ADMIN"; break;
       default: break;
@@ -267,6 +361,15 @@ const ObjectivesEditor = ({ objectives, onChange }) => {
     onChange(newObjs);
   };
 
+  const handleUpdateTarget = (index, newTargetData) => {
+    const newObjs = [...objectives];
+    newObjs[index] = {
+      ...newObjs[index],
+      target: { ...(newObjs[index].target || {}), ...newTargetData }
+    };
+    onChange(newObjs);
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2 mb-2">
@@ -276,7 +379,7 @@ const ObjectivesEditor = ({ objectives, onChange }) => {
         <button onClick={() => handleAddObjective("LOCATION")} className="px-2 py-1 bg-yellow-600/50 hover:bg-yellow-600 text-white text-xs rounded flex items-center gap-1" title="Aller à un endroit">
           <FaMapMarkerAlt /> Lieu
         </button>
-        <button onClick={() => handleAddObjective("NPC")} className="px-2 py-1 bg-purple-600/50 hover:bg-purple-600 text-white text-xs rounded flex items-center gap-1" title="Parler à un PNJ">
+        <button onClick={() => handleAddObjective("TALK")} className="px-2 py-1 bg-purple-600/50 hover:bg-purple-600 text-white text-xs rounded flex items-center gap-1" title="Parler à un PNJ">
           <FaUserTie /> PNJ
         </button>
         <button onClick={() => handleAddObjective("CONSTRUCTION")} className="px-2 py-1 bg-orange-600/50 hover:bg-orange-600 text-white text-xs rounded flex items-center gap-1" title="Construire quelque chose">
@@ -297,15 +400,15 @@ const ObjectivesEditor = ({ objectives, onChange }) => {
             <span className={`text-xs font-bold px-2 py-1 rounded text-white ${
               obj.type === "ITEM" ? "bg-blue-600" :
               obj.type === "LOCATION" ? "bg-yellow-600" :
-              obj.type === "NPC" ? "bg-purple-600" :
+              ["NPC", "TALK"].includes(obj.type) ? "bg-purple-600" :
               obj.type === "CONSTRUCTION" ? "bg-orange-600" : "bg-pink-600"
             }`}>{obj.type}</span>
           </div>
 
           {obj.type === "ITEM" && (
             <ItemListEditor 
-              items={obj.items || []} 
-              onChange={(newItems) => handleUpdateObjective(idx, { items: newItems })}
+              items={obj.target?.items || []}
+              onChange={(items) => handleUpdateTarget(idx, { items })}
               label="Items requis"
             />
           )}
@@ -315,23 +418,21 @@ const ObjectivesEditor = ({ objectives, onChange }) => {
               <label className="block text-xs text-gray-400 mb-1">Coordonnées (format: x:0 y:0 z:0 r:5)</label>
               <input 
                 type="text" 
-                value={obj.coord || ""} 
-                onChange={(e) => handleUpdateObjective(idx, { coord: e.target.value })}
+                value={obj.target?.coord || ""}
+                onChange={(e) => handleUpdateTarget(idx, { coord: e.target.value })}
                 className="w-full bg-gray-800 border border-gray-600 rounded p-1 text-white text-sm font-mono"
               />
             </div>
           )}
 
-          {obj.type === "NPC" && (
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">ID du PNJ (ex: npc_banker_01)</label>
-              <input 
-                type="text" 
-                value={obj.npcId || ""} 
-                onChange={(e) => handleUpdateObjective(idx, { npcId: e.target.value })}
-                className="w-full bg-gray-800 border border-gray-600 rounded p-1 text-white text-sm"
-              />
-            </div>
+          {["NPC", "TALK"].includes(obj.type) && (
+            <NpcSelector
+              value={obj.target?.npcId || ""}
+              onChange={(npcId) => handleUpdateTarget(idx, { npcId })}
+              npcs={npcs}
+              label="PNJ à rencontrer"
+              allowDummy={false}
+            />
           )}
 
           {(obj.type === "CONSTRUCTION" || obj.type === "RP") && (
@@ -350,6 +451,66 @@ const ObjectivesEditor = ({ objectives, onChange }) => {
         </div>
       ))}
       {objectives.length === 0 && <p className="text-sm text-gray-500 italic text-center py-4">Aucun objectif défini.</p>}
+    </div>
+  );
+};
+
+const ImplementationEditor = ({ implementation, onChange }) => {
+  const data = implementation || DEFAULT_QUEST.implementation;
+  const updateTask = (index, updates) => {
+    const tasks = [...data.tasks];
+    tasks[index] = { ...tasks[index], ...updates };
+    onChange({ ...data, tasks });
+  };
+
+  const addTask = () => {
+    onChange({
+      ...data,
+      tasks: [...data.tasks, { id: `task_${Date.now()}`, label: "", type: "BUILD", status: "TODO", notes: "" }]
+    });
+  };
+
+  const removeTask = (index) => {
+    onChange({ ...data, tasks: data.tasks.filter((_, taskIndex) => taskIndex !== index) });
+  };
+
+  return (
+    <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-bold text-orange-400 uppercase">Implémentation / choses à construire</h3>
+        <button onClick={addTask} className="text-xs text-green-400 hover:text-green-300 flex items-center gap-1">
+          <FaPlus /> Ajouter une tâche
+        </button>
+      </div>
+      <div>
+        <label className="block text-xs text-gray-400 mb-1">État global</label>
+        <select value={data.status} onChange={(e) => onChange({ ...data, status: e.target.value })} className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white">
+          {["TODO", "IN_PROGRESS", "BLOCKED", "DONE"].map(status => <option key={status}>{status}</option>)}
+        </select>
+      </div>
+      <div>
+        <label className="block text-xs text-gray-400 mb-1">Résumé</label>
+        <textarea value={data.summary} onChange={(e) => onChange({ ...data, summary: e.target.value })} className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white h-20" />
+      </div>
+      <div className="space-y-3">
+        {data.tasks.map((task, index) => (
+          <div key={task.id || index} className="bg-gray-800 p-3 rounded border border-gray-600 space-y-2">
+            <div className="flex gap-2">
+              <input value={task.id || ""} onChange={(e) => updateTask(index, { id: e.target.value })} placeholder="ID" className="w-32 bg-gray-900 border border-gray-600 rounded p-1 text-white text-sm" />
+              <input value={task.label || ""} onChange={(e) => updateTask(index, { label: e.target.value })} placeholder="Chose à construire/configurer" className="flex-1 bg-gray-900 border border-gray-600 rounded p-1 text-white text-sm" />
+              <button onClick={() => removeTask(index)} className="text-red-500 hover:text-red-400"><FaTrash /></button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input value={task.type || ""} onChange={(e) => updateTask(index, { type: e.target.value })} placeholder="Type, ex: BUILD" className="bg-gray-900 border border-gray-600 rounded p-1 text-white text-sm" />
+              <select value={task.status || "TODO"} onChange={(e) => updateTask(index, { status: e.target.value })} className="bg-gray-900 border border-gray-600 rounded p-1 text-white text-sm">
+                {["TODO", "IN_PROGRESS", "BLOCKED", "DONE"].map(status => <option key={status}>{status}</option>)}
+              </select>
+            </div>
+            <textarea value={task.notes || ""} onChange={(e) => updateTask(index, { notes: e.target.value })} placeholder="Notes" className="w-full bg-gray-900 border border-gray-600 rounded p-1 text-white text-sm h-16" />
+          </div>
+        ))}
+        {data.tasks.length === 0 && <p className="text-xs text-gray-500 italic">Aucune tâche d'implémentation.</p>}
+      </div>
     </div>
   );
 };
@@ -381,6 +542,12 @@ export default function QuestEditor() {
 
   // Form State
   const [formData, setFormData] = useState(DEFAULT_QUEST);
+  const [savedFormData, setSavedFormData] = useState(null);
+
+  const hasUnsavedChanges = useMemo(
+    () => savedFormData !== null && JSON.stringify(formData) !== JSON.stringify(savedFormData),
+    [formData, savedFormData]
+  );
 
   const jobCategories = useMemo(() => {
     return [
@@ -457,32 +624,27 @@ export default function QuestEditor() {
 
   // --- Gestion du Formulaire ---
   const handleEditClick = (quest, tab = "details") => {
+    const questFormData = normalizeQuest(quest);
+
     setSelectedQuest(quest);
     setIsCreating(false);
     setActiveTab(tab);
-    setFormData({
-      ...DEFAULT_QUEST, // Ensure all fields exist
-      ...quest,
-      description: quest.description || { fr: "", en: "" },
-      beginText: quest.beginText || { fr: "", en: "" },
-      endText: quest.endText || { fr: "", en: "" },
-      xp: quest.xp || { job: "aventurier", amount: 0 },
-      prerequisitesAll: quest.prerequisitesAll || [],
-      prerequisitesAny: quest.prerequisitesAny || [],
-      objectives: quest.objectives || [],
-      rewards: quest.rewards || [],
-    });
+    setFormData(questFormData);
+    setSavedFormData(questFormData);
   };
 
   const handleCreateClick = (parentId = null, suggestedId = null) => {
-    setSelectedQuest(null);
-    setIsCreating(true);
-    setActiveTab("details");
-    setFormData({ 
+    const newQuestFormData = {
       ...DEFAULT_QUEST, 
       parentId: parentId || "",
       questId: suggestedId || `new.${Date.now()}` 
-    });
+    };
+
+    setSelectedQuest(null);
+    setIsCreating(true);
+    setActiveTab("details");
+    setFormData(newQuestFormData);
+    setSavedFormData(newQuestFormData);
   };
 
   const handleClearForm = () => {
@@ -521,52 +683,23 @@ export default function QuestEditor() {
     }
   };
 
-  const syncQuestNpcLink = async (questId, npcReference = "") => {
-    const linkedNpc = npcReference && !npcReference.startsWith("dummy-")
-      ? npcs.find(npc => npc.npc_id === npcReference || npc.name === npcReference)
-      : null;
+  const handleSave = async () => {
+    try {
+      const payload = getQuestPayload(formData);
+      const savedQuest = isCreating
+        ? await createQuest(payload)
+        : await updateQuest(formData.questId, payload);
 
-    const updates = npcs.flatMap(npc => {
-      const currentQuestIds = Array.isArray(npc.quests)
-        ? npc.quests
-            .map(quest => typeof quest === "string" ? quest : quest.questId || quest.quest_id || quest.id)
-            .filter(Boolean)
-        : [];
-      const shouldContainQuest = npc.npc_id === linkedNpc?.npc_id;
-      const nextQuestIds = shouldContainQuest
-        ? [...new Set([...currentQuestIds, questId])]
-        : currentQuestIds.filter(id => id !== questId);
-
-      if (
-        nextQuestIds.length === currentQuestIds.length &&
-        nextQuestIds.every((id, index) => id === currentQuestIds[index])
-      ) {
-        return [];
+      if (!savedQuest) {
+        alert("Erreur lors de l'enregistrement de la quête.");
+        return;
       }
 
-      return [updateNpc(npc.npc_id, { ...npc, quests: nextQuestIds })];
-    });
-
-    const results = await Promise.all(updates);
-    return results.every(Boolean);
-  };
-
-  const handleSave = async () => {
-    const savedQuest = isCreating
-      ? await createQuest(formData)
-      : await updateQuest(formData.questId, formData);
-
-    if (!savedQuest) {
-      alert("Erreur lors de l'enregistrement de la quête.");
-      return;
+      await fetchAllData();
+      closeModal();
+    } catch (error) {
+      alert(getApiErrorMessage(error, "Erreur lors de l'enregistrement de la quête."));
     }
-
-    const npcSynced = await syncQuestNpcLink(formData.questId, formData.npc);
-    if (!npcSynced) {
-      alert("La quête est enregistrée, mais la liaison avec le PNJ n'a pas pu être mise à jour.");
-    }
-    await fetchAllData();
-    closeModal();
   };
 
   const handleDelete = async () => {
@@ -576,24 +709,19 @@ export default function QuestEditor() {
       alert("Erreur lors de la suppression de la quête.");
       return;
     }
-    const npcSynced = await syncQuestNpcLink(formData.questId);
-    if (!npcSynced) {
-      alert("La quête est supprimée, mais sa liaison avec le PNJ n'a pas pu être retirée.");
-    }
     await fetchAllData();
     closeModal();
   };
 
   const closeModal = () => {
-    // Ne ferme pas si on clique à côté pour éviter de perdre les données
-    // L'utilisateur doit explicitement cliquer sur Annuler ou la croix
+    setSelectedQuest(null);
+    setIsCreating(false);
+    setSavedFormData(null);
   };
 
   const handleForceClose = () => {
-    if (window.confirm("Quitter sans sauvegarder ? Vos modifications seront perdues.")) {
-      setSelectedQuest(null);
-      setIsCreating(false);
-    }
+    if (hasUnsavedChanges && !window.confirm("Quitter sans sauvegarder ? Vos modifications seront perdues.")) return;
+    closeModal();
   };
 
   // --- Gestion des joueurs sur la quête ---
@@ -941,11 +1069,22 @@ export default function QuestEditor() {
                       </div>
                     </div>
 
-                    <NpcSelector 
-                      value={formData.npc} 
-                      onChange={(val) => setFormData(prev => ({ ...prev, npc: val }))} 
-                      npcs={npcs} 
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <NpcSelector
+                        value={formData.startNpcId}
+                        onChange={(startNpcId) => setFormData(prev => ({ ...prev, startNpcId }))}
+                        npcs={npcs}
+                        label="PNJ de départ"
+                        allowDummy={false}
+                      />
+                      <NpcSelector
+                        value={formData.completionNpcId}
+                        onChange={(completionNpcId) => setFormData(prev => ({ ...prev, completionNpcId }))}
+                        npcs={npcs}
+                        label="PNJ de validation"
+                        allowDummy={false}
+                      />
+                    </div>
                   </>
                 )}
 
@@ -1078,12 +1217,18 @@ export default function QuestEditor() {
                     <ObjectivesEditor 
                       objectives={formData.objectives} 
                       onChange={(newObjs) => setFormData(prev => ({ ...prev, objectives: newObjs }))} 
+                      npcs={npcs}
                     />
                     
                     <ItemListEditor 
                       items={formData.rewards} 
                       onChange={(newRewards) => setFormData(prev => ({ ...prev, rewards: newRewards }))} 
                       label="Récompenses Items"
+                    />
+
+                    <ImplementationEditor
+                      implementation={formData.implementation}
+                      onChange={(implementation) => setFormData(prev => ({ ...prev, implementation }))}
                     />
                   </>
                 )}

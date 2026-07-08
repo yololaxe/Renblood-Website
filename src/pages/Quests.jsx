@@ -76,11 +76,16 @@ export default function Quests() {
   const formatText = (text, quest) => {
     if (!text) return "";
     let formatted = text;
-    formatted = formatted.replace(/{npc}/g, quest.npc || "Inconnu");
+    formatted = formatted.replace(/{npc}/g, quest.startNpcName || quest.startNpcId || "Inconnu");
     formatted = formatted.replace(/{player}/g, playerName);
     formatted = formatted.replace(/{username}/g, playerName);
     return formatted;
   };
+
+  const getNpcLabel = (name, id) => name && id ? `${name} (${id})` : name || id || "Aucun";
+  const getObjectiveNpcLabel = (objective) => (
+    objective.target?.npcName || objective.target?.npcId || objective.npcName || objective.npcId || "PNJ inconnu"
+  );
 
   // Transformation des données pour react-d3-tree
   const treeData = useMemo(() => {
@@ -379,7 +384,7 @@ export default function Quests() {
                             </span>
                             <div className="text-sm text-gray-200">
                               {obj.type === "ITEM" &&
-                                obj.items?.map((it, i) => (
+                                obj.target?.items?.map((it, i) => (
                                   <div key={i}>
                                     • Récupérer {it.count}x{" "}
                                     <span className="text-blue-300">
@@ -391,13 +396,16 @@ export default function Quests() {
                                 <div>
                                   • Se rendre aux coordonnées :{" "}
                                   <span className="text-yellow-300 font-mono">
-                                    {obj.coord}
+                                    {obj.target?.coord}
                                   </span>
                                 </div>
                               )}
                               {/* Fallback pour autres types */}
-                              {!["ITEM", "LOCATION"].includes(obj.type) && (
-                                <div>• {JSON.stringify(obj)}</div>
+                              {["NPC", "TALK"].includes(obj.type) && (
+                                <div>• Parler au PNJ : <span className="text-purple-300">{getObjectiveNpcLabel(obj)}</span></div>
+                              )}
+                              {!["ITEM", "LOCATION", "NPC", "TALK"].includes(obj.type) && (
+                                <div>• Validation : {obj.validation || "ADMIN"}</div>
                               )}
                             </div>
                           </li>
@@ -449,10 +457,16 @@ export default function Quests() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-400">
                   <div>
                     <span className="font-semibold text-gray-500 block mb-1">
-                      Donneur de quête
+                      PNJ de départ
                     </span>
                     <span className="text-white bg-gray-700 px-2 py-1 rounded">
-                      {selectedQuest.npc}
+                      {getNpcLabel(selectedQuest.startNpcName, selectedQuest.startNpcId)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-500 block mb-1">PNJ de validation</span>
+                    <span className="text-white bg-gray-700 px-2 py-1 rounded">
+                      {getNpcLabel(selectedQuest.completionNpcName, selectedQuest.completionNpcId)}
                     </span>
                   </div>
                   {selectedQuest.prerequisitesAll?.length > 0 && (
