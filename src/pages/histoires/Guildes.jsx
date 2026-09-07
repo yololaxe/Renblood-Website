@@ -1,20 +1,28 @@
 // src/pages/Guildes.jsx
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import guildesData from "../../data/guildes";
+import { getStaticGuilds, getStaticCatalog } from "../../data/catalog";
+import EmptyState from "../../components/ui/EmptyState";
 import { FaUsers, FaMapMarkerAlt, FaCoins, FaStar, FaBuilding, FaUserTie, FaTimes, FaGlobe } from "react-icons/fa";
 
 export default function Guildes() {
   const [selectedGuild, setSelectedGuild] = useState(null);
 
-  // Séparation des données : guildes vs rôles globaux
-  // On suppose que guildesData est un tableau de guildes, et que globalRoles est une propriété attachée ou séparée.
-  // Si guildesData est un tableau pur, on filtre. Si c'est un objet { guildes: [], globalRoles: [] }, on adapte.
-  // D'après le code précédent, guildesData semble être un tableau avec une prop 'globalRoles' attachée à l'objet exporté ou un mix.
-  // Pour être sûr, on va assumer que guildesData est un tableau d'objets guildes, et on va chercher globalRoles s'il existe.
-  
-  const guildesList = Array.isArray(guildesData) ? guildesData : guildesData.guildes || [];
-  const globalRoles = guildesData.globalRoles || [];
+  const guildesList = useMemo(() => getStaticGuilds(), []);
+  const globalRoles = useMemo(() => getStaticCatalog("guildRoles"), []);
+
+  if (!guildesList.length) {
+    return (
+      <div className="min-h-screen bg-gray-900 px-6 py-20 text-gray-200">
+        <div className="mx-auto max-w-3xl">
+          <EmptyState
+            title="Aucune guilde disponible"
+            message="Le catalogue des guildes est vide pour le moment. Vérifie la source de données ou réessaie plus tard."
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">

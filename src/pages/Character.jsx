@@ -133,7 +133,7 @@ const JobCard = ({ label, xp, level, maxLevel, nextXp, image }) => {
     : Math.min(100, Math.max(0, ((xp - prevXp) / (nextXp - prevXp)) * 100));
 
   return (
-    <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+    <div className="h-full bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-sm hover:shadow-md transition-all group relative overflow-hidden flex flex-col justify-between">
       {/* Background Image (Optional, low opacity) */}
       {image && (
         <div 
@@ -335,9 +335,9 @@ export default function Character() {
       <div className="relative bg-gray-800 border-b border-gray-700 shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-purple-900/20 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 py-8 md:py-12 relative z-10">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+          <div className="flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-8">
             {/* Avatar */}
-            <div className="relative group">
+            <div className="relative group flex-shrink-0">
               <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-gray-700 overflow-hidden shadow-xl bg-gray-900">
                 {discordInfo?.discord_id ? (
                   <img
@@ -356,24 +356,24 @@ export default function Character() {
             </div>
 
             {/* Info Principales */}
-            <div className="flex-1 text-center md:text-left space-y-3">
+            <div className="flex-1 w-full text-center md:text-left space-y-3">
               <div>
-                <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight break-words">
                   {name} <span className="text-yellow-500">{surname}</span>
                 </h1>
-                <p className="text-xl text-blue-300 font-medium mt-1 flex items-center justify-center md:justify-start gap-2">
+                <p className="text-lg sm:text-xl text-blue-300 font-medium mt-1 flex flex-wrap items-center justify-center md:justify-start gap-2">
                   <span className="bg-blue-900/30 px-3 py-1 rounded-full border border-blue-500/30">{rank}</span>
                   <span className="text-gray-500">•</span>
-                  <span className="italic text-gray-400">{pseudo_minecraft}</span>
+                  <span className="italic text-gray-400 break-all">{pseudo_minecraft}</span>
                 </p>
               </div>
               
-              <p className="text-gray-400 max-w-2xl mx-auto md:mx-0 leading-relaxed italic">
+              <p className="text-gray-400 max-w-2xl mx-auto md:mx-0 leading-relaxed italic break-words">
                 "{description || "Un aventurier mystérieux..."}"
               </p>
 
               {/* Ressources */}
-              <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
+              <div className="flex flex-wrap justify-center md:justify-start gap-3 sm:gap-4 mt-4">
                 <div className="bg-gray-900/80 px-4 py-2 rounded-lg border border-gray-600 flex items-center gap-2 shadow-sm">
                   <MoneyDisplay value={money} />
                 </div>
@@ -391,26 +391,26 @@ export default function Character() {
             </div>
 
             {/* Actions Rapides */}
-            <div className="flex flex-col gap-3">
+            <div className="flex w-full flex-col gap-3 sm:w-auto md:w-auto">
               <LoadingButton
                 loading={refreshing}
                 loadingLabel="Actualisation..."
                 onClick={handleReloadStats}
-                className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow-md"
+                className="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow-md"
               >
                 <FaSync /> Actualiser
               </LoadingButton>
               {discordInfo?.discord_id ? (
                 <button
                   onClick={handleUnlinkDiscord}
-                  className="flex items-center gap-2 bg-red-900/50 hover:bg-red-800/50 text-red-200 border border-red-800 px-4 py-2 rounded-lg transition text-sm"
+                  className="flex items-center justify-center gap-2 bg-red-900/50 hover:bg-red-800/50 text-red-200 border border-red-800 px-4 py-2 rounded-lg transition text-sm"
                 >
                   <FaUnlink /> Délier Discord
                 </button>
               ) : (
                 <button
                   onClick={handleLinkDiscord}
-                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition shadow-md"
+                  className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition shadow-md"
                 >
                   <FaLink /> Lier Discord
                 </button>
@@ -440,23 +440,19 @@ export default function Character() {
       </div>
 
       {/* --- MAIN CONTENT --- */}
-      <div className="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* COLONNE GAUCHE : STATS */}
-        <div className="lg:col-span-2 space-y-8">
-          
-          {/* Section Stats */}
+      <div className="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6 xl:gap-8">
+        <div className="xl:col-span-8 space-y-8">
           <section>
             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
               <FaBolt className="text-yellow-500" /> Caractéristiques
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 items-stretch">
               {Object.entries(STAT_GROUPS).map(([groupKey, group]) => (
-                <div key={groupKey} className={`bg-gray-800 rounded-xl p-5 border ${group.border} shadow-lg`}>
+                <div key={groupKey} className={`bg-gray-800 rounded-xl p-5 border ${group.border} shadow-lg h-full min-h-[260px] flex flex-col`}>
                   <h3 className={`text-lg font-bold mb-4 ${group.color} border-b border-gray-700 pb-2`}>
                     {group.label}
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-3 flex-1">
                     {group.stats.map(({ key, icon, label }) => {
                       const stat = getStatDetails(key);
 
@@ -476,45 +472,10 @@ export default function Character() {
               ))}
             </div>
           </section>
-
-          {/* Section Métiers */}
-          <section>
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-              <FaStar className="text-yellow-500" /> Métiers & Expérience
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.entries(experiences.jobs || {}).map(([jobKey, job]) => {
-                const meta = jobMetaMap[jobKey] || { name: jobKey, image: null };
-                const xp = job.xp;
-                const lvl = job.level;
-                
-                if (xp === -1) return null; // On cache les métiers non débloqués pour épurer
-
-                const isException = EXCEPTIONS.has(jobKey);
-                const maxLevel = isException ? 20 : 10; // 20 arbitraire pour exception si pas défini
-                const nextXp = xpForLevel(lvl + 1) || xp;
-
-                return (
-                  <JobCard 
-                    key={jobKey}
-                    label={meta.name}
-                    xp={xp}
-                    level={lvl}
-                    maxLevel={maxLevel}
-                    nextXp={nextXp}
-                    image={meta.image}
-                  />
-                );
-              })}
-            </div>
-          </section>
         </div>
 
-        {/* COLONNE DROITE : SIDEBAR (Traits, Actions, Licences) */}
-        <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-          
-          {/* Traits & Actions */}
-          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg">
+        <div className="xl:col-span-4 space-y-6 xl:sticky xl:top-24 xl:self-start">
+          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg h-full">
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               🧬 Traits & Actions
             </h3>
@@ -542,8 +503,7 @@ export default function Character() {
             </div>
           </div>
 
-          {/* Licences */}
-          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg">
+          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg h-full">
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               <FaFileContract className="text-yellow-500" /> Licences
             </h3>
@@ -570,7 +530,39 @@ export default function Character() {
               )}
             </div>
           </div>
+        </div>
 
+        <div className="xl:col-span-12">
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+              <FaStar className="text-yellow-500" /> Métiers & Expérience
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
+              {Object.entries(experiences.jobs || {}).map(([jobKey, job]) => {
+                const meta = jobMetaMap[jobKey] || { name: jobKey, image: null };
+                const xp = job.xp;
+                const lvl = job.level;
+                
+                if (xp === -1) return null;
+
+                const isException = EXCEPTIONS.has(jobKey);
+                const maxLevel = isException ? 20 : 10;
+                const nextXp = xpForLevel(lvl + 1) || xp;
+
+                return (
+                  <JobCard 
+                    key={jobKey}
+                    label={meta.name}
+                    xp={xp}
+                    level={lvl}
+                    maxLevel={maxLevel}
+                    nextXp={nextXp}
+                    image={meta.image}
+                  />
+                );
+              })}
+            </div>
+          </section>
         </div>
       </div>
 

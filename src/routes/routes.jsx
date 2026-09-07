@@ -2,6 +2,7 @@
 import React, { lazy } from "react";
 
 const Home = lazy(() => import("../pages/Home.jsx"));
+const HomeTest = lazy(() => import("../pages/HomeTest.jsx"));
 const Players = lazy(() => import("../pages/Players.jsx"));
 const Map = lazy(() => import("../pages/Map.jsx"));
 const Auth = lazy(() => import("../pages/Auth.jsx"));
@@ -55,6 +56,7 @@ const PlayerCounterHistoryPage = lazy(() => import("../pages/markets/PlayerMarke
 const routes = [
   { path: "/", element: <Home /> },
   { path: "/home", element: <Home /> },
+  { path: "/home-test", element: <HomeTest /> },
   { path: "/auth", element: <Auth /> },
   { path: "/unauthorized", element: <Unauthorized /> },
 

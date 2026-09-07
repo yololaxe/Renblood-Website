@@ -1,13 +1,41 @@
 // src/services/api.js
 import axiosInstance from "./axiosInstance";
+import localNodes from "../data/nodes";
+import { readCache, writeCache, clearCache } from "./dataCache";
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+const isDevMode = import.meta.env.DEV;
+const debugLog = (...args) => {
+  if (isDevMode) console.log(...args);
+};
+
+export const getCachedData = (type, key = "default") => readCache(type, key);
+export const setCachedData = (type, value, key = "default") => writeCache(type, value, key);
+export const invalidateCache = (type, key = null) => clearCache(type, key);
+
+const normalizeApiError = (error, fallbackMessage = "Une erreur est survenue.") => {
+  if (!error) return fallbackMessage;
+  if (error.response?.data?.message) return error.response.data.message;
+  if (error.response?.data?.detail) return error.response.data.detail;
+  return error.message || fallbackMessage;
+};
+
+export const requestJson = async (method, url, payload = null, config = {}) => {
+  try {
+    const response = await axiosInstance({ method, url, data: payload, ...config });
+    return response.data;
+  } catch (error) {
+    console.error(`API ${method.toUpperCase()} ${url} error:`, error);
+    throw new Error(normalizeApiError(error));
+  }
+};
 
 // ✅ Vérifier si l'API est active
 export const checkApiStatus = async () => {
   try {
     await axiosInstance.get("/ping");
-    console.log(`🟢 API en ligne`);
+    debugLog(`🟢 API en ligne`);
     return true;
   } catch (error) {
     console.error(`❌ API inaccessible`, error);
@@ -498,12 +526,20 @@ export const addBonus = async (playerId, stat, count, type) => {
 
 ////////////////////////////// NODES ////////////////////////////////////
 export const getAllNodes = async () => {
+  const cacheKey = "default";
+  const cached = getCachedData("nodes", cacheKey);
+  if (cached) return cached;
+
   try {
+    if (Array.isArray(localNodes) && localNodes.length > 0) {
+      return setCachedData("nodes", localNodes, cacheKey);
+    }
+
     const res = await axiosInstance.get(`stats/nodes/`);
-    return res.data;
+    return setCachedData("nodes", res.data || [], cacheKey);
   } catch (err) {
-    console.error("❌ Erreur lors de la récupération des nodes :", err);
-    return [];
+    console.warn("⚠️ API nodes indisponible, fallback local activé.");
+    return setCachedData("nodes", Array.isArray(localNodes) ? localNodes : [], cacheKey);
   }
 };
 

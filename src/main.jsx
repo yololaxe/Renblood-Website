@@ -7,12 +7,14 @@ import { registerSW } from 'virtual:pwa-register';
 
 const updateSW = registerSW({
   onNeedRefresh() {
-    // Vous pouvez ici afficher un toast/bannière "Nouvelle version dispo, cliquez pour recharger"
-    console.log('🎉 Nouvelle version disponible !');
+    if (import.meta.env.DEV) {
+      console.log('🎉 Nouvelle version disponible !');
+    }
   },
   onOfflineReady() {
-    // UI info mode offline
-    console.log('👌 Prêt à fonctionner hors-ligne');
+    if (import.meta.env.DEV) {
+      console.log('👌 Prêt à fonctionner hors-ligne');
+    }
   }
 });
 

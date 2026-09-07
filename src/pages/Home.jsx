@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import { lazy, Suspense, useEffect, useState, useRef } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import YouTube from "react-youtube";
 import { FaVolumeMute, FaVolumeUp, FaDiscord, FaMapMarkedAlt, FaScroll, FaUsers, FaUserCircle, FaSearch, FaTasks, FaBookOpen, FaNewspaper, FaStar } from "react-icons/fa";
@@ -107,7 +107,39 @@ export default function Home() {
   const [volume, setVolume] = useState(50);
   const [searchOpen, setSearchOpen] = useState(false);
   const playerRef = useRef(null);
+  const localVideoRef = useRef(null);
   const { scrollY } = useScroll();
+
+  const localBackgrounds = useMemo(
+    () => [
+      "/animation/Animated_fantasy_city.mp4",
+      "/animation/Animated_fantasy_countryside.mp4",
+      "/animation/Animated_medieval_village.mp4",
+      "/animation/Animating_Minecraft_server.mp4",
+    ],
+    []
+  );
+
+  const backgroundSources = useMemo(
+    () => [
+      { type: "youtube", id: "jLFNzAMJ5DE", label: "YouTube" },
+      ...localBackgrounds.map((src, index) => ({ type: "local", src, label: `Animation ${index + 1}` })),
+    ],
+    [localBackgrounds]
+  );
+
+  const [activeBackground, setActiveBackground] = useState(0);
+
+  useEffect(() => {
+    setActiveBackground(Math.floor(Math.random() * backgroundSources.length));
+  }, [backgroundSources.length]);
+
+  useEffect(() => {
+    if (localVideoRef.current) {
+      localVideoRef.current.muted = isMuted;
+      localVideoRef.current.volume = isMuted ? 0 : Math.max(0.15, volume / 100);
+    }
+  }, [isMuted, volume]);
   
   // Parallaxe pour le hero
   const yHero = useTransform(scrollY, [0, 500], [0, 200]);
@@ -180,18 +212,28 @@ export default function Home() {
     player.mute();
     player.setVolume(volume);
     player.setPlaybackQuality("hd1080");
+    player.setPlaybackQuality("highres");
+    player.setPlaybackRate(1);
     playerRef.current = player;
   };
 
   const toggleSound = () => {
-    if (!playerRef.current) return;
-    if (isMuted) {
-      playerRef.current.unMute();
-      playerRef.current.setVolume(volume);
-    } else {
-      playerRef.current.mute();
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+
+    if (playerRef.current) {
+      if (nextMuted) {
+        playerRef.current.mute();
+      } else {
+        playerRef.current.unMute();
+        playerRef.current.setVolume(volume);
+      }
     }
-    setIsMuted(!isMuted);
+
+    if (localVideoRef.current) {
+      localVideoRef.current.muted = nextMuted;
+      localVideoRef.current.volume = nextMuted ? 0 : Math.max(0.15, volume / 100);
+    }
   };
 
   const videoOptions = {
@@ -202,6 +244,7 @@ export default function Home() {
       controls: 0,
       mute: 1,
       loop: 1,
+      playsinline: 1,
       playlist: "jLFNzAMJ5DE",
       modestbranding: 1,
       showinfo: 0,
@@ -210,10 +253,14 @@ export default function Home() {
       rel: 0,
       iv_load_policy: 3,
       cc_load_policy: 0,
+      origin: window.location.origin,
       quality: "hd1080",
       vq: "hd1080",
+      enablejsapi: 1,
     },
   };
+
+  const currentBackground = backgroundSources[activeBackground] || backgroundSources[0];
 
   const adPatreonProp = authStatus === "unknown" ? undefined : authStatus === "guest" ? null : patreon;
 
@@ -224,23 +271,55 @@ export default function Home() {
       <div className="relative h-screen w-full overflow-hidden">
         {/* Video Background */}
         <div className="absolute inset-0 z-0">
-          <YouTube
-            videoId="jLFNzAMJ5DE"
-            opts={videoOptions}
-            onReady={onPlayerReady}
-            className="absolute inset-0 w-full h-full scale-125" // Scale pour éviter les bandes noires
-            iframeClassName="w-full h-full object-cover pointer-events-none"
-          />
+          {currentBackground?.type === "youtube" ? (
+            <YouTube
+              key="youtube-backdrop"
+              videoId={currentBackground.id}
+              opts={videoOptions}
+              onReady={onPlayerReady}
+              className="absolute inset-0 h-full w-full scale-125"
+              iframeClassName="pointer-events-none h-full w-full object-cover"
+            />
+          ) : (
+            <video
+              key={currentBackground.src}
+              ref={localVideoRef}
+              className="absolute inset-0 h-full w-full scale-125 object-cover"
+              src={currentBackground.src}
+              autoPlay
+              muted={isMuted}
+              loop
+              playsInline
+              preload="auto"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-gray-900" />
         </div>
 
         {/* Sound Control */}
         <button
           onClick={toggleSound}
-          className="absolute top-24 right-6 z-20 p-3 bg-black/50 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-all border border-white/10"
+          className="absolute top-24 right-20 z-20 rounded-full border border-white/10 bg-black/50 p-3 text-white backdrop-blur-md transition-all hover:bg-white/20"
         >
           {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
         </button>
+
+        {/* Background selector */}
+        <div className="absolute right-5 top-1/2 z-20 flex -translate-y-1/2 flex-col gap-3 rounded-full border border-white/10 bg-black/35 p-2 backdrop-blur-md">
+          {backgroundSources.map((background, index) => (
+            <button
+              key={`${background.type}-${background.id || background.src}`}
+              type="button"
+              aria-label={`Choisir l’animation ${background.label}`}
+              onClick={() => setActiveBackground(index)}
+              className={`h-3.5 w-3.5 rounded-full border transition-all ${
+                activeBackground === index
+                  ? "scale-125 border-yellow-300 bg-yellow-400 shadow-[0_0_12px_rgba(250,204,21,0.8)]"
+                  : "border-white/30 bg-white/20 hover:bg-white/40"
+              }`}
+            />
+          ))}
+        </div>
 
         {/* Hero Content */}
         <motion.div 

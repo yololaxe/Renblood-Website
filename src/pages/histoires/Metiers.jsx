@@ -1,10 +1,12 @@
 // src/pages/Metier.jsx
 import React, { useState, useEffect, useMemo } from 'react';
-import { categories, specials } from '../../data/metiers';
+import { getStaticJobs } from '../../data/catalog';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiSearch, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { listenToAuthChanges } from '../../data/firebaseConfig';
 import { getPlayerJobs } from '../../services/api';
+import Badge from '../../components/ui/Badge';
+import EmptyState from '../../components/ui/EmptyState';
 import { FaHammer, FaLeaf, FaGem, FaUtensils, FaConciergeBell, FaStar } from "react-icons/fa";
 
 // Utility to normalize string: lowercase & remove accents
@@ -13,14 +15,6 @@ const normalizeString = str =>
         .normalize('NFD')
         .replace(/[̀-ͯ]/g, '')
         .toLowerCase();
-
-function Badge({ children }) {
-    return (
-        <span className="inline-block bg-gray-900/50 text-gray-300 text-xs font-medium px-2 py-1 rounded border border-gray-600">
-            {children}
-        </span>
-    );
-}
 
 function JobCard({ job, level, xp }) {
     const [open, setOpen] = useState(false);
@@ -108,6 +102,20 @@ function JobCard({ job, level, xp }) {
 }
 
 export default function Metier() {
+    const staticJobs = useMemo(() => getStaticJobs(), []);
+    const categories = useMemo(
+      () => [
+        { name: 'Bois', jobs: staticJobs.filter((job) => ['lumberjack', 'artisan', 'naval_architect', 'carpenter'].includes(job.id)) },
+        { name: 'Pierre', jobs: staticJobs.filter((job) => ['miner', 'blacksmith', 'glassmaker', 'mason'].includes(job.id)) },
+        { name: 'Nourriture', jobs: staticJobs.filter((job) => ['farmer', 'breeder', 'fisherman', 'innkeeper'].includes(job.id)) },
+        { name: 'Services', jobs: staticJobs.filter((job) => ['transporter', 'guard', 'merchant', 'explorer'].includes(job.id)) },
+      ],
+      [staticJobs]
+    );
+    const specials = useMemo(
+      () => staticJobs.filter((job) => ['builder', 'bestiary', 'politician', 'banker'].includes(job.id)),
+      [staticJobs]
+    );
     const [activeTab, setActiveTab] = useState(categories[0].name);
     const [query, setQuery] = useState('');
     const [user, setUser] = useState(null);
@@ -115,7 +123,7 @@ export default function Metier() {
 
     const tabs = useMemo(
         () => [...categories, { name: 'Spéciaux', jobs: specials }],
-        []
+        [categories, specials]
     );
 
     const icons = {
@@ -139,7 +147,7 @@ export default function Metier() {
     
     const allJobs = useMemo(
         () => [...categories.flatMap(cat => cat.jobs), ...specials],
-        []
+        [categories, specials]
     );
     
     const filteredJobs = useMemo(
@@ -149,6 +157,8 @@ export default function Metier() {
             ),
         [allJobs, query]
     );
+
+    const hasNoFilteredJobs = query && filteredJobs.length === 0;
 
     useEffect(() => {
         const unsubscribe = listenToAuthChanges(async firebaseUser => {
@@ -202,6 +212,15 @@ export default function Metier() {
                         />
                     </div>
                 </div>
+
+                {hasNoFilteredJobs && (
+                    <div className="mb-10">
+                        <EmptyState
+                            title="Aucun métier trouvé"
+                            message="Aucun métier ne correspond à votre recherche. Essayez un autre mot-clé."
+                        />
+                    </div>
+                )}
 
                 {/* Tabs */}
                 {query.length === 0 && (

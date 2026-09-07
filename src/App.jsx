@@ -8,10 +8,9 @@ import PublicRoutes from "./routes/PublicRoutes";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import PageTransition from "./components/PageTransition";
-import BackButton from "./components/BackButton"; // Import du bouton retour
+import BackButton from "./components/BackButton";
+import LoadingState from "./components/LoadingState";
 import "./index.css";
-
-// 👇 NEW
 import AdProvider from "./components/ads/AdProvider";
 
 const AnimatedRoutes = () => {
@@ -23,7 +22,7 @@ const AnimatedRoutes = () => {
         {routes.map(({ path, element, private: isPrivate, requiredRole }, index) => {
           const WrappedElement = (
             <PageTransition>
-              <Suspense fallback={<div className="text-center mt-12">Chargement...</div>}>
+              <Suspense fallback={<LoadingState message="Chargement de la page..." />}>
                 {element}
               </Suspense>
             </PageTransition>

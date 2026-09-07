@@ -8,7 +8,7 @@ const BackButton = () => {
   const location = useLocation();
 
   // Ne pas afficher sur la page d'accueil pour éviter la confusion
-  if (location.pathname === "/home" || location.pathname === "/") {
+  if (location.pathname === "/home" || location.pathname === "/" || location.pathname === "/home-test") {
     return null;
   }
 

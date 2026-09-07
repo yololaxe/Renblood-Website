@@ -18,12 +18,9 @@ let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
+  failedQueue.forEach((prom) => {
+    if (error) prom.reject(error);
+    else prom.resolve(token);
   });
   failedQueue = [];
 };
@@ -31,53 +28,70 @@ const processQueue = (error, token = null) => {
 axiosInstance.interceptors.request.use(
   async (config) => {
     const user = auth.currentUser;
-    if (!user) {
-      return config;
-    }
+    if (!user) return config;
 
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         failedQueue.push({
           resolve: (token) => {
-            config.headers["Authorization"] = "Bearer " + token;
+            config.headers["Authorization"] = `Bearer ${token}`;
             resolve(config);
           },
-          reject: (err) => {
-            reject(err);
-          },
+          reject,
         });
       });
     }
 
     try {
       const idToken = await user.getIdToken(true);
-      config.headers["Authorization"] = "Bearer " + idToken;
+      config.headers["Authorization"] = `Bearer ${idToken}`;
       return config;
     } catch (error) {
       isRefreshing = true;
+
       return new Promise((resolve, reject) => {
         failedQueue.push({
           resolve: (token) => {
-            config.headers["Authorization"] = "Bearer " + token;
+            config.headers["Authorization"] = `Bearer ${token}`;
             resolve(config);
           },
-          reject: (err) => {
-            reject(err);
-          },
+          reject,
         });
 
-        user.getIdToken(true).then(token => {
-          processQueue(null, token);
-          isRefreshing = false;
-        }).catch(err => {
-          processQueue(err, null);
-          isRefreshing = false;
-          reject(err);
-        });
+        user
+          .getIdToken(true)
+          .then((token) => {
+            processQueue(null, token);
+            isRefreshing = false;
+          })
+          .catch((err) => {
+            processQueue(err, null);
+            isRefreshing = false;
+            reject(err);
+          });
       });
     }
   },
+  (error) => Promise.reject(error)
+);
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
   (error) => {
+    if (!error.response) {
+      console.error("API: réseau inaccessible", error.message);
+      return Promise.reject(error);
+    }
+
+    const status = error.response?.status;
+    if (status === 401) {
+      console.warn("API: auth invalide ou expirée");
+    }
+
+    if (status === 500) {
+      console.error("API: erreur serveur", error.response?.data || error.message);
+    }
+
     return Promise.reject(error);
   }
 );
