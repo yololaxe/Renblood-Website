@@ -247,18 +247,18 @@ export default function Chapitres() {
   const progress = total > 1 ? (chapitreIndex / (total - 1)) * 100 : 100;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+    <div className="min-h-screen bg-[#11110f] text-stone-200 pb-20">
       
       {/* Header Flottant */}
-      <div className="sticky top-0 z-40 bg-gray-900/95 backdrop-blur-md border-b border-gray-700 shadow-lg">
+      <div className="sticky top-0 z-40 bg-[#11110f]/95 backdrop-blur-md border-b border-stone-700 shadow-none">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-center">
-          <h1 className="text-lg font-bold text-white truncate max-w-xs sm:max-w-md text-center">
+          <h1 className="text-lg font-bold text-white truncate max-w-xs sm:max-w-md text-center editorial-title">
             {livre.titre}
           </h1>
         </div>
         
         {/* Progress Bar */}
-        <div className="h-1 bg-gray-800 w-full">
+        <div className="h-1 bg-[#1b1b17] w-full">
           <motion.div 
             className="h-full bg-yellow-500"
             initial={{ width: 0 }}
@@ -272,8 +272,8 @@ export default function Chapitres() {
         
         {/* Sidebar Navigation (Desktop) */}
         <aside className="hidden lg:block w-64 flex-shrink-0">
-          <div className="sticky top-24 bg-gray-800 rounded-xl border border-gray-700 p-4 shadow-lg">
-            <h3 className="text-sm font-bold text-gray-400 uppercase mb-4 flex items-center gap-2">
+          <div className="sticky top-24 bg-[#1b1b17] rounded-sm border border-stone-700 p-4 shadow-none">
+            <h3 className="text-sm font-bold text-stone-400 uppercase mb-4 flex items-center gap-2">
               <FaListUl /> Sommaire
             </h3>
             <ul className="space-y-1">
@@ -284,7 +284,7 @@ export default function Chapitres() {
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                       idx === chapitreIndex
                         ? "bg-yellow-600 text-white font-semibold"
-                        : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                        : "text-stone-400 hover:bg-stone-800 hover:text-white"
                     }`}
                   >
                     {idx + 1}. {c.titre.split("|")[0].trim()}
@@ -306,17 +306,17 @@ export default function Chapitres() {
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-2">
               {chapitre.titre.split("|")[1] || chapitre.titre}
             </h2>
-            <p className="text-yellow-500 font-mono text-sm mb-8 uppercase tracking-widest">
+            <p className="text-amber-300 font-mono text-sm mb-8 uppercase tracking-widest">
               {chapitre.titre.split("|")[0]}
             </p>
 
             <div className="space-y-12">
               {chapitre.sections.map((section) => (
-                <section key={section.id} className="relative pl-6 border-l-2 border-gray-700 hover:border-yellow-500/50 transition-colors">
-                  <h3 className="text-xl font-bold text-gray-200 mb-3 flex items-center gap-2">
-                    <span className="text-yellow-500 text-sm">§</span> {section.titre}
+                <section key={section.id} className="relative pl-6 border-l-2 border-stone-700 hover:border-yellow-500/50 transition-colors">
+                  <h3 className="text-xl font-bold text-stone-200 mb-3 flex items-center gap-2">
+                    <span className="text-amber-300 text-sm">§</span> {section.titre}
                   </h3>
-                  <p className="text-gray-300 leading-relaxed text-lg font-serif text-justify">
+                  <p className="text-stone-300 leading-relaxed text-lg font-serif text-justify">
                     {section.contenu}
                   </p>
                 </section>
@@ -325,11 +325,11 @@ export default function Chapitres() {
           </motion.div>
 
           {/* Navigation Footer */}
-          <div className="mt-16 pt-8 border-t border-gray-700 flex justify-between items-center">
+          <div className="mt-16 pt-8 border-t border-stone-700 flex justify-between items-center">
             {chapitreIndex > 0 ? (
               <button
                 onClick={() => navigate(`/histoires/livres/${livreId}/chapitre/${chapitreIndex}`)}
-                className="flex items-center gap-3 px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-white transition shadow-md"
+                className="flex items-center gap-3 px-6 py-3 bg-[#1b1b17] hover:bg-stone-800 rounded-lg text-white transition shadow-md"
               >
                 <FaArrowLeft /> Précédent
               </button>
@@ -338,14 +338,14 @@ export default function Chapitres() {
             {chapitreIndex < total - 1 ? (
               <button
                 onClick={() => navigate(`/histoires/livres/${livreId}/chapitre/${chapitreIndex + 2}`)}
-                className="flex items-center gap-3 px-6 py-3 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold transition shadow-lg"
+                className="flex items-center gap-3 px-6 py-3 bg-yellow-600 hover:bg-yellow-500 rounded-lg text-white font-bold transition shadow-none"
               >
                 Suivant <FaArrowRight />
               </button>
             ) : (
               <button
                 onClick={() => navigate("/histoires/livres")}
-                className="flex items-center gap-3 px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold transition shadow-lg"
+                className="flex items-center gap-3 px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg text-white font-bold transition shadow-none"
               >
                 Terminer <FaBookOpen />
               </button>

@@ -92,17 +92,17 @@ export default function PlayerTraitAction({
   };
 
   return (
-    <div className="bg-gray-700 p-6 rounded-lg mt-6 space-y-4">
+    <div className="bg-stone-800 p-6 rounded-lg mt-6 space-y-4">
       {/* Tabs */}
       <div className="flex space-x-4">
         <button
-          className={`px-4 py-2 rounded ${selectedTab === "traits" ? "bg-blue-600 text-white" : "bg-gray-600 text-gray-200"}`}
+          className={`px-4 py-2 rounded ${selectedTab === "traits" ? "bg-amber-800 text-white" : "bg-gray-600 text-stone-200"}`}
           onClick={() => setSelectedTab("traits")}
         >
           Traits
         </button>
         <button
-          className={`px-4 py-2 rounded ${selectedTab === "actions" ? "bg-red-600 text-white" : "bg-gray-600 text-gray-200"}`}
+          className={`px-4 py-2 rounded ${selectedTab === "actions" ? "bg-red-600 text-white" : "bg-gray-600 text-stone-200"}`}
           onClick={() => setSelectedTab("actions")}
         >
           Actions
@@ -117,7 +117,7 @@ export default function PlayerTraitAction({
               const id = t.trait_id ?? t.id;
               const label = t.Name ?? t.name;
               return (
-                <div key={id} className="flex justify-between items-center bg-gray-800 p-2 rounded">
+                <div key={id} className="flex justify-between items-center bg-[#1b1b17] p-2 rounded">
                   <span>{label}</span>
                   <button
                     className="px-2 py-1 bg-red-600 hover:bg-red-500 text-white rounded"
@@ -129,7 +129,7 @@ export default function PlayerTraitAction({
               );
             })
           ) : (
-            <p className="text-gray-400">Aucun trait.</p>
+            <p className="text-stone-400">Aucun trait.</p>
           )
         ) : (
           actionsList.length > 0 ? (
@@ -137,7 +137,7 @@ export default function PlayerTraitAction({
               const id = a.action_id ?? a.id;
               const label = a.Name ?? a.name;
               return (
-                <div key={id} className="flex justify-between items-center bg-gray-800 p-2 rounded">
+                <div key={id} className="flex justify-between items-center bg-[#1b1b17] p-2 rounded">
                   <span>{label}</span>
                   <button
                     className="px-2 py-1 bg-red-600 hover:bg-red-500 text-white rounded"
@@ -149,7 +149,7 @@ export default function PlayerTraitAction({
               );
             })
           ) : (
-            <p className="text-gray-400">Aucune action.</p>
+            <p className="text-stone-400">Aucune action.</p>
           )
         )}
       </div>
@@ -157,7 +157,7 @@ export default function PlayerTraitAction({
       {/* Add select */}
       <div className="flex space-x-2 items-center">
         <select
-          className="flex-1 bg-gray-800 p-2 rounded text-white"
+          className="flex-1 bg-[#1b1b17] p-2 rounded text-white"
           value={selectedItem}
           onChange={e => setSelectedItem(e.target.value)}
         >

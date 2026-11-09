@@ -1,7 +1,4 @@
-import React, { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { auth } from "../data/firebaseConfig";
-import { me } from "../services/api";
 import { useUser } from "../context/UserContext";
 
 const roleHierarchy = {
@@ -21,38 +18,14 @@ const roleHierarchy = {
 };
 
 const PrivateRoutes = ({ children, requiredRole = "Utilisateur" }) => {
-  const [loading, setLoading] = useState(true);
-  const { userId, userRank, setUserId, setUserRank } = useUser();
+  const { userId, userRank, firebaseUser, onboarding, authStatus } = useUser();
+  if (authStatus === "loading") return <p role="status" className="realm-content registration-loading">Ouverture de votre dossier…</p>;
+  if (!firebaseUser || authStatus === "error" || !userId) return <Navigate to="/auth" replace />;
+  if (!onboarding?.player_ready || !userRank) return <Navigate to={onboarding?.needs_onboarding ? "/welcome" : "/account/profile"} replace />;
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (!user) {
-        setUserId(null);
-        setUserRank(null);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const data = await me(user.uid);
-        setUserId(data.id);
-        setUserRank(data.rank);
-      } catch (err) {
-        setUserId(null);
-        setUserRank(null);
-      } finally {
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [setUserId, setUserRank]);
-
-  if (loading) return <div className="text-center mt-12">Chargement...</div>;
-
-  if (!userId || !userRank) return <Navigate to="/home" />;
-
-  if (requiredRole && roleHierarchy[userRank] < roleHierarchy[requiredRole]) {
+  const minimum = requiredRole === "Utilisateur" ? roleHierarchy.Esclave : roleHierarchy[requiredRole];
+  const rank = roleHierarchy[userRank];
+  if (rank === undefined || minimum === undefined || rank < minimum) {
     return <Navigate to="/unauthorized" />;
   }
 

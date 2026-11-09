@@ -1,3 +1,4 @@
+import RealmHeader from "../../components/RealmHeader";
 // src/pages/TalentTree2.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
@@ -155,21 +156,19 @@ export default function TalentTree2() {
   };
 
   if (!talentData || Object.keys(itemMap).length === 0) {
-    return <p className="text-center text-gray-400 mt-20">Chargement...</p>;
+    return <p className="text-center text-stone-400 mt-20">Chargement...</p>;
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-8 text-white">
-      <h1 className="text-4xl font-extrabold mb-6 text-center bg-clip-text text-transparent from-purple-400 to-pink-500 bg-gradient-to-r">
-        🏛️ Arbre des Talents – {talentData.name}
-      </h1>
+    <div className="max-w-[1680px] mx-auto px-5 py-16 sm:px-8 lg:px-12 text-white">
+      <RealmHeader eyebrow="Les talents / Spécialisation" title={talentData.name} description="Choisissez les aptitudes qui feront évoluer votre personnage. Les points disponibles sont indiqués ci-dessous." />
       <p className="text-center text-lg mb-8">
         Points disponibles :{' '}
         <span className="font-bold text-green-300">{availablePoints}</span>
       </p>
 
       {/* 4 colonnes de choix */}
-      <div className="grid grid-cols-4 gap-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8 xl:gap-12">
         {['choice_1','choice_2','choice_3','choice_4'].map((key, ci) => (
           <div key={key} className="space-y-6">
             {talentData.skills[key].map((skill, ti) => {
@@ -189,9 +188,9 @@ export default function TalentTree2() {
                       disabled={unlocked || blocked}
                       className={`w-24 h-24 rounded-full flex items-center justify-center p-2 text-sm font-medium transition-shadow ${
                         unlocked
-                          ? "bg-green-600 shadow-lg"
+                          ? "bg-green-600 shadow-none"
                           : blocked
-                          ? "bg-gray-700 cursor-not-allowed"
+                          ? "bg-stone-800 cursor-not-allowed"
                           : "bg-gray-600 hover:bg-gray-500 shadow-md"
                       }`}>
                       {displayName(code)}
@@ -199,7 +198,7 @@ export default function TalentTree2() {
                   </Tooltip>
                   {ti < talentData.skills[key].length - 1 && (
                     <svg
-                      className="w-6 h-6 text-gray-400 mt-2"
+                      className="w-6 h-6 text-stone-400 mt-2"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -234,10 +233,10 @@ export default function TalentTree2() {
                 disabled={!available}
                 className={`px-6 py-3 rounded-lg font-semibold ${
                   unlocked
-                    ? "bg-indigo-600 shadow-lg"
+                    ? "bg-indigo-600 shadow-none"
                     : available
                     ? "bg-purple-600 hover:bg-purple-700 shadow-md"
-                    : "bg-gray-700 cursor-not-allowed"
+                    : "bg-stone-800 cursor-not-allowed"
                 }`}>
                 {displayName(code)}
               </button>
@@ -261,10 +260,10 @@ export default function TalentTree2() {
                 disabled={!available}
                 className={`px-8 py-4 rounded-lg text-xl font-bold text-white transition ${
                   unlocked
-                    ? "bg-green-600 shadow-lg"
+                    ? "bg-green-600 shadow-none"
                     : available
                     ? "bg-yellow-400 hover:bg-yellow-300 shadow-md"
-                    : "bg-gray-700 cursor-not-allowed"
+                    : "bg-stone-800 cursor-not-allowed"
                 }`}>
                 {displayName(code)}
               </button>

@@ -16,12 +16,12 @@ export default function Journal() {
           className="mb-10 text-center text-stone-100"
         >
           <FaNewspaper className="mx-auto mb-4 text-5xl text-amber-500" />
-          <h1 className="font-serif text-5xl font-black md:text-7xl">Le Journal de Shaleton</h1>
+          <h1 className="font-serif text-5xl font-black md:text-7xl editorial-title">Le Journal de Shaleton</h1>
           <p className="mt-3 text-stone-400">Feuille quotidienne tenue par Paul Mortadelle</p>
         </motion.header>
 
         <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <aside className="h-fit rounded-xl border border-stone-700 bg-stone-900 p-4 lg:sticky lg:top-24">
+          <aside className="h-fit rounded-sm border border-stone-700 bg-stone-900 p-4 lg:sticky lg:top-24">
             <h2 className="mb-4 border-b border-stone-700 pb-3 font-serif text-xl font-bold text-amber-400">
               Éditions publiées
             </h2>
@@ -48,7 +48,7 @@ export default function Journal() {
               key={edition.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="overflow-hidden rounded-sm border border-amber-950/30 bg-[#eee3c5] shadow-2xl"
+              className="overflow-hidden rounded-sm border border-amber-950/30 bg-[#eee3c5] shadow-none"
               style={{
                 backgroundImage:
                   "radial-gradient(circle at 20% 20%, rgba(120, 80, 30, 0.08), transparent 30%), radial-gradient(circle at 80% 70%, rgba(120, 80, 30, 0.06), transparent 35%)",

@@ -117,7 +117,7 @@ export default function MoneyReport() {
             <select
               value={selectedPlayer || ""}
               onChange={(e) => setSelectedPlayer(e.target.value)}
-              className="w-48 bg-gray-700 text-white p-2 rounded-lg shadow-inner"
+              className="w-48 bg-stone-800 text-white p-2 rounded-lg shadow-inner"
             >
               {players.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -131,7 +131,7 @@ export default function MoneyReport() {
           <div className="w-full md:w-1/2">
             <label className="block mb-1 font-medium">
               Nombre de sessions à afficher&nbsp;:{" "}
-              <span className="text-blue-300">{sessionCount}</span>
+              <span className="text-amber-200">{sessionCount}</span>
             </label>
             <input
               type="range"
@@ -146,11 +146,11 @@ export default function MoneyReport() {
 
         {/* Graphique */}
         {limited.length > 0 ? (
-          <div className="bg-white p-6 rounded-xl shadow-xl text-gray-900">
+          <div className="bg-white p-6 rounded-sm shadow-xl text-gray-900">
             <Bar data={chartData} options={chartOptions} />
           </div>
         ) : (
-          <p className="text-center text-gray-400">
+          <p className="text-center text-stone-400">
             Aucune donnée disponible pour ce joueur.
           </p>
         )}

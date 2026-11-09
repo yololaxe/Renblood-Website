@@ -25,14 +25,14 @@ export default function MarketWidget() {
     <div className="flex h-full flex-col gap-4">
       <button
         onClick={() => navigate("/admin/markets")}
-        className="flex items-center gap-4 rounded-xl border border-amber-500/40 bg-amber-900/20 p-4 text-left transition hover:bg-amber-900/40"
+        className="flex items-center gap-4 rounded-sm border border-amber-500/40 bg-amber-900/20 p-4 text-left transition hover:bg-amber-900/40"
       >
         <span className="rounded-lg bg-amber-600 p-3 text-2xl text-white">
           <FaStore />
         </span>
         <span>
           <span className="block font-bold text-white">Administration des marchés</span>
-          <span className="text-sm text-gray-400">Gérer les prix, items et comptoirs marchands</span>
+          <span className="text-sm text-stone-400">Gérer les prix, items et comptoirs marchands</span>
         </span>
       </button>
 
@@ -46,11 +46,11 @@ export default function MarketWidget() {
             transition={{ delay: index * 0.08 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="rounded-xl border border-gray-600 bg-gray-700/30 p-4 text-left transition hover:border-amber-500/50 hover:bg-gray-700/60"
+            className="rounded-sm border border-stone-600 bg-stone-800/30 p-4 text-left transition hover:border-amber-500/50 hover:bg-stone-800/60"
           >
             <span className="mb-3 block text-xl text-amber-400">{shortcut.icon}</span>
             <span className="block font-semibold text-white">{shortcut.label}</span>
-            <span className="text-xs text-gray-400">{shortcut.description}</span>
+            <span className="text-xs text-stone-400">{shortcut.description}</span>
           </motion.button>
         ))}
       </div>

@@ -7,8 +7,8 @@ export default function QuestsWidget() {
 
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4">
-      <FaScroll className="text-5xl text-yellow-500" />
-      <p className="text-gray-400 text-center text-sm">
+      <FaScroll className="text-5xl text-amber-300" />
+      <p className="text-stone-400 text-center text-sm">
         Gérez l'arbre des quêtes, créez de nouvelles aventures et suivez la progression des joueurs.
       </p>
       <button

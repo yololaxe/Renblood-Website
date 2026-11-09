@@ -82,6 +82,11 @@ export const getPlayers = async (rank) => {
   }
 };
 
+export const getPublicStats = async () => {
+  const { data } = await axiosInstance.get("/players/public-stats/");
+  return data;
+};
+
 export const me = async (firebaseUid) => {
   try {
     const { data } = await axiosInstance.get(`/players/me/${firebaseUid}/`);
@@ -173,87 +178,6 @@ export const removeActionFromPlayer = async (playerId, actionId) => {
   }
 };
 
-
-
-export const createDefaultPlayer = async (firebaseUser) => {
-  const jobNames = [
-    "lumberjack", "naval_architect", "artisan", "carpenter", "miner", "blacksmith", "glassmaker", "mason",
-    "farmer", "breeder", "fisherman", "innkeeper", "guard", "merchant", "transporter", "explorer",
-    "bestiary", "banker", "politician", "builder"
-  ];
-
-  const experiences = {
-    jobs: Object.fromEntries(
-      jobNames.map((job) => {
-        const length = ["bestiary", "banker", "politician", "builder"].includes(job) ? 15 : 10;
-        return [
-          job,
-          {
-            xp: -1,
-            level: 0,
-            progression: Array(length).fill(false),
-            inter_choice: [],
-            choose_lvl_10: ""
-          }
-        ];
-      })
-    )
-  };
-
-  const defaultPlayer = {
-    id: firebaseUser.uid,
-    id_minecraft: firebaseUser.uid,
-    pseudo_minecraft: firebaseUser.displayName || "Inconnu",
-    name: firebaseUser.displayName?.split(" ")[0] || "",
-    surname: firebaseUser.displayName?.split(" ")[1] || "",
-    description: "",
-    rank: "Citoyen",
-    money: 0.0,
-    divin: "",
-
-    // Attributs physiques
-    life: 10,
-    strength: 1,
-    speed: 100,
-    reach: 5,
-    resistance: 0,
-    place: 18,
-    haste: 78,
-    regeneration: 1,
-
-    // Traits et Actions par défaut
-    traits: [],
-    actions: [],
-
-    // Compétences diverses
-    dodge: 2,
-    discretion: 3,
-    charisma: 1,
-    rethoric: 1,
-    mana: 100,
-    negotiation: 0,
-    influence: 1,
-    skill: 100,
-
-    // Discord fields
-    discord_id: null,
-    discord_username: null,
-    discord_discriminator: null,
-    discord_avatar: null,
-
-    // Expériences et caractéristiques réelles
-    experiences,
-    patreon: 0,
-    real_charact: {}
-  };
-
-  try {
-    await createPlayer(defaultPlayer);
-    console.log("✅ Joueur par défaut créé !");
-  } catch (err) {
-    console.error("❌ Erreur lors de la création du joueur par défaut :", err);
-  }
-};
 
 
 /**

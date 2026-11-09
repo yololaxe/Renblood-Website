@@ -22,7 +22,7 @@ export default function ReportingWidget() {
       desc: "Participation et tendances",
       icon: <FaUsers />,
       path: "/reporting/sessions",
-      color: "text-blue-400 bg-blue-900/20 border-blue-500/30"
+      color: "text-amber-300 bg-blue-900/20 border-amber-600/30"
     },
     // {
     //   id: "sales",
@@ -45,21 +45,21 @@ export default function ReportingWidget() {
           transition={{ delay: idx * 0.1 }}
           whileHover={{ scale: 1.02, x: 5 }}
           whileTap={{ scale: 0.98 }}
-          className={`w-full flex items-center p-4 rounded-xl border transition-all text-left group ${r.color} hover:bg-opacity-40`}
+          className={`w-full flex items-center p-4 rounded-sm border transition-all text-left group ${r.color} hover:bg-opacity-40`}
         >
-          <div className="text-2xl mr-4 p-3 bg-gray-800 rounded-full shadow-sm group-hover:scale-110 transition-transform">
+          <div className="text-2xl mr-4 p-3 bg-[#1b1b17] rounded-full shadow-sm group-hover:scale-110 transition-transform">
             {r.icon}
           </div>
           <div>
             <h3 className="font-bold text-white text-lg">{r.title}</h3>
-            <p className="text-xs text-gray-400">{r.desc}</p>
+            <p className="text-xs text-stone-400">{r.desc}</p>
           </div>
         </motion.button>
       ))}
       
       {/* Placeholder pour remplir si vide */}
       {reports.length < 3 && (
-        <div className="flex-1 border-2 border-dashed border-gray-700 rounded-xl flex items-center justify-center text-gray-600 text-sm">
+        <div className="flex-1 border-2 border-dashed border-stone-700 rounded-sm flex items-center justify-center text-gray-600 text-sm">
           Plus de rapports bientôt...
         </div>
       )}

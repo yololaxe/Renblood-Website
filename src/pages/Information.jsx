@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
+  FaArrowRight,
   FaBalanceScale,
   FaBook,
   FaBookOpen,
@@ -12,7 +13,6 @@ import {
   FaMapMarkedAlt,
   FaMedal,
   FaNewspaper,
-  FaQuestionCircle,
   FaSearch,
   FaShieldAlt,
   FaStore,
@@ -26,74 +26,62 @@ const GlobalSearch = lazy(() => import("../components/GlobalSearch"));
 const guideGroups = [
   {
     title: "Je débute",
-    desc: "Les premières pages à ouvrir avant de franchir les portes du royaume.",
-    icon: <FaQuestionCircle />,
-    tone: "text-yellow-400 border-yellow-500/30 bg-yellow-500/10",
+    desc: "Les premières étapes pour prendre tes repères.",
     links: [
       { to: "/histoires/lois", label: "Règles de base", desc: "Lois, sanctions et cadre RP." },
-      { to: "/quests", label: "Premières quêtes", desc: "Objectifs disponibles et progression." },
+      { to: "/quests", label: "Premières quêtes", desc: "Objectifs et progression." },
       { to: "/histoires/metiers", label: "Choisir un métier", desc: "Activités, XP et spécialités." },
       { href: "https://discord.gg/uwNy5tM8jU", label: "Discord", desc: "Rejoindre la communauté." },
     ],
   },
   {
     title: "Mon personnage",
-    desc: "Fiche, progression, titres et capacités réunis comme dans un registre de cité.",
-    icon: <FaUserTie />,
-    tone: "text-blue-400 border-blue-500/30 bg-blue-500/10",
+    desc: "Fiche, progression et capacités.",
     links: [
-      { to: "/character", label: "Personnage", desc: "Stats, argent, traits, actions et licences." },
-      { to: "/talents", label: "Talents", desc: "Arbres de talents et spécialisations." },
+      { to: "/character", label: "Personnage", desc: "Stats, argent, traits et licences." },
+      { to: "/talents", label: "Talents", desc: "Arbres et spécialisations." },
       { to: "/histoires/metiers", label: "Métiers", desc: "Métiers disponibles et progression." },
-      { to: "/histoires/titres", label: "Titres", desc: "Rangs, distinctions et hiérarchie." },
+      { to: "/histoires/titres", label: "Titres", desc: "Rangs et distinctions." },
     ],
   },
   {
     title: "Le monde",
-    desc: "Territoires, lignées, pouvoirs et armées qui façonnent Renblood.",
-    icon: <FaMapMarkedAlt />,
-    tone: "text-green-400 border-green-500/30 bg-green-500/10",
+    desc: "Territoires, lignées et pouvoirs.",
     links: [
       { to: "/map", label: "Carte", desc: "Villes, comtés et territoires." },
       { to: "/histoires/familles", label: "Familles", desc: "Lignées, alliances et arbres." },
-      { to: "/histoires/politique", label: "Politique", desc: "Pouvoirs, responsabilités et gouvernance." },
+      { to: "/histoires/politique", label: "Politique", desc: "Pouvoirs et gouvernance." },
       { to: "/histoires/armee", label: "Armée", desc: "Forces militaires et défense." },
     ],
   },
   {
     title: "Règles importantes",
-    desc: "À consulter avant une décision risquée, marchande, judiciaire ou politique.",
-    icon: <FaBalanceScale />,
-    tone: "text-red-300 border-red-500/30 bg-red-500/10",
+    desc: "Les repères utiles avant d’agir.",
     links: [
       { to: "/histoires/lois", label: "Lois", desc: "Infractions, justice et sanctions." },
-      { to: "/market-prices", label: "Prix des marchés", desc: "Prix publics pratiqués dans les villes." },
-      { to: "/histoires/metiers", label: "Économie et métiers", desc: "Gagner de l'argent et produire." },
-      { to: "/histoires/titres", label: "Rangs et droits", desc: "Statuts, titres et permissions RP." },
+      { to: "/market-prices", label: "Prix des marchés", desc: "Prix pratiqués dans les villes." },
+      { to: "/histoires/metiers", label: "Économie et métiers", desc: "Gagner de l’argent et produire." },
+      { to: "/histoires/titres", label: "Rangs et droits", desc: "Statuts et permissions RP." },
     ],
   },
   {
     title: "À qui parler ?",
-    desc: "Retrouver les figures utiles, les guildes et les autorités du royaume.",
-    icon: <FaUsers />,
-    tone: "text-purple-300 border-purple-500/30 bg-purple-500/10",
+    desc: "Les figures, guildes et autorités du royaume.",
     links: [
-      { to: "/histoires/npcs", label: "PNJ", desc: "Personnages rencontrés et lieux associés." },
-      { to: "/histoires/guildes", label: "Guildes", desc: "Organisations, chefs et objectifs." },
-      { to: "/players", label: "Joueurs", desc: "Citoyens et personnages du serveur." },
-      { to: "/histoires/politique", label: "Autorités", desc: "Rôles politiques et responsables." },
+      { to: "/histoires/npcs", label: "PNJ", desc: "Personnages et lieux associés." },
+      { to: "/histoires/guildes", label: "Guildes", desc: "Organisations et objectifs." },
+      { to: "/players", label: "Joueurs", desc: "Citoyens et personnages." },
+      { to: "/histoires/politique", label: "Autorités", desc: "Responsables et rôles politiques." },
     ],
   },
   {
     title: "Actualités",
-    desc: "Journal, événements, annonces et changements récents consignés par écrit.",
-    icon: <FaNewspaper />,
-    tone: "text-stone-200 border-stone-500/30 bg-stone-500/10",
+    desc: "Les événements et changements du royaume.",
     links: [
-      { to: "/histoires/journal", label: "Journal", desc: "Nouvelles, événements et patch notes." },
+      { to: "/histoires/journal", label: "Journal", desc: "Nouvelles, événements et mises à jour." },
       { to: "/histoires/livres", label: "Livres", desc: "Chroniques, récits et archives." },
       { to: "/histoires/guildes", label: "Vie des guildes", desc: "Organisations et mouvements." },
-      { to: "/histoires/familles", label: "Familles nobles", desc: "Alliances et changements d'influence." },
+      { to: "/histoires/familles", label: "Familles nobles", desc: "Alliances et influence." },
     ],
   },
 ];
@@ -103,13 +91,13 @@ const archiveLinks = [
   { to: "/histoires/familles", icon: <FaLandmark />, label: "Les Familles", desc: "Lignées nobles et alliances." },
   { to: "/histoires/lois", icon: <FaBalanceScale />, label: "Les Lois", desc: "Code pénal et règles de vie." },
   { to: "/histoires/politique", icon: <FaChessRook />, label: "La Politique", desc: "Intrigues et gouvernance." },
-  { to: "/histoires/armee", icon: <FaShieldAlt />, label: "L'Armée", desc: "Forces militaires et défense." },
+  { to: "/histoires/armee", icon: <FaShieldAlt />, label: "L’Armée", desc: "Forces militaires et défense." },
   { to: "/histoires/titres", icon: <FaMedal />, label: "Les Titres", desc: "Rangs et distinctions." },
   { to: "/histoires/guildes", icon: <FaUsers />, label: "Les Guildes", desc: "Organisations et confréries." },
   { to: "/histoires/metiers", icon: <FaHammer />, label: "Les Métiers", desc: "Savoir-faire et artisanat." },
   { to: "/histoires/npcs", icon: <FaUserTie />, label: "Les PNJ", desc: "Habitants et figures locales." },
-  { to: "/histoires/journal", icon: <FaNewspaper />, label: "Le Journal", desc: "Nouvelles et chroniques de Shaleton." },
-  { to: "/market-prices", icon: <FaStore />, label: "Prix des marchés", desc: "Prix publics pratiqués dans les villes." },
+  { to: "/histoires/journal", icon: <FaNewspaper />, label: "Le Journal", desc: "Nouvelles et chroniques." },
+  { to: "/market-prices", icon: <FaStore />, label: "Prix des marchés", desc: "Prix publics des villes." },
 ];
 
 const quickTools = [
@@ -119,166 +107,182 @@ const quickTools = [
   { to: "/histoires/journal", icon: <FaNewspaper />, label: "Journal" },
 ];
 
-const container = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.07 } },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-};
-
-function SmartLink({ link, children, className }) {
-  if (link.href) {
-    return (
-      <a href={link.href} target="_blank" rel="noopener noreferrer" className={className}>
-        {children}
-      </a>
-    );
-  }
-  return (
-    <Link to={link.to} className={className}>
-      {children}
-    </Link>
+function GuideLink({ link }) {
+  const className = "group flex min-h-16 items-center justify-between gap-4 border-b border-stone-700/70 py-3 transition-colors hover:border-amber-300/70";
+  const content = (
+    <>
+      <span className="min-w-0">
+        <span className="block font-semibold text-stone-100 transition-colors group-hover:text-amber-200">{link.label}</span>
+        <span className="mt-0.5 block text-sm leading-snug text-stone-400">{link.desc}</span>
+      </span>
+      <FaArrowRight aria-hidden="true" className="shrink-0 text-sm text-stone-500 transition-transform group-hover:translate-x-1 group-hover:text-amber-300" />
+    </>
   );
+
+  if (link.href) {
+    return <a href={link.href} target="_blank" rel="noopener noreferrer" className={className}>{content}</a>;
+  }
+  return <Link to={link.to} className={className}>{content}</Link>;
 }
 
 export default function Information() {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200">
-      <div className="relative flex min-h-[46vh] items-center justify-center overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-35"
-          style={{ backgroundImage: "url('/accueil/carte-renblood.png')" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-900/45 via-gray-900/82 to-gray-900" />
+    <main className="min-h-screen overflow-x-hidden bg-[#11110f] text-stone-100">
+      <header className="relative border-b border-stone-700/70">
+        <div className="mx-auto grid w-full max-w-[1680px] grid-cols-1 items-center gap-8 px-5 pb-10 pt-12 sm:px-8 md:pb-14 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12 lg:px-12 lg:pb-16 lg:pt-16">
+          <div className="relative z-10">
+            <p className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-amber-300 sm:text-sm">
+              <span className="h-px w-8 bg-amber-300" /> Guide du voyageur <span className="text-stone-500">/ 01—06</span>
+            </p>
+            <h1 className="max-w-4xl text-[clamp(2.25rem,8vw,7.5rem)] font-black leading-[0.88] tracking-[-0.065em] text-stone-50 editorial-title">
+              Prendre ses repères<span className="text-amber-300">.</span>
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-7 text-stone-300 sm:text-lg sm:leading-8">
+              Les règles, les lieux et les personnes qui font vivre Renblood. Choisis un sujet pour ouvrir directement le bon registre.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="mt-8 flex min-h-14 w-full max-w-2xl items-center gap-4 border-y border-stone-600 py-3 text-left text-stone-300 transition-colors hover:border-amber-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300"
+              aria-label="Rechercher dans le guide"
+            >
+              <FaSearch aria-hidden="true" className="shrink-0 text-amber-300" />
+              <span className="min-w-0 flex-1 truncate">Rechercher une règle, un métier, un joueur…</span>
+              <span className="hidden shrink-0 text-xs uppercase tracking-wider text-stone-500 sm:inline">Ctrl K</span>
+              <FaArrowRight aria-hidden="true" className="shrink-0 text-sm text-stone-500" />
+            </button>
+          </div>
 
-        <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="mb-3 text-sm font-semibold uppercase tracking-[0.22em] text-yellow-400"
-          >
-            Archives royales
-          </motion.p>
-          <motion.h1
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="mb-4 text-4xl font-extrabold text-white drop-shadow-lg md:text-6xl"
-          >
-            Guide de Renblood
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="mx-auto mb-7 max-w-2xl text-lg font-light text-gray-300 md:text-xl"
-          >
-            Ouvre le bon registre, trouve la bonne règle, puis retourne jouer.
-          </motion.p>
-          <motion.button
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35, duration: 0.5 }}
-            onClick={() => setSearchOpen(true)}
-            className="mx-auto flex w-full max-w-2xl items-center gap-3 rounded-xl border border-yellow-500/40 bg-gray-950/80 px-5 py-4 text-left text-gray-300 shadow-2xl backdrop-blur-sm transition hover:border-yellow-400 hover:bg-gray-900"
-          >
-            <FaSearch className="text-yellow-400" />
-            <span className="flex-1">Rechercher une info, un métier, une loi, un joueur...</span>
-            <span className="hidden rounded border border-gray-600 px-2 py-1 text-xs text-gray-500 sm:inline">Ctrl K</span>
-          </motion.button>
+          <figure className="relative min-h-64 overflow-hidden border border-stone-700 bg-stone-900 sm:min-h-80 lg:min-h-[430px]">
+            <img
+              src="/accueil/carte-renblood-1154.jpg"
+              srcSet="/accueil/carte-renblood-640.jpg 640w, /accueil/carte-renblood-1154.jpg 1154w"
+              sizes="(min-width: 1680px) 760px, (min-width: 1024px) 48vw, 100vw"
+              decoding="async"
+              alt="Carte illustrée du royaume de Renblood"
+              className="absolute inset-0 h-full w-full object-cover object-center opacity-75"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#11110f]/90 via-transparent to-black/10" />
+            <figcaption className="absolute bottom-0 left-0 right-0 flex flex-col items-start gap-2 p-5 sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:p-7">
+              <span>
+                <span className="block text-xs font-bold uppercase tracking-[0.2em] text-amber-200">Le royaume</span>
+                <span className="mt-1 block text-2xl font-bold text-white sm:text-3xl">Un monde à parcourir</span>
+              </span>
+              <span className="text-sm text-stone-300">Carte · territoires · cités</span>
+            </figcaption>
+            <span aria-hidden="true" className="absolute right-4 top-4 border border-white/35 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">Renblood</span>
+          </figure>
         </div>
-      </div>
+      </header>
 
-      <div className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="-mt-7 mb-12 grid grid-cols-2 gap-3 md:grid-cols-4">
-          {quickTools.map((tool) => (
+      <nav aria-label="Accès rapides" className="border-b border-stone-700/70 bg-[#171715]">
+        <div className="mx-auto grid w-full max-w-[1680px] grid-cols-2 px-5 sm:px-8 md:grid-cols-4 lg:px-12">
+          {quickTools.map((tool, index) => (
             <Link
               key={tool.to}
               to={tool.to}
-              className="relative z-20 flex items-center justify-center gap-2 rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm font-semibold text-gray-200 shadow-lg transition hover:border-yellow-500 hover:text-white"
+              className="group flex min-h-16 items-center gap-3 border-b border-r border-stone-700/70 px-3 py-3 transition-colors hover:bg-white/[0.035] focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300 sm:px-5 md:border-b-0"
             >
-              {tool.icon} {tool.label}
+              <span className="text-xs tabular-nums text-stone-500">0{index + 1}</span>
+              <span className="text-amber-300">{tool.icon}</span>
+              <span className="text-sm font-semibold text-stone-200 group-hover:text-white sm:text-base">{tool.label}</span>
+              <FaArrowRight aria-hidden="true" className="ml-auto hidden text-xs text-stone-500 transition-transform group-hover:translate-x-1 sm:block" />
             </Link>
           ))}
         </div>
+      </nav>
 
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="grid grid-cols-1 gap-6 lg:grid-cols-2"
-        >
-          {guideGroups.map((group) => (
+      <section id="aide-economie" className="mx-auto w-full max-w-[1680px] scroll-mt-24 px-5 py-10 sm:px-8 lg:px-12" aria-labelledby="aide-economie-title">
+        <h2 id="aide-economie-title" className="text-2xl font-bold text-stone-100">Premiers gestes en jeu</h2>
+        <div className="mt-5 grid gap-x-10 md:grid-cols-2">
+          {[
+            ["Commencer avec Nagaki", "Dans Minecraft, utilise /mc tuto start. La même commande reprend l’étape en cours. /mc tuto guide active ou masque le guidage."],
+            ["Ouvrir un comptoir", "Maj + clic droit sur ton comptoir. Dans Stock, sélectionne les piles de ton inventaire, puis envoie-les. Dans Prix, active la vente et applique ton tarif."],
+            ["Faire un échange marchand", "Lis les objets et quantités demandés, puis dépose-les dans les cases voisines. Le paiement est remis en pièces après validation. Survole les boutons pour lire leur aide. Annuler abandonne l’offre ; Échap ferme la fenêtre pour y revenir plus tard. Attends le résultat du règlement avant une autre action."],
+            ["Servir à l’auberge", "Clique sur le client pour lire sa commande. Prends le bon plat en main, puis fais Maj + clic droit sur le client. /ms auberge status <nom> indique l’état et le prochain essai de ton auberge."],
+            ["Une case de stock est réservée", "Sélectionne la case dans Stock pour voir les objets disponibles, réservés ou en cours de dépôt. Le bouton Copier le reçu permet de transmettre sa référence à l’équipe. Choisis une autre case pendant la vérification."],
+            ["Pourquoi une case n’accepte plus d’objets ?", "Chaque case respecte la taille des piles de l’objet : un équipement à l’unité, certains objets par 16, les autres jusqu’à 64. Les objets réservés ou en cours de dépôt occupent aussi de la place. Choisis une autre case si la première est pleine."],
+            ["Un coffre est resté en exploration", "Garde libre le coffre d’origine avant le retour. Si le transfert est impossible, le coffre du camp est conservé : contacte l’équipe pour récupérer son contenu. /ms exploration tuto rappelle ces repères dans le jeu."],
+            ["Retrouver un reçu", "Ouvre Mes finances sur le site et cherche l’opération. Si le jeu demande une vérification, garde la référence du reçu pour la transmettre à l’équipe."],
+          ].map(([title, description]) => <details key={title} className="border-b border-stone-700 py-4 text-stone-200">
+            <summary className="cursor-pointer font-medium">{title}</summary>
+            <p className="mt-2 max-w-prose text-sm leading-relaxed text-stone-400">{description}</p>
+          </details>)}
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-[1680px] px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20" aria-labelledby="guide-sections-title">
+        <div className="mb-8 flex flex-col gap-3 border-b border-stone-700 pb-5 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-amber-300">Par où commencer</p>
+            <h2 id="guide-sections-title" className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Les registres essentiels</h2>
+          </div>
+          <p className="max-w-xl text-sm leading-6 text-stone-400 sm:text-right">Six portes d’entrée pour trouver rapidement l’information utile à ta prochaine session.</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-x-10 md:grid-cols-2 xl:grid-cols-3 xl:gap-x-12">
+          {guideGroups.map((group, index) => (
             <motion.section
               key={group.title}
-              variants={item}
-              className="group relative overflow-hidden rounded-xl border border-gray-700 bg-gray-800/80 p-6 shadow-lg transition hover:-translate-y-1 hover:border-yellow-500/40"
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.35, delay: (index % 3) * 0.04 }}
+              className="border-t border-stone-500/80 py-5 sm:py-7"
+              aria-labelledby={`guide-group-${index}`}
             >
-              <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent" />
-              <div className="mb-5 flex items-start gap-4">
-                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border text-xl transition group-hover:scale-105 ${group.tone}`}>
-                  {group.icon}
-                </div>
+              <div className="mb-3 flex items-start gap-4">
+                <span className="pt-1 text-sm font-semibold tabular-nums text-amber-300">0{index + 1}</span>
                 <div>
-                  <h2 className="text-2xl font-bold text-white">{group.title}</h2>
-                  <p className="mt-1 text-sm leading-relaxed text-gray-400">{group.desc}</p>
+                  <h3 id={`guide-group-${index}`} className="text-2xl font-bold tracking-tight text-stone-50">{group.title}</h3>
+                  <p className="mt-1 text-sm leading-6 text-stone-400">{group.desc}</p>
                 </div>
               </div>
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {group.links.map((link) => (
-                  <SmartLink
-                    key={`${group.title}-${link.label}`}
-                    link={link}
-                    className="rounded-lg border border-gray-700 bg-gray-900/70 p-4 transition hover:border-gray-500 hover:bg-gray-900"
-                  >
-                    <span className="block font-semibold text-white">{link.label}</span>
-                    <span className="mt-1 block text-sm text-gray-400">{link.desc}</span>
-                  </SmartLink>
-                ))}
+              <div className="ml-9">
+                {group.links.map((link) => <GuideLink key={`${group.title}-${link.label}`} link={link} />)}
               </div>
             </motion.section>
           ))}
-        </motion.div>
+        </div>
+      </section>
 
-        <section className="mt-16">
-          <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+      <section className="border-y border-stone-700/70 bg-[#171715]" aria-labelledby="archive-title">
+        <div className="mx-auto w-full max-w-[1680px] px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20">
+          <div className="mb-8 grid gap-3 border-b border-stone-700 pb-5 md:grid-cols-[1fr_auto] md:items-end sm:mb-10">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-yellow-400">Rayonnages complets</p>
-              <h2 className="text-3xl font-bold text-white">Toutes les informations</h2>
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-amber-300">Index complet · {archiveLinks.length} rubriques</p>
+              <h2 id="archive-title" className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Toutes les archives</h2>
             </div>
-            <p className="max-w-2xl text-sm text-gray-400">
-              Les registres ci-dessus guident les joueurs. Cette section garde toutes les entrées historiques actuelles.
-            </p>
+            <p className="max-w-xl text-sm leading-6 text-stone-400 md:text-right">Explore les chroniques, les institutions et les ressources pratiques du royaume.</p>
           </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {archiveLinks.map(({ to, icon, label, desc }) => (
-              <Link
-                key={to}
-                to={to}
-                className="group rounded-lg border border-gray-700 bg-gray-800 p-5 transition hover:-translate-y-1 hover:border-yellow-500/70 hover:bg-gray-800/90"
-              >
-                <div className="mb-3 text-2xl text-yellow-400 transition group-hover:scale-110">{icon}</div>
-                <h3 className="text-lg font-bold text-white group-hover:text-yellow-300">{label}</h3>
-                <p className="mt-1 text-sm text-gray-400">{desc}</p>
+          <div className="grid grid-cols-1 gap-x-10 sm:grid-cols-2 xl:grid-cols-3 xl:gap-x-14">
+            {archiveLinks.map(({ to, icon, label, desc }, index) => (
+              <Link key={to} to={to} className="group flex min-h-20 items-center gap-4 border-b border-stone-700/70 py-4 transition-colors hover:border-amber-300/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300">
+                <span className="w-7 shrink-0 text-xs tabular-nums text-stone-500">{String(index + 1).padStart(2, "0")}</span>
+                <span className="shrink-0 text-lg text-amber-300">{icon}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold text-stone-100 group-hover:text-amber-200">{label}</span>
+                  <span className="mt-0.5 block text-sm text-stone-400">{desc}</span>
+                </span>
+                <FaArrowRight aria-hidden="true" className="shrink-0 text-sm text-stone-500 transition-transform group-hover:translate-x-1 group-hover:text-amber-300" />
               </Link>
             ))}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      <footer className="mx-auto flex w-full max-w-[1680px] flex-col gap-3 px-5 py-8 text-sm text-stone-400 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
+        <span className="flex items-center gap-2 text-stone-200"><FaBookOpen className="text-amber-300" /> Le guide de Renblood</span>
+        <span>Besoin d’un autre repère ? Utilise la recherche globale avec Ctrl K.</span>
+      </footer>
 
       {searchOpen && (
         <Suspense fallback={null}>
           <GlobalSearch open onClose={() => setSearchOpen(false)} />
         </Suspense>
       )}
-    </div>
+    </main>
   );
 }

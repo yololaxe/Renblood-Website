@@ -111,17 +111,17 @@ const PlayerLicenceManager = ({ playerId, mcId, onClose, showToast }) => {
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 50 }}
         transition={{ duration: 0.2 }}
-        className="bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-3xl w-full border border-gray-600 relative overflow-y-auto max-h-[90vh]"
+        className="bg-[#1b1b17] p-6 rounded-sm shadow-none max-w-3xl w-full border border-stone-600 relative overflow-y-auto max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-white transition"
+          className="absolute top-3 right-3 text-stone-400 hover:text-white transition"
         >
           <FaTimes size={20} />
         </button>
-        <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 border-b border-gray-700 pb-4">
-          <FaFileContract className="text-blue-400" />
+        <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 border-b border-stone-700 pb-4">
+          <FaFileContract className="text-amber-300" />
           Gérer les licences du joueur
         </h3>
 
@@ -129,14 +129,14 @@ const PlayerLicenceManager = ({ playerId, mcId, onClose, showToast }) => {
         <section className="mb-8">
           <h4 className="text-xl font-semibold text-white mb-4">Licences actuelles</h4>
           {licences.length === 0 ? (
-            <p className="text-gray-400 italic">Aucune licence pour ce joueur.</p>
+            <p className="text-stone-400 italic">Aucune licence pour ce joueur.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {licences.map((lic) => (
-                <div key={lic.id} className="bg-gray-700 p-4 rounded-xl shadow-md border border-gray-600 flex justify-between items-center">
+                <div key={lic.id} className="bg-stone-800 p-4 rounded-sm shadow-md border border-stone-600 flex justify-between items-center">
                   <div>
                     <p className="font-bold text-white">{lic.name}</p>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-stone-400">
                       {lic.start_date} - {lic.end_date}
                     </p>
                   </div>
@@ -162,7 +162,7 @@ const PlayerLicenceManager = ({ playerId, mcId, onClose, showToast }) => {
               placeholder="Nom de la licence"
               value={newLicence.name}
               onChange={handleInputChange}
-              className="bg-gray-700 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-stone-800 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
             <input
               type="text"
@@ -170,7 +170,7 @@ const PlayerLicenceManager = ({ playerId, mcId, onClose, showToast }) => {
               placeholder="Nom du propriétaire"
               value={newLicence.owner_name}
               onChange={handleInputChange}
-              className="bg-gray-700 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-stone-800 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
             <input
               type="text"
@@ -178,7 +178,7 @@ const PlayerLicenceManager = ({ playerId, mcId, onClose, showToast }) => {
               placeholder="Nom de l'exploitant"
               value={newLicence.exploitant_name}
               onChange={handleInputChange}
-              className="bg-gray-700 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-stone-800 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
             <input
               type="number"
@@ -186,7 +186,7 @@ const PlayerLicenceManager = ({ playerId, mcId, onClose, showToast }) => {
               placeholder="Prix"
               value={newLicence.price}
               onChange={handleInputChange}
-              className="bg-gray-700 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-stone-800 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
             <input
               type="text"
@@ -194,7 +194,7 @@ const PlayerLicenceManager = ({ playerId, mcId, onClose, showToast }) => {
               placeholder="Date de début (ex: Automne 324)"
               value={newLicence.start_date}
               onChange={handleInputChange}
-              className="bg-gray-700 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-stone-800 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
             <input
               type="text"
@@ -202,7 +202,7 @@ const PlayerLicenceManager = ({ playerId, mcId, onClose, showToast }) => {
               placeholder="Date de fin (ex: Été 344)"
               value={newLicence.end_date}
               onChange={handleInputChange}
-              className="bg-gray-700 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-stone-800 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
             <textarea
               name="details"
@@ -210,12 +210,12 @@ const PlayerLicenceManager = ({ playerId, mcId, onClose, showToast }) => {
               value={newLicence.details}
               onChange={handleInputChange}
               rows="3"
-              className="bg-gray-700 text-white p-2 rounded-lg md:col-span-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-stone-800 text-white p-2 rounded-lg md:col-span-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
             ></textarea>
           </div>
           <button
             onClick={handleAddLicence}
-            className="mt-6 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold transition"
+            className="mt-6 w-full flex items-center justify-center gap-2 bg-amber-800 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-semibold transition"
           >
             <FaPlus /> Ajouter la licence
           </button>

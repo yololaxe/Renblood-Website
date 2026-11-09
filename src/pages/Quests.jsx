@@ -1,3 +1,4 @@
+import RealmHeader from "../components/RealmHeader";
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Tree from "react-d3-tree";
@@ -54,6 +55,15 @@ export default function Quests() {
 
     fetchData();
   }, [userId]);
+
+  useEffect(() => {
+    if (!selectedQuest) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const close = e => { if (e.key === "Escape") setSelectedQuest(null); };
+    window.addEventListener("keydown", close);
+    return () => { document.body.style.overflow = previousOverflow; window.removeEventListener("keydown", close); };
+  }, [selectedQuest]);
 
   // Centrer l'arbre au chargement
   const containerRef = React.useCallback((container) => {
@@ -167,9 +177,9 @@ export default function Quests() {
       return (
         <g>
           <foreignObject x="-120" y="-40" width="240" height="100">
-            <div className="w-full h-full p-3 rounded-lg border border-gray-700 bg-gray-800/50 flex flex-col items-center justify-center shadow-inner opacity-70 cursor-not-allowed">
-              <FaLock className="text-gray-500 text-2xl mb-2" />
-              <span className="text-gray-500 font-mono text-sm">???</span>
+            <div className="w-full h-full p-3 rounded-lg border border-stone-700 bg-[#191916]/50 flex flex-col items-center justify-center shadow-inner opacity-70 cursor-not-allowed">
+              <FaLock className="text-stone-500 text-2xl mb-2" />
+              <span className="text-stone-500 font-mono text-sm">???</span>
             </div>
           </foreignObject>
         </g>
@@ -178,26 +188,26 @@ export default function Quests() {
 
     // Si déverrouillé
     return (
-      <g onClick={() => setSelectedQuest(quest)}>
+      <g role="button" tabIndex={0} aria-label={`Ouvrir la quête ${quest.name}`} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedQuest(quest); } }} onClick={() => setSelectedQuest(quest)}>
         <foreignObject x="-120" y="-40" width="240" height="100">
           <div 
             className={`
-              w-full h-full p-3 rounded-lg border shadow-lg flex flex-col justify-between cursor-pointer transition-all duration-200
-              ${isActive ? "border-green-500 bg-gray-800 shadow-[0_0_15px_rgba(34,197,94,0.3)]" : ""}
-              ${isCompleted ? "border-blue-500 bg-gray-800 opacity-80" : ""}
-              ${!isActive && !isCompleted ? "border-gray-600 bg-gray-800 hover:border-yellow-500" : ""}
+              realm-quest-node w-full h-full p-3 border flex flex-col justify-between cursor-pointer transition-all duration-200
+              ${isActive ? "border-green-500 bg-[#191916] shadow-[0_0_15px_rgba(34,197,94,0.3)]" : ""}
+              ${isCompleted ? "border-amber-600 bg-[#191916] opacity-80" : ""}
+              ${!isActive && !isCompleted ? "border-stone-600 bg-[#191916] hover:border-yellow-500" : ""}
               ${isSelected ? "ring-2 ring-yellow-400 scale-105" : ""}
             `}
           >
             <div className="flex justify-between items-start">
-              <span className="text-[10px] font-bold uppercase text-yellow-500/80 bg-yellow-500/10 px-1.5 py-0.5 rounded">
+              <span className="text-[10px] font-bold uppercase text-amber-300/80 bg-yellow-500/10 px-1.5 py-0.5 rounded">
                 {quest.category}
               </span>
               {isActive && (
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]" title="En cours" />
               )}
               {isCompleted && (
-                <div className="text-[10px] text-blue-400 font-bold border border-blue-500/30 px-1 rounded">FINI</div>
+                <div className="text-[10px] text-amber-300 font-bold border border-amber-600/30 px-1 rounded">FINI</div>
               )}
             </div>
             
@@ -212,7 +222,7 @@ export default function Quests() {
                 </span>
               )}
               {quest.xp && (
-                <span className="text-[10px] text-blue-400 flex items-center gap-0.5">
+                <span className="text-[10px] text-amber-300 flex items-center gap-0.5">
                   <FaStar size={8} /> {quest.xp.amount}
                 </span>
               )}
@@ -237,44 +247,21 @@ export default function Quests() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-stone-950 text-white flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen w-screen bg-gray-900 text-white overflow-hidden flex flex-col relative">
-      {/* Header Flottant */}
-      <div className="absolute top-20 left-0 right-0 z-10 flex flex-col items-center pointer-events-none">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-bold text-yellow-500 flex items-center gap-2 drop-shadow-lg bg-gray-900/50 px-4 py-2 rounded-full backdrop-blur-md pointer-events-auto"
-        >
-          <FaScroll /> Carte des Quêtes
-        </motion.h1>
-
-        {/* Filtres */}
-        <div className="flex flex-wrap justify-center gap-2 mt-4 pointer-events-auto">
-          {QUEST_TYPES.map((type) => (
-            <button
-              key={type.id}
-              onClick={() => setSelectedType(type.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 shadow-lg backdrop-blur-sm ${
-                selectedType === type.id
-                  ? "bg-yellow-500 text-gray-900 scale-105"
-                  : "bg-gray-800/80 text-gray-300 hover:bg-gray-700 hover:text-white border border-gray-600"
-              }`}
-            >
-              {type.label}
-            </button>
-          ))}
-        </div>
+    <div className="realm-page realm-quest-page">
+      <RealmHeader eyebrow="Le journal / Quêtes" title="Choisissez votre voie" description="Suivez les fils de votre aventure et découvrez les objectifs qui s’ouvrent à vous." />
+      <div className="realm-content" style={{paddingTop:0}}>
+        <div className="realm-quest-toolbar" aria-label="Filtrer les quêtes">{QUEST_TYPES.map(type => <button key={type.id} className="realm-filter" aria-pressed={selectedType === type.id} onClick={() => { setSelectedType(type.id); setSelectedQuest(null); }}>{type.label}</button>)}</div>
+        <p className="realm-quest-help">Déplacez la carte pour explorer les branches. Sélectionnez une quête pour consulter ses objectifs et récompenses.</p>
       </div>
-
       {/* Zone de l'arbre (Canvas) */}
-      <div className="flex-grow w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-800 via-gray-900 to-black" ref={containerRef}>
+      <div className="realm-quest-canvas" ref={containerRef}>
         {treeData ? (
           <Tree
             data={treeData}
@@ -289,23 +276,15 @@ export default function Quests() {
             transitionDuration={0}
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
+          <div className="flex items-center justify-center h-full text-stone-400">
             Aucune quête disponible.
           </div>
         )}
-      </div>
-
-      {/* Contrôles de zoom */}
-      <div className="absolute bottom-8 right-8 flex flex-col gap-2 z-10">
-        <button onClick={() => setZoom(z => Math.min(z + 0.2, 2))} className="p-3 bg-gray-800 rounded-full shadow-lg border border-gray-600 hover:bg-gray-700 text-white">
-          <FaSearchPlus />
-        </button>
-        <button onClick={() => setZoom(1)} className="p-3 bg-gray-800 rounded-full shadow-lg border border-gray-600 hover:bg-gray-700 text-white">
-          <FaCompress />
-        </button>
-        <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.3))} className="p-3 bg-gray-800 rounded-full shadow-lg border border-gray-600 hover:bg-gray-700 text-white">
-          <FaSearchMinus />
-        </button>
+        <div className="realm-zoom" aria-label="Zoom de la carte">
+          <button aria-label="Agrandir" onClick={() => setZoom(z => Math.min(z + .2,2))}><FaSearchPlus /></button>
+          <button aria-label="Réinitialiser le zoom" onClick={() => setZoom(1)}><FaCompress /></button>
+          <button aria-label="Réduire" onClick={() => setZoom(z => Math.max(z - .2,.3))}><FaSearchMinus /></button>
+        </div>
       </div>
 
       {/* Modale de détails (inchangée) */}
@@ -315,27 +294,27 @@ export default function Quests() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            role="dialog" aria-modal="true" aria-label={selectedQuest.name} className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
             onClick={() => setSelectedQuest(null)}
           >
             <motion.div
               initial={{ scale: 0.9, y: 50 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 50 }}
-              className="bg-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-600 overflow-hidden flex flex-col max-h-[90vh]"
+              className="bg-[#191916] w-full max-w-2xl rounded-sm shadow-none border border-stone-600 overflow-hidden flex flex-col max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header Modale */}
-              <div className="p-6 border-b border-gray-700 flex justify-between items-start bg-gray-900/50">
+              <div className="p-6 border-b border-stone-700 flex justify-between items-start bg-stone-950/50">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded">
+                    <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-yellow-500/10 px-2 py-1 rounded">
                       {selectedQuest.category}
                     </span>
-                    <span className="text-xs text-gray-500 uppercase tracking-wider border border-gray-600 px-2 py-1 rounded">
+                    <span className="text-xs text-stone-500 uppercase tracking-wider border border-stone-600 px-2 py-1 rounded">
                       {selectedQuest.type}
                     </span>
-                    <span className="text-xs text-gray-400 font-mono">
+                    <span className="text-xs text-stone-400 font-mono">
                       ID: {selectedQuest.questId}
                     </span>
                   </div>
@@ -344,8 +323,9 @@ export default function Quests() {
                   </h2>
                 </div>
                 <button
+                  aria-label="Fermer les détails de la quête"
                   onClick={() => setSelectedQuest(null)}
-                  className="text-gray-400 hover:text-white transition p-1"
+                  className="text-stone-400 hover:text-white transition p-1"
                 >
                   <FaTimes size={24} />
                 </button>
@@ -358,7 +338,7 @@ export default function Quests() {
                   <h3 className="text-lg font-semibold text-white mb-2">
                     📜 Description
                   </h3>
-                  <p className="text-gray-300 leading-relaxed">
+                  <p className="text-stone-300 leading-relaxed">
                     {formatText(
                       selectedQuest.description?.fr || selectedQuest.description?.en,
                       selectedQuest
@@ -377,17 +357,17 @@ export default function Quests() {
                         {selectedQuest.objectives.map((obj, idx) => (
                           <li
                             key={idx}
-                            className="bg-gray-700/50 p-3 rounded-lg border border-gray-700 flex items-start gap-3"
+                            className="bg-stone-800/50 p-3 rounded-lg border border-stone-700 flex items-start gap-3"
                           >
-                            <span className="bg-gray-600 text-xs font-bold px-2 py-1 rounded text-gray-300 mt-0.5">
+                            <span className="bg-gray-600 text-xs font-bold px-2 py-1 rounded text-stone-300 mt-0.5">
                               {obj.type}
                             </span>
-                            <div className="text-sm text-gray-200">
+                            <div className="text-sm text-stone-200">
                               {obj.type === "ITEM" &&
                                 obj.target?.items?.map((it, i) => (
                                   <div key={i}>
                                     • Récupérer {it.count}x{" "}
-                                    <span className="text-blue-300">
+                                    <span className="text-amber-200">
                                       {it.itemId}
                                     </span>
                                   </div>
@@ -415,26 +395,26 @@ export default function Quests() {
                   )}
 
                 {/* Récompenses */}
-                <div className="bg-gray-700/30 p-4 rounded-xl border border-gray-700/50">
+                <div className="bg-stone-800/30 p-4 rounded-sm border border-stone-700/50">
                   <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                     🎁 Récompenses
                   </h3>
                   <div className="flex flex-wrap gap-4">
                     {selectedQuest.money > 0 && (
-                      <div className="flex items-center gap-2 bg-gray-800 px-3 py-2 rounded-lg border border-gray-600">
-                        <FaCoins className="text-yellow-500" />
+                      <div className="flex items-center gap-2 bg-[#191916] px-3 py-2 rounded-lg border border-stone-600">
+                        <FaCoins className="text-amber-300" />
                         <span className="font-bold text-yellow-100">
                           <MoneyDisplay value={selectedQuest.money} />
                         </span>
                       </div>
                     )}
                     {selectedQuest.xp && (
-                      <div className="flex items-center gap-2 bg-gray-800 px-3 py-2 rounded-lg border border-gray-600">
-                        <FaStar className="text-blue-400" />
+                      <div className="flex items-center gap-2 bg-[#191916] px-3 py-2 rounded-lg border border-stone-600">
+                        <FaStar className="text-amber-300" />
                         <span className="font-bold text-blue-100">
                           {selectedQuest.xp.amount} XP
                         </span>
-                        <span className="text-xs text-gray-500 uppercase ml-1">
+                        <span className="text-xs text-stone-500 uppercase ml-1">
                           ({selectedQuest.xp.job})
                         </span>
                       </div>
@@ -442,36 +422,36 @@ export default function Quests() {
                     {selectedQuest.rewards?.map((reward, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center gap-2 bg-gray-800 px-3 py-2 rounded-lg border border-gray-600"
+                        className="flex items-center gap-2 bg-[#191916] px-3 py-2 rounded-lg border border-stone-600"
                       >
                         <span className="text-green-400 font-bold">
                           {reward.count}x
                         </span>
-                        <span className="text-gray-200">{reward.itemId}</span>
+                        <span className="text-stone-200">{reward.itemId}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* NPC & Dialogues */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-400">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-stone-400">
                   <div>
-                    <span className="font-semibold text-gray-500 block mb-1">
+                    <span className="font-semibold text-stone-500 block mb-1">
                       PNJ de départ
                     </span>
-                    <span className="text-white bg-gray-700 px-2 py-1 rounded">
+                    <span className="text-white bg-stone-800 px-2 py-1 rounded">
                       {getNpcLabel(selectedQuest.startNpcName, selectedQuest.startNpcId)}
                     </span>
                   </div>
                   <div>
-                    <span className="font-semibold text-gray-500 block mb-1">PNJ de validation</span>
-                    <span className="text-white bg-gray-700 px-2 py-1 rounded">
+                    <span className="font-semibold text-stone-500 block mb-1">PNJ de validation</span>
+                    <span className="text-white bg-stone-800 px-2 py-1 rounded">
                       {getNpcLabel(selectedQuest.completionNpcName, selectedQuest.completionNpcId)}
                     </span>
                   </div>
                   {selectedQuest.prerequisitesAll?.length > 0 && (
                     <div>
-                      <span className="font-semibold text-gray-500 block mb-1">
+                      <span className="font-semibold text-stone-500 block mb-1">
                         Prérequis
                       </span>
                       <div className="flex flex-wrap gap-1">
@@ -490,10 +470,11 @@ export default function Quests() {
               </div>
 
               {/* Footer Modale */}
-              <div className="p-6 border-t border-gray-700 bg-gray-900/50 flex justify-end">
+              <div className="p-6 border-t border-stone-700 bg-stone-950/50 flex justify-end">
                 <button
+                  aria-label="Fermer les détails de la quête"
                   onClick={() => setSelectedQuest(null)}
-                  className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition font-medium"
+                  className="px-6 py-2 bg-stone-800 hover:bg-gray-600 text-white rounded-lg transition font-medium"
                 >
                   Fermer
                 </button>

@@ -2,10 +2,10 @@ import ToolTip from "../Tooltip";
 
 export default function StatCard({ icon, label, value, bonus, tooltip }) {
   return (
-    <div className="flex items-center justify-between bg-gray-800/50 p-2 rounded-lg border border-gray-700 hover:border-gray-500 transition-colors">
+    <div className="flex items-center justify-between bg-[#1b1b17]/50 p-2 rounded-lg border border-stone-700 hover:border-gray-500 transition-colors">
       <div className="flex items-center gap-3">
-        <span className="text-xl text-gray-400">{icon}</span>
-        <span className="text-sm font-medium text-gray-300">{label}</span>
+        <span className="text-xl text-stone-400">{icon}</span>
+        <span className="text-sm font-medium text-stone-300">{label}</span>
       </div>
       <div className="flex items-center gap-1">
         <span className="text-lg font-bold text-white">{value}</span>

@@ -143,18 +143,18 @@ export default function EditFuturePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 p-6 pb-20">
+    <div className="min-h-screen bg-[#11110f] text-stone-200 p-6 pb-20">
       
       {/* Header */}
-      <div className="max-w-7xl mx-auto mb-8 flex items-center gap-4">
+      <div className="max-w-[1680px] mx-auto mb-8 flex items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white">Modifier mon Action</h1>
-          <p className="text-gray-400">Changez votre activité pour la prochaine session.</p>
+          <h1 className="text-3xl font-extrabold text-white editorial-title">Modifier mon Action</h1>
+          <p className="text-stone-400">Changez votre activité pour la prochaine session.</p>
         </div>
       </div>
 
       {/* Grid */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="max-w-[1680px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {FUTURE_TEMPLATES.map((t, index) => (
           <motion.div
             key={t.type}
@@ -166,17 +166,17 @@ export default function EditFuturePage() {
               setAnswer("");
             }}
             whileHover={{ y: -5, boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)" }}
-            className={`flex flex-col rounded-xl overflow-hidden border-2 shadow-lg cursor-pointer transition-all duration-300 ${
+            className={`flex flex-col rounded-sm overflow-hidden border-2 shadow-none cursor-pointer transition-all duration-300 ${
               t.type === selectedType
-                ? "border-green-500 bg-gray-800 ring-2 ring-green-500/50"
-                : "border-transparent bg-gray-800 hover:border-gray-600"
+                ? "border-green-500 bg-[#1b1b17] ring-2 ring-green-500/50"
+                : "border-transparent bg-[#1b1b17] hover:border-stone-600"
             }`}
           >
             {/* Card Header */}
             <div className={`bg-gradient-to-r ${t.color} px-5 py-4 relative overflow-hidden`}>
               <h2 className="text-xl font-bold text-white relative z-10">{t.label}</h2>
               {t.type === selectedType && (
-                <div className="absolute top-4 right-4 bg-white text-green-600 rounded-full p-1 shadow-lg">
+                <div className="absolute top-4 right-4 bg-white text-green-600 rounded-full p-1 shadow-none">
                   <FaCheck size={12} />
                 </div>
               )}
@@ -187,25 +187,25 @@ export default function EditFuturePage() {
               
               {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-900/50 p-2 rounded border border-gray-700">
-                  <span className="block text-xs text-gray-500 uppercase font-bold mb-1 flex items-center gap-1"><FaLock size={10}/> Restriction</span>
-                  <span className="text-gray-200 font-medium">{t.restriction}</span>
+                <div className="bg-[#11110f]/50 p-2 rounded border border-stone-700">
+                  <span className="block text-xs text-stone-500 uppercase font-bold mb-1 flex items-center gap-1"><FaLock size={10}/> Restriction</span>
+                  <span className="text-stone-200 font-medium">{t.restriction}</span>
                 </div>
-                <div className="bg-gray-900/50 p-2 rounded border border-gray-700">
-                  <span className="block text-xs text-gray-500 uppercase font-bold mb-1 flex items-center gap-1"><FaCoins size={10}/> Coût</span>
+                <div className="bg-[#11110f]/50 p-2 rounded border border-stone-700">
+                  <span className="block text-xs text-stone-500 uppercase font-bold mb-1 flex items-center gap-1"><FaCoins size={10}/> Coût</span>
                   <span className="text-yellow-400 font-medium">{t.cost}</span>
                 </div>
-                <div className="bg-gray-900/50 p-2 rounded border border-gray-700">
-                  <span className="block text-xs text-gray-500 uppercase font-bold mb-1 flex items-center gap-1"><FaDice size={10}/> Chance</span>
-                  <span className="text-blue-400 font-medium">{t.chance}</span>
+                <div className="bg-[#11110f]/50 p-2 rounded border border-stone-700">
+                  <span className="block text-xs text-stone-500 uppercase font-bold mb-1 flex items-center gap-1"><FaDice size={10}/> Chance</span>
+                  <span className="text-amber-300 font-medium">{t.chance}</span>
                 </div>
-                <div className="bg-gray-900/50 p-2 rounded border border-gray-700">
-                  <span className="block text-xs text-gray-500 uppercase font-bold mb-1 flex items-center gap-1"><FaGift size={10}/> Gain</span>
+                <div className="bg-[#11110f]/50 p-2 rounded border border-stone-700">
+                  <span className="block text-xs text-stone-500 uppercase font-bold mb-1 flex items-center gap-1"><FaGift size={10}/> Gain</span>
                   <span className="text-green-400 font-medium truncate" title={t.reward}>{t.reward}</span>
                 </div>
               </div>
 
-              <p className="text-gray-400 italic border-l-2 border-gray-600 pl-3 py-1">
+              <p className="text-stone-400 italic border-l-2 border-stone-600 pl-3 py-1">
                 {t.detail}
               </p>
             </div>
@@ -214,33 +214,33 @@ export default function EditFuturePage() {
       </div>
 
       {/* Question Input (Sticky Bottom) */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-6 shadow-2xl z-20">
+      <div className="fixed bottom-0 left-0 right-0 bg-[#1b1b17] border-t border-stone-700 p-6 shadow-none z-20">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-4 items-center">
           
           {tpl?.question ? (
             <div className="flex-1 w-full">
               <label className="block mb-2 text-white font-semibold flex items-center gap-2">
-                <FaQuestionCircle className="text-blue-400" />
+                <FaQuestionCircle className="text-amber-300" />
                 {tpl.question}
               </label>
               <input
                 type="text"
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
+                className="w-full px-4 py-3 bg-[#11110f] border border-stone-600 rounded-lg text-white focus:border-amber-600 focus:ring-1 focus:ring-amber-500 outline-none transition"
                 placeholder="Votre réponse..."
               />
             </div>
           ) : (
-            <div className="flex-1 text-gray-400 italic">Aucune information supplémentaire requise pour cette action.</div>
+            <div className="flex-1 text-stone-400 italic">Aucune information supplémentaire requise pour cette action.</div>
           )}
 
           <button
             disabled={loading || !selectedType}
             onClick={handleSubmit}
-            className={`px-8 py-3 rounded-lg font-bold text-lg shadow-lg transition transform hover:scale-105 flex items-center gap-2 whitespace-nowrap ${
+            className={`px-8 py-3 rounded-lg font-bold text-lg shadow-none transition transform hover:scale-105 flex items-center gap-2 whitespace-nowrap ${
               loading || !selectedType
-                ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                ? "bg-stone-800 text-stone-500 cursor-not-allowed"
                 : "bg-green-600 hover:bg-green-500 text-white"
             }`}
           >

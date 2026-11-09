@@ -5,14 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-
     "preview": "vite preview",
-
     "build:prod": "vite build --mode production",
-    "build:staging": "vite build --mode staging",
-
+    "build:staging": "vite build --mode staging && node scripts/write-release.mjs staging",
     "deploy:prod": "npm run build:prod && firebase deploy --only hosting:prod --project renblood-website",
-    "deploy:staging": "npm run build:staging && firebase deploy --only hosting:staging --project renblood-website"
+    "deploy:staging": "npm run build:staging && firebase deploy --only hosting:staging --project renblood-website",
+    "test:onboarding": "node --test src/services/profileDraft.test.mjs"
   },
   "dependencies": {
     "axios": "^1.7.9",

@@ -1,3 +1,4 @@
+import RealmHeader from "../../components/RealmHeader";
 // src/pages/histoires/Familles.jsx
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -184,25 +185,13 @@ export default function Familles() {
   const [selected, setSelected] = useState(null);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+    <div className="min-h-screen bg-[#11110f] text-stone-200 pb-20">
       
       {/* Hero Header */}
-      <div className="relative bg-gray-800 border-b border-gray-700 py-16 px-4 mb-12 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-5 pointer-events-none" />
-        <motion.h1 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-indigo-400 to-purple-600 mb-4 relative z-10"
-        >
-          Grandes Familles
-        </motion.h1>
-        <p className="text-gray-400 max-w-2xl mx-auto relative z-10 text-lg">
-          Découvrez l’histoire, la puissance et les alliances des dynasties qui façonnent Renblood.
-        </p>
-      </div>
+      <RealmHeader eyebrow="Lignées / Maisons" title="Grandes Familles" description="Découvrez l’histoire, la puissance et les alliances des dynasties qui façonnent Renblood." />
 
       {/* Grid */}
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="max-w-[1680px] mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {familles.map((f, index) => (
           <motion.div
             key={f.id}
@@ -212,9 +201,9 @@ export default function Familles() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
             whileHover={{ y: -5 }}
-            className="group cursor-pointer bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-purple-500/50 shadow-lg hover:shadow-2xl transition-all flex flex-col items-center text-center"
+            className="group cursor-pointer bg-[#1b1b17] rounded-sm p-6 border border-stone-700 hover:border-purple-500/50 shadow-none hover:shadow-none transition-all flex flex-col items-center text-center"
           >
-            <div className="w-24 h-24 rounded-full bg-gray-700 p-1 border-2 border-gray-600 group-hover:border-purple-500 transition-colors mb-4">
+            <div className="w-24 h-24 rounded-full bg-stone-800 p-1 border-2 border-stone-600 group-hover:border-purple-500 transition-colors mb-4">
               <img
                 src={f.blason}
                 alt={f.nom}
@@ -222,13 +211,13 @@ export default function Familles() {
               />
             </div>
             <h2 className="text-2xl font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">{f.nom}</h2>
-            <p className="text-sm text-gray-400 flex items-center gap-2 justify-center mb-4">
+            <p className="text-sm text-stone-400 flex items-center gap-2 justify-center mb-4">
               <FaMapMarkerAlt /> {f.comté}, {f.ville}
             </p>
-            <div className="w-full h-px bg-gray-700 mb-4" />
-            <div className="grid grid-cols-2 gap-2 text-xs text-gray-400 w-full">
-              <div className="flex items-center gap-1 justify-center bg-gray-900/50 py-1 rounded"><FaShieldAlt /> {f.armee}</div>
-              <div className="flex items-center gap-1 justify-center bg-gray-900/50 py-1 rounded"><FaCoins /> {f.argent}</div>
+            <div className="w-full h-px bg-stone-800 mb-4" />
+            <div className="grid grid-cols-2 gap-2 text-xs text-stone-400 w-full">
+              <div className="flex items-center gap-1 justify-center bg-[#11110f]/50 py-1 rounded"><FaShieldAlt /> {f.armee}</div>
+              <div className="flex items-center gap-1 justify-center bg-[#11110f]/50 py-1 rounded"><FaCoins /> {f.argent}</div>
             </div>
           </motion.div>
         ))}
@@ -246,7 +235,7 @@ export default function Familles() {
           >
             <motion.div
               layoutId={`family-${selected.id}`}
-              className="bg-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-600 overflow-hidden relative flex flex-col"
+              className="bg-[#1b1b17] w-full max-w-2xl rounded-sm shadow-none border border-stone-600 overflow-hidden relative flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header Modal */}
@@ -270,7 +259,7 @@ export default function Familles() {
 
               {/* Content */}
               <div className="p-8">
-                <p className="text-gray-300 mb-8 text-center italic leading-relaxed border-l-4 border-purple-500 pl-4 bg-gray-900/30 py-4 rounded-r-lg">
+                <p className="text-stone-300 mb-8 text-center italic leading-relaxed border-l-4 border-purple-500 pl-4 bg-[#11110f]/30 py-4 rounded-r-lg">
                   "{selected.description}"
                 </p>
 
@@ -278,17 +267,17 @@ export default function Familles() {
                   <StatItem icon={<FaShieldAlt className="text-red-400"/>} label="Armée" value={selected.armee} />
                   <StatItem icon={<FaHorse className="text-yellow-600"/>} label="Chevaux" value={selected.chevaux} />
                   <StatItem icon={<FaDragon className="text-green-500"/>} label="Dragons" value={selected.dragons} />
-                  <StatItem icon={<FaHome className="text-blue-400"/>} label="Bâtiments" value={selected.batiments} />
+                  <StatItem icon={<FaHome className="text-amber-300"/>} label="Bâtiments" value={selected.batiments} />
                   <StatItem icon={<FaHatWizard className="text-purple-400"/>} label="Magiciens" value={selected.magiciens} />
                   <StatItem icon={<FaShip className="text-cyan-400"/>} label="Navires" value={selected.navires} />
                   <StatItem icon={<FaCoins className="text-yellow-400"/>} label="Argent" value={selected.argent} />
-                  <StatItem icon={<FaCrown className="text-yellow-500"/>} label="Relation" value={`${selected.relationRoyale}%`} />
+                  <StatItem icon={<FaCrown className="text-amber-300"/>} label="Relation" value={`${selected.relationRoyale}%`} />
                   <StatItem icon={<FaFire className="text-orange-500"/>} label="Puissance" value={selected.puissance} colSpan />
                 </div>
 
                 <button
                   onClick={() => navigate(`/histoires/arbre/${selected.nom.toLowerCase()}`)}
-                  className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl shadow-lg transition transform hover:scale-105 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-sm shadow-none transition transform hover:scale-105 flex items-center justify-center gap-2"
                 >
                   <FaSitemap /> Voir l’Arbre Généalogique
                 </button>
@@ -303,9 +292,9 @@ export default function Familles() {
 }
 
 const StatItem = ({ icon, label, value, colSpan }) => (
-  <div className={`bg-gray-900/50 p-3 rounded-lg border border-gray-700 flex flex-col items-center ${colSpan ? "sm:col-span-3 bg-gradient-to-r from-orange-900/20 to-red-900/20 border-orange-500/30" : ""}`}>
+  <div className={`bg-[#11110f]/50 p-3 rounded-lg border border-stone-700 flex flex-col items-center ${colSpan ? "sm:col-span-3 bg-gradient-to-r from-orange-900/20 to-red-900/20 border-orange-500/30" : ""}`}>
     <div className="text-xl mb-1">{icon}</div>
-    <span className="text-xs text-gray-500 uppercase font-bold">{label}</span>
+    <span className="text-xs text-stone-500 uppercase font-bold">{label}</span>
     <span className="text-white font-mono font-bold">{typeof value === 'number' ? value.toLocaleString() : value}</span>
   </div>
 );

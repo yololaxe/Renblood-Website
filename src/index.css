@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: dark;
+  scrollbar-color: #64748b #111827;
+  scrollbar-width: thin;
+}
+
+*:focus-visible {
+  outline: 2px solid #facc15;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @keyframes fade-in {
     from {
       opacity: 0;
@@ -100,4 +122,17 @@ html, body {
   height: 100vh;
   object-fit: cover;
   z-index: -1;
+}
+
+/* Give data-heavy pages more room on large desktop screens while keeping readable gutters. */
+@media (min-width: 1280px) {
+  .max-w-5xl { max-width: min(86vw, 1280px); }
+  .max-w-6xl { max-width: min(90vw, 1440px); }
+  .max-w-7xl { max-width: min(94vw, 1600px); }
+  .max-w-screen-xl { max-width: min(96vw, 1680px); }
+}
+
+@media (max-width: 640px) {
+  html { scroll-padding-top: 4.5rem; }
+  button, a { -webkit-tap-highlight-color: transparent; }
 }

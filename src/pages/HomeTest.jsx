@@ -188,11 +188,11 @@ function RealmNavigator({ activeSection, isOpen, onClose, onJump, onOpen }) {
   return (
     <>
       <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-1rem)] max-w-3xl -translate-x-1/2 md:bottom-auto md:left-auto md:right-5 md:top-24 md:w-auto md:max-w-none md:translate-x-0">
-        <div className="flex items-center justify-between gap-2 rounded-[1.4rem] border border-white/12 bg-black/50 p-2 shadow-2xl shadow-black/45 backdrop-blur-2xl md:flex-col">
+        <div className="flex items-center justify-between gap-2 rounded-[1.4rem] border border-white/12 bg-black/50 p-2 shadow-none shadow-black/45 backdrop-blur-2xl md:flex-col">
           <button
             type="button"
             onClick={onOpen}
-            className="flex min-h-12 items-center gap-3 rounded-2xl bg-amber-200 px-4 font-black text-[#130e08] transition hover:bg-white md:w-full md:justify-start"
+            className="flex min-h-12 items-center gap-3 rounded-sm bg-amber-200 px-4 font-black text-[#130e08] transition hover:bg-white md:w-full md:justify-start"
             title="Ouvrir la navigation"
           >
             <FaBars />
@@ -204,9 +204,9 @@ function RealmNavigator({ activeSection, isOpen, onClose, onJump, onOpen }) {
                 key={item.id}
                 type="button"
                 onClick={() => handleSelect(item)}
-                className={`group flex min-h-12 min-w-12 items-center justify-center rounded-2xl px-3 transition md:justify-start md:gap-3 ${
+                className={`group flex min-h-12 min-w-12 items-center justify-center rounded-sm px-3 transition md:justify-start md:gap-3 ${
                   activeSection === item.id
-                    ? "bg-white text-[#130e08] shadow-lg shadow-white/10"
+                    ? "bg-white text-[#130e08] shadow-none shadow-white/10"
                     : "text-stone-300 hover:bg-white/10 hover:text-white"
                 }`}
                 title={item.label}
@@ -225,7 +225,7 @@ function RealmNavigator({ activeSection, isOpen, onClose, onJump, onOpen }) {
           animate={{ opacity: 1 }}
           className="fixed inset-0 z-[60] bg-[#050506]/92 p-4 backdrop-blur-2xl md:p-8"
         >
-          <div className="mx-auto flex h-full max-w-7xl flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.035] shadow-2xl shadow-black/60">
+          <div className="mx-auto flex h-full max-w-7xl flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.035] shadow-none shadow-black/60">
             <div className="flex items-center justify-between border-b border-white/10 p-4 md:p-6">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.28em] text-amber-200">command deck</p>
@@ -234,7 +234,7 @@ function RealmNavigator({ activeSection, isOpen, onClose, onJump, onOpen }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/12"
+                className="flex h-12 w-12 items-center justify-center rounded-sm border border-white/10 bg-white/5 text-white transition hover:bg-white/12"
                 title="Fermer"
               >
                 <FaTimes />
@@ -281,7 +281,7 @@ function RealmNavigator({ activeSection, isOpen, onClose, onJump, onOpen }) {
                     onClick={() => handleSelect(item)}
                     className="group flex min-h-20 items-center gap-4 rounded-[1.25rem] border border-white/10 bg-white/[0.055] p-4 text-left transition hover:-translate-y-0.5 hover:border-cyan-200/35 hover:bg-cyan-200/10"
                   >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-200/12 text-xl text-cyan-100">{item.icon}</span>
+                    <span className="flex h-12 w-12 items-center justify-center rounded-sm bg-cyan-200/12 text-xl text-cyan-100">{item.icon}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-xs font-black uppercase tracking-[0.22em] text-stone-400">{item.kicker}</span>
                       <span className="block text-xl font-black text-white">{item.label}</span>
@@ -313,7 +313,7 @@ function HeroCompass({ onJump, onOpen }) {
       <button
         type="button"
         onClick={onOpen}
-        className="absolute left-1/2 top-1/2 flex h-40 w-40 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-amber-200/35 bg-black/50 text-center shadow-2xl shadow-red-950/40 backdrop-blur-2xl transition hover:scale-105 hover:bg-amber-200/10 md:h-48 md:w-48"
+        className="absolute left-1/2 top-1/2 flex h-40 w-40 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-amber-200/35 bg-black/50 text-center shadow-none shadow-red-950/40 backdrop-blur-2xl transition hover:scale-105 hover:bg-amber-200/10 md:h-48 md:w-48"
       >
         <img src="/accueil/logo.png" alt="Renblood" className="w-28 md:w-36" />
         <span className="mt-2 text-[10px] font-black uppercase tracking-[0.3em] text-amber-200">ouvrir carte</span>
@@ -435,7 +435,7 @@ export default function HomeTest() {
               <span className="h-2 w-2 rounded-full bg-red-400 shadow-[0_0_18px_rgba(248,113,113,.9)]" />
               prototype vivant
             </div>
-            <h1 className="max-w-4xl text-5xl font-black leading-[0.86] text-white md:text-7xl lg:text-8xl">
+            <h1 className="max-w-4xl text-5xl font-black leading-[0.86] text-white md:text-7xl lg:text-8xl editorial-title">
               Renblood comme une interface de royaume.
             </h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-stone-300 md:text-xl">
@@ -447,7 +447,7 @@ export default function HomeTest() {
                 <a
                   key={portal.href}
                   href={portal.href}
-                  className="group flex min-h-24 flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.055] p-4 backdrop-blur-xl transition hover:-translate-y-1 hover:border-amber-200/45 hover:bg-white/[0.09]"
+                  className="group flex min-h-24 flex-col justify-between rounded-sm border border-white/10 bg-white/[0.055] p-4 backdrop-blur-xl transition hover:-translate-y-1 hover:border-amber-200/45 hover:bg-white/[0.09]"
                 >
                   <span className="text-xl text-amber-200 transition group-hover:scale-110">{portal.icon}</span>
                   <span className="text-sm font-black uppercase tracking-widest text-white">{portal.label}</span>
@@ -485,9 +485,9 @@ export default function HomeTest() {
                   key={act.title}
                   type="button"
                   onClick={() => setActiveAct(index)}
-                  className={`relative overflow-hidden rounded-2xl border p-5 text-left transition ${
+                  className={`relative overflow-hidden rounded-sm border p-5 text-left transition ${
                     activeAct === index
-                      ? "border-amber-200/50 bg-amber-200/12 shadow-2xl shadow-amber-950/20"
+                      ? "border-amber-200/50 bg-amber-200/12 shadow-none shadow-amber-950/20"
                       : "border-white/10 bg-white/[0.045] hover:border-white/25 hover:bg-white/[0.075]"
                   }`}
                 >
@@ -503,7 +503,7 @@ export default function HomeTest() {
               initial={{ opacity: 0, scale: 0.96, rotateX: 7 }}
               animate={{ opacity: 1, scale: 1, rotateX: 0 }}
               transition={{ duration: 0.55 }}
-              className="relative min-h-[520px] overflow-hidden rounded-[2rem] border border-white/10 bg-black/30 shadow-2xl shadow-black/40"
+              className="relative min-h-[520px] overflow-hidden rounded-[2rem] border border-white/10 bg-black/30 shadow-none shadow-black/40"
             >
               <img src={acts[activeAct].image} alt="" className="absolute inset-0 h-full w-full object-cover" />
               <div className={`absolute inset-0 bg-gradient-to-br ${acts[activeAct].tone} via-black/20 to-black/85`} />

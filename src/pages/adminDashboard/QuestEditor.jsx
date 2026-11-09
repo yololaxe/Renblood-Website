@@ -138,17 +138,17 @@ const MoneyInput = ({ value, onChange }) => {
   };
 
   return (
-    <div className="bg-gray-700/50 p-3 rounded-lg border border-gray-600">
-      <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Argent</label>
+    <div className="bg-stone-800/50 p-3 rounded-lg border border-stone-600">
+      <label className="block text-xs font-bold text-stone-400 uppercase mb-2">Argent</label>
       <div className="grid grid-cols-4 gap-2">
         {Object.entries(parts).map(([part, val]) => (
           <div key={part}>
-            <label className="text-xs text-gray-500 capitalize">{part}</label>
+            <label className="text-xs text-stone-500 capitalize">{part}</label>
             <input 
               type="number" 
               value={val} 
               onChange={(e) => handleChange(part, e.target.value)}
-              className="w-full bg-gray-800 border border-gray-600 rounded p-1 text-white text-sm"
+              className="w-full bg-[#1b1b17] border border-stone-600 rounded p-1 text-white text-sm"
             />
           </div>
         ))}
@@ -175,9 +175,9 @@ const ItemListEditor = ({ items, onChange, label }) => {
   };
 
   return (
-    <div className="bg-gray-700/50 p-3 rounded-lg border border-gray-600">
+    <div className="bg-stone-800/50 p-3 rounded-lg border border-stone-600">
       <div className="flex justify-between items-center mb-2">
-        <label className="text-xs font-bold text-gray-400 uppercase">{label}</label>
+        <label className="text-xs font-bold text-stone-400 uppercase">{label}</label>
         <button onClick={handleAddItem} className="text-green-400 hover:text-green-300 text-xs flex items-center gap-1">
           <FaPlus /> Ajouter Item
         </button>
@@ -190,21 +190,21 @@ const ItemListEditor = ({ items, onChange, label }) => {
               placeholder="ID Item (ex: minecraft:stone)" 
               value={item.itemId} 
               onChange={(e) => handleItemChange(idx, "itemId", e.target.value)}
-              className="flex-grow bg-gray-800 border border-gray-600 rounded p-1 text-white text-sm"
+              className="flex-grow bg-[#1b1b17] border border-stone-600 rounded p-1 text-white text-sm"
             />
             <input 
               type="number" 
               placeholder="Qté" 
               value={item.count} 
               onChange={(e) => handleItemChange(idx, "count", Number(e.target.value))}
-              className="w-16 bg-gray-800 border border-gray-600 rounded p-1 text-white text-sm"
+              className="w-16 bg-[#1b1b17] border border-stone-600 rounded p-1 text-white text-sm"
             />
             <button onClick={() => handleRemoveItem(idx)} className="text-red-500 hover:text-red-400">
               <FaTrash />
             </button>
           </div>
         ))}
-        {items.length === 0 && <p className="text-xs text-gray-500 italic">Aucun item.</p>}
+        {items.length === 0 && <p className="text-xs text-stone-500 italic">Aucun item.</p>}
       </div>
     </div>
   );
@@ -258,7 +258,7 @@ const NpcSelector = ({ value, onChange, npcs, label = "PNJ Donneur", allowDummy 
   return (
     <div className="relative">
       <div className="flex justify-between items-center mb-1">
-        <label className="block text-xs font-bold text-gray-400 uppercase">{label}</label>
+        <label className="block text-xs font-bold text-stone-400 uppercase">{label}</label>
         {value && !isDummy && (
           <button onClick={() => onChange("")} className="text-xs text-red-400 hover:text-red-300">
             Retirer
@@ -267,7 +267,7 @@ const NpcSelector = ({ value, onChange, npcs, label = "PNJ Donneur", allowDummy 
         {allowDummy && (isDummy || !value) && (
           <button
             onClick={toggleDummy}
-            className={`text-xs px-2 py-0.5 rounded border ${isDummy ? "bg-yellow-600 border-yellow-500 text-white" : "bg-gray-700 border-gray-600 text-gray-400"}`}
+            className={`text-xs px-2 py-0.5 rounded border ${isDummy ? "bg-yellow-600 border-yellow-500 text-white" : "bg-stone-800 border-stone-600 text-stone-400"}`}
           >
             {isDummy ? "Mode Dummy Actif" : "Utiliser Dummy"}
           </button>
@@ -276,56 +276,56 @@ const NpcSelector = ({ value, onChange, npcs, label = "PNJ Donneur", allowDummy 
 
       {isDummy ? (
         <div className="flex items-center gap-2">
-          <span className="text-gray-400 text-sm">dummy-</span>
+          <span className="text-stone-400 text-sm">dummy-</span>
           <input 
             type="text" 
             value={dummyName} 
             onChange={handleDummyChange}
             placeholder="Nom du futur PNJ"
-            className="flex-1 bg-gray-700 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
+            className="flex-1 bg-stone-800 border border-stone-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
           />
         </div>
       ) : (
         <>
           <div 
-            className="flex items-center bg-gray-700 border border-gray-600 rounded p-2 cursor-pointer"
+            className="flex items-center bg-stone-800 border border-stone-600 rounded p-2 cursor-pointer"
             onClick={() => setShowList(!showList)}
           >
-            <FaUserTie className="text-gray-400 mr-2" />
+            <FaUserTie className="text-stone-400 mr-2" />
             <span className="flex-1 text-white">{selectedNpcName || "Sélectionner un PNJ..."}</span>
-            <FaSearch className="text-gray-500" />
+            <FaSearch className="text-stone-500" />
           </div>
 
           {showList && (
-            <div className="absolute z-50 mt-1 w-full bg-gray-800 border border-gray-600 rounded shadow-xl max-h-60 overflow-y-auto">
+            <div className="absolute z-50 mt-1 w-full bg-[#1b1b17] border border-stone-600 rounded shadow-xl max-h-60 overflow-y-auto">
               <input 
                 type="text" 
                 placeholder="Rechercher (nom, région)..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full p-2 bg-gray-900 border-b border-gray-700 text-white focus:outline-none sticky top-0"
+                className="w-full p-2 bg-[#11110f] border-b border-stone-700 text-white focus:outline-none sticky top-0"
                 autoFocus
               />
               {filteredNpcs.map(npc => (
                 <div 
                   key={npc.npc_id} 
                   onClick={() => handleSelect(npc)}
-                  className="p-2 hover:bg-gray-700 cursor-pointer flex items-center gap-3 border-b border-gray-700/50 last:border-0"
+                  className="p-2 hover:bg-stone-800 cursor-pointer flex items-center gap-3 border-b border-stone-700/50 last:border-0"
                 >
                   <img 
                     src={npc.profile_image || "/assets/NPCdefault.png"} 
                     alt={npc.name} 
-                    className="w-8 h-8 rounded-full object-cover bg-gray-900"
+                    className="w-8 h-8 rounded-full object-cover bg-[#11110f]"
                     onError={(e) => e.target.src = "/assets/NPCdefault.png"}
                   />
                   <div>
                     <p className="text-sm font-bold text-white">{npc.name}</p>
-                    <p className="text-xs text-gray-400">{npc.region}</p>
+                    <p className="text-xs text-stone-400">{npc.region}</p>
                   </div>
                 </div>
               ))}
               {filteredNpcs.length === 0 && (
-                <div className="p-3 text-center text-gray-500 text-sm">Aucun PNJ trouvé.</div>
+                <div className="p-3 text-center text-stone-500 text-sm">Aucun PNJ trouvé.</div>
               )}
             </div>
           )}
@@ -373,7 +373,7 @@ const ObjectivesEditor = ({ objectives, onChange, npcs }) => {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2 mb-2">
-        <button onClick={() => handleAddObjective("ITEM")} className="px-2 py-1 bg-blue-600/50 hover:bg-blue-600 text-white text-xs rounded flex items-center gap-1" title="Récupérer des items">
+        <button onClick={() => handleAddObjective("ITEM")} className="px-2 py-1 bg-amber-800/50 hover:bg-amber-800 text-white text-xs rounded flex items-center gap-1" title="Récupérer des items">
           <FaCube /> Item
         </button>
         <button onClick={() => handleAddObjective("LOCATION")} className="px-2 py-1 bg-yellow-600/50 hover:bg-yellow-600 text-white text-xs rounded flex items-center gap-1" title="Aller à un endroit">
@@ -391,14 +391,14 @@ const ObjectivesEditor = ({ objectives, onChange, npcs }) => {
       </div>
 
       {objectives.map((obj, idx) => (
-        <div key={idx} className="bg-gray-700/50 p-3 rounded-lg border border-gray-600 relative">
+        <div key={idx} className="bg-stone-800/50 p-3 rounded-lg border border-stone-600 relative">
           <button onClick={() => handleRemoveObjective(idx)} className="absolute top-2 right-2 text-red-500 hover:text-red-400">
             <FaTimes />
           </button>
           
           <div className="mb-2">
             <span className={`text-xs font-bold px-2 py-1 rounded text-white ${
-              obj.type === "ITEM" ? "bg-blue-600" :
+              obj.type === "ITEM" ? "bg-amber-800" :
               obj.type === "LOCATION" ? "bg-yellow-600" :
               ["NPC", "TALK"].includes(obj.type) ? "bg-purple-600" :
               obj.type === "CONSTRUCTION" ? "bg-orange-600" : "bg-pink-600"
@@ -415,12 +415,12 @@ const ObjectivesEditor = ({ objectives, onChange, npcs }) => {
 
           {obj.type === "LOCATION" && (
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Coordonnées (format: x:0 y:0 z:0 r:5)</label>
+              <label className="block text-xs text-stone-400 mb-1">Coordonnées (format: x:0 y:0 z:0 r:5)</label>
               <input 
                 type="text" 
                 value={obj.target?.coord || ""}
                 onChange={(e) => handleUpdateTarget(idx, { coord: e.target.value })}
-                className="w-full bg-gray-800 border border-gray-600 rounded p-1 text-white text-sm font-mono"
+                className="w-full bg-[#1b1b17] border border-stone-600 rounded p-1 text-white text-sm font-mono"
               />
             </div>
           )}
@@ -437,11 +437,11 @@ const ObjectivesEditor = ({ objectives, onChange, npcs }) => {
 
           {(obj.type === "CONSTRUCTION" || obj.type === "RP") && (
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Validation</label>
+              <label className="block text-xs text-stone-400 mb-1">Validation</label>
               <select 
                 value={obj.validation || "ADMIN"} 
                 onChange={(e) => handleUpdateObjective(idx, { validation: e.target.value })}
-                className="w-full bg-gray-800 border border-gray-600 rounded p-1 text-white text-sm"
+                className="w-full bg-[#1b1b17] border border-stone-600 rounded p-1 text-white text-sm"
               >
                 <option value="ADMIN">ADMIN (Validation manuelle)</option>
                 <option value="AUTO">AUTO (Automatique)</option>
@@ -450,7 +450,7 @@ const ObjectivesEditor = ({ objectives, onChange, npcs }) => {
           )}
         </div>
       ))}
-      {objectives.length === 0 && <p className="text-sm text-gray-500 italic text-center py-4">Aucun objectif défini.</p>}
+      {objectives.length === 0 && <p className="text-sm text-stone-500 italic text-center py-4">Aucun objectif défini.</p>}
     </div>
   );
 };
@@ -475,7 +475,7 @@ const ImplementationEditor = ({ implementation, onChange }) => {
   };
 
   return (
-    <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600 space-y-4">
+    <div className="bg-stone-800/50 p-4 rounded-lg border border-stone-600 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-orange-400 uppercase">Implémentation / choses à construire</h3>
         <button onClick={addTask} className="text-xs text-green-400 hover:text-green-300 flex items-center gap-1">
@@ -483,33 +483,33 @@ const ImplementationEditor = ({ implementation, onChange }) => {
         </button>
       </div>
       <div>
-        <label className="block text-xs text-gray-400 mb-1">État global</label>
-        <select value={data.status} onChange={(e) => onChange({ ...data, status: e.target.value })} className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white">
+        <label className="block text-xs text-stone-400 mb-1">État global</label>
+        <select value={data.status} onChange={(e) => onChange({ ...data, status: e.target.value })} className="w-full bg-[#1b1b17] border border-stone-600 rounded p-2 text-white">
           {["TODO", "IN_PROGRESS", "BLOCKED", "DONE"].map(status => <option key={status}>{status}</option>)}
         </select>
       </div>
       <div>
-        <label className="block text-xs text-gray-400 mb-1">Résumé</label>
-        <textarea value={data.summary} onChange={(e) => onChange({ ...data, summary: e.target.value })} className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-white h-20" />
+        <label className="block text-xs text-stone-400 mb-1">Résumé</label>
+        <textarea value={data.summary} onChange={(e) => onChange({ ...data, summary: e.target.value })} className="w-full bg-[#1b1b17] border border-stone-600 rounded p-2 text-white h-20" />
       </div>
       <div className="space-y-3">
         {data.tasks.map((task, index) => (
-          <div key={task.id || index} className="bg-gray-800 p-3 rounded border border-gray-600 space-y-2">
+          <div key={task.id || index} className="bg-[#1b1b17] p-3 rounded border border-stone-600 space-y-2">
             <div className="flex gap-2">
-              <input value={task.id || ""} onChange={(e) => updateTask(index, { id: e.target.value })} placeholder="ID" className="w-32 bg-gray-900 border border-gray-600 rounded p-1 text-white text-sm" />
-              <input value={task.label || ""} onChange={(e) => updateTask(index, { label: e.target.value })} placeholder="Chose à construire/configurer" className="flex-1 bg-gray-900 border border-gray-600 rounded p-1 text-white text-sm" />
+              <input value={task.id || ""} onChange={(e) => updateTask(index, { id: e.target.value })} placeholder="ID" className="w-32 bg-[#11110f] border border-stone-600 rounded p-1 text-white text-sm" />
+              <input value={task.label || ""} onChange={(e) => updateTask(index, { label: e.target.value })} placeholder="Chose à construire/configurer" className="flex-1 bg-[#11110f] border border-stone-600 rounded p-1 text-white text-sm" />
               <button onClick={() => removeTask(index)} className="text-red-500 hover:text-red-400"><FaTrash /></button>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <input value={task.type || ""} onChange={(e) => updateTask(index, { type: e.target.value })} placeholder="Type, ex: BUILD" className="bg-gray-900 border border-gray-600 rounded p-1 text-white text-sm" />
-              <select value={task.status || "TODO"} onChange={(e) => updateTask(index, { status: e.target.value })} className="bg-gray-900 border border-gray-600 rounded p-1 text-white text-sm">
+              <input value={task.type || ""} onChange={(e) => updateTask(index, { type: e.target.value })} placeholder="Type, ex: BUILD" className="bg-[#11110f] border border-stone-600 rounded p-1 text-white text-sm" />
+              <select value={task.status || "TODO"} onChange={(e) => updateTask(index, { status: e.target.value })} className="bg-[#11110f] border border-stone-600 rounded p-1 text-white text-sm">
                 {["TODO", "IN_PROGRESS", "BLOCKED", "DONE"].map(status => <option key={status}>{status}</option>)}
               </select>
             </div>
-            <textarea value={task.notes || ""} onChange={(e) => updateTask(index, { notes: e.target.value })} placeholder="Notes" className="w-full bg-gray-900 border border-gray-600 rounded p-1 text-white text-sm h-16" />
+            <textarea value={task.notes || ""} onChange={(e) => updateTask(index, { notes: e.target.value })} placeholder="Notes" className="w-full bg-[#11110f] border border-stone-600 rounded p-1 text-white text-sm h-16" />
           </div>
         ))}
-        {data.tasks.length === 0 && <p className="text-xs text-gray-500 italic">Aucune tâche d'implémentation.</p>}
+        {data.tasks.length === 0 && <p className="text-xs text-stone-500 italic">Aucune tâche d'implémentation.</p>}
       </div>
     </div>
   );
@@ -588,12 +588,9 @@ export default function QuestEditor() {
       setQuestTracking(trackingMap);
 
       // 4. Récupérer les joueurs
-      const ranksToFetch = ["Citoyen", "Admin", "Etranger", "Villageois", "Noble"]; 
-      const playersPromises = ranksToFetch.map(r => getPlayers(r));
-      const playersResults = await Promise.all(playersPromises);
-      
+      const players = await getPlayers("Admin");
       const playerMap = new Map();
-      playersResults.flat().filter(Boolean).forEach(p => {
+      players.filter(Boolean).forEach(p => {
         if (p.id && !playerMap.has(p.id)) {
           playerMap.set(p.id, p);
         }
@@ -850,16 +847,16 @@ export default function QuestEditor() {
       <g>
         <foreignObject x="-140" y="-50" width="280" height="140">
           <div 
-            className="w-full h-full bg-gray-800 border border-gray-600 rounded-xl shadow-xl flex flex-col overflow-hidden hover:border-yellow-500 transition-colors group cursor-pointer"
+            className="w-full h-full bg-[#1b1b17] border border-stone-600 rounded-sm shadow-xl flex flex-col overflow-hidden hover:border-yellow-500 transition-colors group cursor-pointer"
             onClick={() => handleEditClick(quest, "details")}
           >
             {/* Header */}
-            <div className="bg-gray-900/50 p-2 flex justify-between items-center border-b border-gray-700">
-              <span className="text-[10px] font-mono text-gray-400 bg-gray-900 px-1 rounded">
+            <div className="bg-[#11110f]/50 p-2 flex justify-between items-center border-b border-stone-700">
+              <span className="text-[10px] font-mono text-stone-400 bg-[#11110f] px-1 rounded">
                 {quest.questId}
               </span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                quest.category === "Main" ? "bg-yellow-500/20 text-yellow-500" : "bg-blue-500/20 text-blue-400"
+                quest.category === "Main" ? "bg-yellow-500/20 text-amber-300" : "bg-blue-500/20 text-amber-300"
               }`}>
                 {quest.category}
               </span>
@@ -868,7 +865,7 @@ export default function QuestEditor() {
             {/* Body */}
             <div className="p-3 flex-grow relative">
               <h3 className="text-sm font-bold text-white leading-tight mb-1">{quest.name}</h3>
-              <p className="text-[10px] text-gray-400 line-clamp-2">
+              <p className="text-[10px] text-stone-400 line-clamp-2">
                 {quest.description?.fr}
               </p>
 
@@ -883,16 +880,16 @@ export default function QuestEditor() {
                 {trackedPlayers.slice(0, 3).map((tp, i) => {
                   const player = playersCache[tp.playerId];
                   const avatarUrl = player ? getDiscordAvatarUrl(player.discord_id, player.discord_avatar) : "/assets/default-avatar.png";
-                  const borderColor = tp.status === "COMPLETED" ? "border-green-500" : "border-blue-500";
+                  const borderColor = tp.status === "COMPLETED" ? "border-green-500" : "border-amber-600";
                   
                   return (
-                    <div key={i} className={`w-6 h-6 rounded-full border-2 ${borderColor} bg-gray-700 flex items-center justify-center overflow-hidden`} title={player?.pseudo_minecraft || "Inconnu"}>
+                    <div key={i} className={`w-6 h-6 rounded-full border-2 ${borderColor} bg-stone-800 flex items-center justify-center overflow-hidden`} title={player?.pseudo_minecraft || "Inconnu"}>
                        <img src={avatarUrl} alt="pl" className="w-full h-full object-cover" />
                     </div>
                   );
                 })}
                 {trackedPlayers.length > 3 && (
-                    <div className="w-6 h-6 rounded-full border-2 border-gray-600 bg-gray-800 flex items-center justify-center text-[8px] text-white font-bold">
+                    <div className="w-6 h-6 rounded-full border-2 border-stone-600 bg-[#1b1b17] flex items-center justify-center text-[8px] text-white font-bold">
                         +{trackedPlayers.length - 3}
                     </div>
                 )}
@@ -926,13 +923,13 @@ export default function QuestEditor() {
   if (loading) return <div className="text-white text-center mt-20">Chargement de l'éditeur...</div>;
 
   return (
-    <div className="h-screen w-full bg-gray-900 text-white flex flex-col relative overflow-hidden">
+    <div className="h-screen w-full bg-[#11110f] text-white flex flex-col relative overflow-hidden">
       
       {/* Toolbar */}
       <div className="absolute top-4 left-4 z-10 flex gap-2">
         <button 
           onClick={() => handleCreateClick()}
-          className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg font-bold transition"
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg shadow-none font-bold transition"
         >
           <FaPlus /> Nouvelle Quête
         </button>
@@ -940,9 +937,9 @@ export default function QuestEditor() {
 
       {/* Zoom Controls */}
       <div className="absolute bottom-8 right-8 flex flex-col gap-2 z-10">
-        <button onClick={() => setZoom(z => Math.min(z + 0.2, 2))} className="p-3 bg-gray-800 rounded-full shadow-lg border border-gray-600 hover:bg-gray-700 text-white"><FaSearchPlus /></button>
-        <button onClick={() => setZoom(1)} className="p-3 bg-gray-800 rounded-full shadow-lg border border-gray-600 hover:bg-gray-700 text-white"><FaCompress /></button>
-        <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.3))} className="p-3 bg-gray-800 rounded-full shadow-lg border border-gray-600 hover:bg-gray-700 text-white"><FaSearchMinus /></button>
+        <button onClick={() => setZoom(z => Math.min(z + 0.2, 2))} className="p-3 bg-[#1b1b17] rounded-full shadow-none border border-stone-600 hover:bg-stone-800 text-white"><FaSearchPlus /></button>
+        <button onClick={() => setZoom(1)} className="p-3 bg-[#1b1b17] rounded-full shadow-none border border-stone-600 hover:bg-stone-800 text-white"><FaCompress /></button>
+        <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.3))} className="p-3 bg-[#1b1b17] rounded-full shadow-none border border-stone-600 hover:bg-stone-800 text-white"><FaSearchMinus /></button>
       </div>
 
       {/* Canvas */}
@@ -961,7 +958,7 @@ export default function QuestEditor() {
             transitionDuration={300}
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex items-center justify-center h-full text-stone-500">
             Aucune quête. Créez-en une !
           </div>
         )}
@@ -977,11 +974,11 @@ export default function QuestEditor() {
           >
             <motion.div 
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
-              className="w-full max-w-2xl bg-gray-800 h-full shadow-2xl border-l border-gray-700 flex flex-col"
+              className="w-full max-w-2xl bg-[#1b1b17] h-full shadow-none border-l border-stone-700 flex flex-col"
               onClick={e => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="p-6 border-b border-gray-700 bg-gray-900">
+              <div className="p-6 border-b border-stone-700 bg-[#11110f]">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                     {isCreating ? <><FaPlus className="text-green-500"/> Créer une quête</> : <><FaEdit className="text-blue-500"/> Éditer la quête</>}
@@ -992,18 +989,18 @@ export default function QuestEditor() {
                         <FaBroom /> Vider
                       </button>
                     )}
-                    <button onClick={handleForceClose} className="text-gray-400 hover:text-white"><FaTimes size={24}/></button>
+                    <button onClick={handleForceClose} className="text-stone-400 hover:text-white"><FaTimes size={24}/></button>
                   </div>
                 </div>
                 
                 {/* Tabs */}
                 {!isCreating && (
-                  <div className="flex space-x-4 border-b border-gray-700 overflow-x-auto">
+                  <div className="flex space-x-4 border-b border-stone-700 overflow-x-auto">
                     {['details', 'texts', 'logic', 'players'].map(tab => (
                       <button 
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`pb-2 px-3 capitalize whitespace-nowrap ${activeTab === tab ? "text-yellow-500 border-b-2 border-yellow-500 font-bold" : "text-gray-400 hover:text-white"}`}
+                        className={`pb-2 px-3 capitalize whitespace-nowrap ${activeTab === tab ? "text-amber-300 border-b-2 border-yellow-500 font-bold" : "text-stone-400 hover:text-white"}`}
                       >
                         {tab === 'players' ? `Joueurs (${questTracking[formData.questId]?.length || 0})` : 
                          tab === 'texts' ? 'Textes & Dialogues' : 
@@ -1023,17 +1020,17 @@ export default function QuestEditor() {
                     {/* Identifiants */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">ID Quête</label>
+                        <label className="block text-xs font-bold text-stone-400 uppercase mb-1">ID Quête</label>
                         <input 
                           type="text" name="questId" value={formData.questId} onChange={handleFormChange}
-                          className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
+                          className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">ID Parent</label>
+                        <label className="block text-xs font-bold text-stone-400 uppercase mb-1">ID Parent</label>
                         <input 
                           type="text" name="parentId" value={formData.parentId || ""} onChange={handleFormChange}
-                          className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
+                          className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
                           placeholder="ex: m1"
                         />
                       </div>
@@ -1041,17 +1038,17 @@ export default function QuestEditor() {
 
                     {/* Infos de base */}
                     <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Nom</label>
+                      <label className="block text-xs font-bold text-stone-400 uppercase mb-1">Nom</label>
                       <input 
                         type="text" name="name" value={formData.name} onChange={handleFormChange}
-                        className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
+                        className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white focus:border-yellow-500 outline-none"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Catégorie</label>
-                        <select name="category" value={formData.category} onChange={handleFormChange} className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white">
+                        <label className="block text-xs font-bold text-stone-400 uppercase mb-1">Catégorie</label>
+                        <select name="category" value={formData.category} onChange={handleFormChange} className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white">
                           <option value="Main">Principale</option>
                           <option value="Secondary">Secondaire</option>
                           <option value="Tertiary">Tertiaire</option>
@@ -1060,8 +1057,8 @@ export default function QuestEditor() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Type</label>
-                        <select name="type" value={formData.type} onChange={handleFormChange} className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white">
+                        <label className="block text-xs font-bold text-stone-400 uppercase mb-1">Type</label>
+                        <select name="type" value={formData.type} onChange={handleFormChange} className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white">
                           <option value="Solo">Solo</option>
                           <option value="Multi">Multi</option>
                           <option value="Hybrid">Hybrid</option>
@@ -1092,55 +1089,55 @@ export default function QuestEditor() {
                 {(activeTab === "texts" || isCreating) && (
                   <>
                     <div className="space-y-4">
-                      <h3 className="text-sm font-bold text-yellow-500 uppercase border-b border-gray-700 pb-1">Description</h3>
+                      <h3 className="text-sm font-bold text-amber-300 uppercase border-b border-stone-700 pb-1">Description</h3>
                       <div className="grid grid-cols-1 gap-2">
                         <textarea 
                           placeholder="Français"
                           value={formData.description?.fr || ""} 
                           onChange={(e) => handleNestedChange("description", "fr", e.target.value)}
-                          className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white h-20 text-sm"
+                          className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white h-20 text-sm"
                         />
                         <textarea 
                           placeholder="Anglais"
                           value={formData.description?.en || ""} 
                           onChange={(e) => handleNestedChange("description", "en", e.target.value)}
-                          className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white h-20 text-sm"
+                          className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white h-20 text-sm"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-4">
-                      <h3 className="text-sm font-bold text-yellow-500 uppercase border-b border-gray-700 pb-1">Texte de début</h3>
+                      <h3 className="text-sm font-bold text-amber-300 uppercase border-b border-stone-700 pb-1">Texte de début</h3>
                       <div className="grid grid-cols-1 gap-2">
                         <textarea 
                           placeholder="Français"
                           value={formData.beginText?.fr || ""} 
                           onChange={(e) => handleNestedChange("beginText", "fr", e.target.value)}
-                          className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white h-20 text-sm"
+                          className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white h-20 text-sm"
                         />
                         <textarea 
                           placeholder="Anglais"
                           value={formData.beginText?.en || ""} 
                           onChange={(e) => handleNestedChange("beginText", "en", e.target.value)}
-                          className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white h-20 text-sm"
+                          className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white h-20 text-sm"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-4">
-                      <h3 className="text-sm font-bold text-yellow-500 uppercase border-b border-gray-700 pb-1">Texte de fin</h3>
+                      <h3 className="text-sm font-bold text-amber-300 uppercase border-b border-stone-700 pb-1">Texte de fin</h3>
                       <div className="grid grid-cols-1 gap-2">
                         <textarea 
                           placeholder="Français"
                           value={formData.endText?.fr || ""} 
                           onChange={(e) => handleNestedChange("endText", "fr", e.target.value)}
-                          className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white h-20 text-sm"
+                          className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white h-20 text-sm"
                         />
                         <textarea 
                           placeholder="Anglais"
                           value={formData.endText?.en || ""} 
                           onChange={(e) => handleNestedChange("endText", "en", e.target.value)}
-                          className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white h-20 text-sm"
+                          className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white h-20 text-sm"
                         />
                       </div>
                     </div>
@@ -1153,23 +1150,23 @@ export default function QuestEditor() {
                     {/* Prérequis */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Prérequis (Tous)</label>
+                        <label className="block text-xs font-bold text-stone-400 uppercase mb-1">Prérequis (Tous)</label>
                         <input 
                           type="text" 
                           placeholder="id1, id2..."
                           value={formData.prerequisitesAll?.join(", ") || ""} 
                           onChange={(e) => handleArrayChange(e, "prerequisitesAll")}
-                          className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm"
+                          className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white text-sm"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Prérequis (Au moins un)</label>
+                        <label className="block text-xs font-bold text-stone-400 uppercase mb-1">Prérequis (Au moins un)</label>
                         <input 
                           type="text" 
                           placeholder="id1, id2..."
                           value={formData.prerequisitesAny?.join(", ") || ""} 
                           onChange={(e) => handleArrayChange(e, "prerequisitesAny")}
-                          className="w-full bg-gray-700 border border-gray-600 rounded p-2 text-white text-sm"
+                          className="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white text-sm"
                         />
                       </div>
                     </div>
@@ -1180,15 +1177,15 @@ export default function QuestEditor() {
                         value={formData.money} 
                         onChange={(val) => setFormData(prev => ({ ...prev, money: val }))} 
                       />
-                      <div className="bg-gray-700/50 p-3 rounded-lg border border-gray-600">
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Expérience</label>
+                      <div className="bg-stone-800/50 p-3 rounded-lg border border-stone-600">
+                        <label className="block text-xs font-bold text-stone-400 uppercase mb-2">Expérience</label>
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="text-xs text-gray-500">Métier</label>
+                            <label className="text-xs text-stone-500">Métier</label>
                             <select 
                               value={formData.xp?.job || "aventurier"} 
                               onChange={(e) => handleNestedChange("xp", "job", e.target.value)}
-                              className="w-full bg-gray-800 border border-gray-600 rounded p-1 text-white text-sm"
+                              className="w-full bg-[#1b1b17] border border-stone-600 rounded p-1 text-white text-sm"
                             >
                               <option value="aventurier">Aventurier</option>
                               {jobCategories.map((cat, i) => (
@@ -1201,12 +1198,12 @@ export default function QuestEditor() {
                             </select>
                           </div>
                           <div>
-                            <label className="text-xs text-gray-500">Montant</label>
+                            <label className="text-xs text-stone-500">Montant</label>
                             <input 
                               type="number" 
                               value={formData.xp?.amount || 0} 
                               onChange={(e) => handleNestedChange("xp", "amount", Number(e.target.value))}
-                              className="w-full bg-gray-800 border border-gray-600 rounded p-1 text-white text-sm" 
+                              className="w-full bg-[#1b1b17] border border-stone-600 rounded p-1 text-white text-sm" 
                             />
                           </div>
                         </div>
@@ -1237,14 +1234,14 @@ export default function QuestEditor() {
                 {activeTab === "players" && !isCreating && (
                   <div className="space-y-6">
                     {/* Add Player Form */}
-                    <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600 flex flex-col gap-3">
+                    <div className="bg-stone-800/50 p-4 rounded-sm border border-stone-600 flex flex-col gap-3">
                       <div className="flex justify-between items-center">
                         <h3 className="text-sm font-bold text-white flex items-center gap-2">
                           <FaPlus className="text-green-400" /> Démarrer la quête pour un joueur
                         </h3>
                         <button 
                           onClick={() => setShowAddPlayerModal(true)}
-                          className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded flex items-center gap-1 transition shadow-md"
+                          className="text-xs bg-amber-800 hover:bg-amber-700 text-white px-3 py-1.5 rounded flex items-center gap-1 transition shadow-md"
                         >
                            Sélectionner un joueur
                         </button>
@@ -1258,7 +1255,7 @@ export default function QuestEditor() {
                       </h3>
                       
                       {(!questTracking[formData.questId] || questTracking[formData.questId].length === 0) ? (
-                        <p className="text-gray-400 italic bg-gray-800 p-4 rounded-lg border border-gray-700 text-center">Aucun joueur n'a commencé cette quête.</p>
+                        <p className="text-stone-400 italic bg-[#1b1b17] p-4 rounded-lg border border-stone-700 text-center">Aucun joueur n'a commencé cette quête.</p>
                       ) : (
                         <div className="space-y-3">
                           {questTracking[formData.questId].map((entry, idx) => {
@@ -1267,12 +1264,12 @@ export default function QuestEditor() {
                             const isCompleted = entry.status === "COMPLETED";
 
                             return (
-                              <div key={entry.playerId} className="flex items-center justify-between bg-gray-700 p-3 rounded-lg border border-gray-600 hover:border-gray-500 transition-colors">
+                              <div key={entry.playerId} className="flex items-center justify-between bg-stone-800 p-3 rounded-lg border border-stone-600 hover:border-gray-500 transition-colors">
                                 <div className="flex items-center gap-3">
                                   <img src={avatarUrl} alt="avatar" className="w-10 h-10 rounded-full border border-gray-500" />
                                   <div>
                                     <p className="font-bold text-white">{player.pseudo_minecraft}</p>
-                                    <p className="text-xs text-gray-400 flex items-center gap-1">
+                                    <p className="text-xs text-stone-400 flex items-center gap-1">
                                       {player.discord_id ? <><FaDiscord className="text-indigo-400"/> Connecté</> : "Pas de Discord"}
                                     </p>
                                   </div>
@@ -1280,7 +1277,7 @@ export default function QuestEditor() {
                                 
                                 <div className="flex items-center gap-3">
                                   <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 ${
-                                    isCompleted ? "bg-green-900/50 text-green-400 border border-green-700" : "bg-blue-900/50 text-blue-400 border border-blue-700"
+                                    isCompleted ? "bg-green-900/50 text-green-400 border border-green-700" : "bg-blue-900/50 text-amber-300 border border-blue-700"
                                   }`}>
                                     {isCompleted ? <><FaCheckCircle /> Terminé</> : <><FaRunning /> En cours</>}
                                   </div>
@@ -1306,15 +1303,15 @@ export default function QuestEditor() {
               </div>
 
               {/* Modal Footer */}
-              <div className="p-6 border-t border-gray-700 bg-gray-900 flex justify-between">
+              <div className="p-6 border-t border-stone-700 bg-[#11110f] flex justify-between">
                 {!isCreating && (
                   <button onClick={handleDelete} className="flex items-center gap-2 text-red-500 hover:text-red-400 font-bold">
                     <FaTrash /> Supprimer
                   </button>
                 )}
                 <div className="flex gap-3 ml-auto">
-                  <button onClick={handleForceClose} className="px-4 py-2 text-gray-400 hover:text-white">Annuler</button>
-                  <button onClick={handleSave} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded font-bold shadow-lg">
+                  <button onClick={handleForceClose} className="px-4 py-2 text-stone-400 hover:text-white">Annuler</button>
+                  <button onClick={handleSave} className="flex items-center gap-2 bg-amber-800 hover:bg-amber-700 text-white px-6 py-2 rounded font-bold shadow-none">
                     <FaSave /> Enregistrer
                   </button>
                 </div>
@@ -1329,18 +1326,18 @@ export default function QuestEditor() {
                   className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex justify-center items-center p-4"
                   onClick={() => setShowAddPlayerModal(false)}
                 >
-                  <div className="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-600 w-full max-w-md flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
+                  <div className="bg-[#1b1b17] p-6 rounded-sm shadow-none border border-stone-600 w-full max-w-md flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-bold text-white">Ajouter un joueur</h3>
-                      <button onClick={() => setShowAddPlayerModal(false)} className="text-gray-400 hover:text-white"><FaTimes /></button>
+                      <button onClick={() => setShowAddPlayerModal(false)} className="text-stone-400 hover:text-white"><FaTimes /></button>
                     </div>
                     
                     <div className="relative mb-4">
-                      <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                      <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
                       <input 
                         type="text" placeholder="Rechercher (pseudo, nom)..." 
                         value={playerSearch} onChange={(e) => setPlayerSearch(e.target.value)}
-                        className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 pl-10 pr-3 text-white focus:outline-none focus:border-blue-500"
+                        className="w-full bg-[#11110f] border border-stone-700 rounded-lg py-2 pl-10 pr-3 text-white focus:outline-none focus:border-amber-600"
                         autoFocus
                       />
                     </div>
@@ -1355,30 +1352,30 @@ export default function QuestEditor() {
                             onClick={() => !isAlreadyOnQuest && setSelectedPlayerToAdd(p.id)}
                             className={`flex items-center justify-between p-3 rounded-lg border transition cursor-pointer ${
                               isAlreadyOnQuest 
-                                ? "bg-gray-800 border-gray-700 opacity-50 cursor-not-allowed" 
+                                ? "bg-[#1b1b17] border-stone-700 opacity-50 cursor-not-allowed" 
                                 : selectedPlayerToAdd === p.id 
-                                  ? "bg-blue-900/50 border-blue-500" 
-                                  : "bg-gray-700 border-gray-600 hover:border-gray-500"
+                                  ? "bg-blue-900/50 border-amber-600" 
+                                  : "bg-stone-800 border-stone-600 hover:border-gray-500"
                             }`}
                           >
                             <div className="flex items-center gap-3">
                               <img src={getDiscordAvatarUrl(p.discord_id, p.discord_avatar)} className="w-8 h-8 rounded-full" alt="av" />
                               <span className="text-white font-medium">{p.pseudo_minecraft}</span>
                             </div>
-                            {isAlreadyOnQuest && <span className="text-xs text-gray-500 uppercase">Déjà assigné</span>}
-                            {selectedPlayerToAdd === p.id && <FaCheckCircle className="text-blue-400" />}
+                            {isAlreadyOnQuest && <span className="text-xs text-stone-500 uppercase">Déjà assigné</span>}
+                            {selectedPlayerToAdd === p.id && <FaCheckCircle className="text-amber-300" />}
                           </div>
                         );
                       })}
-                      {filteredPlayersList.length === 0 && <p className="text-center text-gray-500 py-4">Aucun joueur trouvé.</p>}
+                      {filteredPlayersList.length === 0 && <p className="text-center text-stone-500 py-4">Aucun joueur trouvé.</p>}
                     </div>
 
-                    <div className="mt-6 flex justify-end gap-3 border-t border-gray-700 pt-4">
-                      <button onClick={() => setShowAddPlayerModal(false)} className="px-4 py-2 text-gray-400 hover:text-white">Annuler</button>
+                    <div className="mt-6 flex justify-end gap-3 border-t border-stone-700 pt-4">
+                      <button onClick={() => setShowAddPlayerModal(false)} className="px-4 py-2 text-stone-400 hover:text-white">Annuler</button>
                       <button 
                         onClick={handleAddPlayerToQuest}
                         disabled={!selectedPlayerToAdd}
-                        className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold shadow-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
                         <FaPlay /> Démarrer la quête
                       </button>

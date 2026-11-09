@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CounterBalanceSummary, MarketPage, MarketState, MarketTransactionsTable, MarketTypeBadge, MarketWithdrawalsTable, PublicMarketPriceTable, Cell, TableShell, Bool, field, toList } from "../../components/market/MarketComponents";
 import { MoneyDisplay } from "../../components/MoneyDisplay";
+import { averageMoney } from "../../utils/economyUI";
 import { useUser } from "../../context/UserContext";
 import * as api from "../../services/marketApi";
 import { useMarketList } from "./marketPageUtils";
@@ -20,6 +21,10 @@ const normalizeText = (value) => String(value || "")
 
 const priceValue = (item) => field(
   item,
+  "buyPriceIron",
+  "buy_price_iron",
+  "buyPrice",
+  "buy_price",
   "calculatedPrice",
   "calculated_price",
   "publicPrice",
@@ -79,6 +84,7 @@ const normalizeCalculatedPricesForPublic = (prices) => {
       (candidateMeta.timestamp === currentMeta.timestamp && candidateMeta.priority < currentMeta.priority)
     ) {
       currentRow[key] = priceValue(price);
+      currentRow[`${key}Sell`] = field(price,"sellPriceIron","sell_price_iron","sellPrice","sell_price");
       currentRow._meta[key] = candidateMeta;
     }
 
@@ -97,16 +103,13 @@ const normalizeReferencesForPublic = (items) => Object.fromEntries(
   })
 );
 
-const average = (values) => {
-  const numericValues = values.map(Number).filter((value) => Number.isFinite(value));
-  if (!numericValues.length) return undefined;
-  return Math.round(numericValues.reduce((sum, value) => sum + value, 0) / numericValues.length);
-};
+const average = averageMoney;
 
 const buildPublicMarketPayload = async () => {
   let rawPrices = [];
   try {
-    rawPrices = toList(await api.getPublicMarketPrices());
+    const payload=await api.getPublicMarketPrices();
+    rawPrices=Array.isArray(payload?.cities)?payload.cities.flatMap(city=>(city.prices||[]).map(price=>({...price,cityId:city.cityId,cityName:city.cityName}))):toList(payload);
   } catch (err) {
     if (![404, 204].includes(err?.response?.status)) {
       console.warn("Prix publics indisponibles, fallback sur les prix calculés.", err);
@@ -133,6 +136,7 @@ const buildPublicMarketPayload = async () => {
     ...item,
     referencePrice: references[item.key],
     averagePrice: average(prices.map((row) => field(row, item.key, `${item.key}Price`, `${item.key}_price`))),
+    averageSellPrice: average(prices.map(row=>row[`${item.key}Sell`])),
   }));
 
   return { prices, summary };
@@ -164,14 +168,14 @@ export function PublicMarketPricesPage() {
     return () => { cancelled = true; };
   }, []);
 
-  return <MarketPage title="Prix des marchés" description="Prix actuels des ressources principales, triés par ville. Les moyennes sont calculées sur les derniers prix disponibles."><MarketState loading={loading} error={error} empty={!data.prices.length}><PublicMarketPriceTable prices={data.prices} summary={data.summary} /></MarketState></MarketPage>;
+  return <MarketPage title="Prix des marchés" description="Achat : ce que vous payez. Revente : ce que le marchand vous verse. Le prix et le stock sont confirmés au comptoir lors de votre échange."><MarketState loading={loading} error={error} empty={!data.prices.length}><PublicMarketPriceTable prices={data.prices} summary={data.summary} /></MarketState></MarketPage>;
 }
 
 export function PlayerOwnedCountersPage() {
   const { userId } = useUser();
   const loader = useCallback(() => api.getOwnedCounters(userId), [userId]);
   const list = useMarketList(loader);
-  return <MarketPage title="Mes comptoirs marchands"><MarketState loading={list.loading} error={list.error} empty={!list.data.length}><TableShell headers={["Nom", "Type", "Ville", "Actif", "Gains totaux", "Retraits", "Solde net estime", "Actions"]}>{list.data.map((counter) => <tr key={counter.id}><Cell>{counter.name}</Cell><Cell><MarketTypeBadge type={counter.type} /></Cell><Cell>{field(counter, "cityName", "city_name", "city")}</Cell><Cell><Bool value={counter.active} /></Cell><Cell><MoneyDisplay amount={field(counter, "estimatedEarnings", "estimated_earnings", "totalGains", "total_gains")} /></Cell><Cell><MoneyDisplay amount={field(counter, "totalWithdrawn", "total_withdrawn")} /></Cell><Cell><MoneyDisplay amount={field(counter, "estimatedBalance", "estimated_balance")} /></Cell><Cell><Link className="text-blue-400" to={`/account/merchant-counters/${field(counter, "counterId", "counter_id", "id")}`}>Historique</Link></Cell></tr>)}</TableShell></MarketState></MarketPage>;
+  return <MarketPage title="Mes comptoirs marchands" description="Les montants de cette liste sont des estimations historiques. Retrouvez le disponible confirmé et les reçus de vos caisses dans Mes finances." actions={<Link className="realm-action" to="/finances">Mes finances</Link>}><MarketState loading={list.loading} error={list.error} empty={!list.data.length}><TableShell headers={["Nom", "Type", "Ville", "Actif", "Gains totaux", "Retraits", "Solde net estime", "Actions"]}>{list.data.map((counter) => <tr key={counter.id}><Cell>{counter.name}</Cell><Cell><MarketTypeBadge type={counter.type} /></Cell><Cell>{field(counter, "cityName", "city_name", "city")}</Cell><Cell><Bool value={counter.active} /></Cell><Cell><MoneyDisplay amount={field(counter, "estimatedEarnings", "estimated_earnings", "totalGains", "total_gains")} /></Cell><Cell><MoneyDisplay amount={field(counter, "totalWithdrawn", "total_withdrawn")} /></Cell><Cell><MoneyDisplay amount={field(counter, "estimatedBalance", "estimated_balance")} /></Cell><Cell><Link className="text-amber-300" to={`/account/merchant-counters/${field(counter, "counterId", "counter_id", "id")}`}>Historique</Link></Cell></tr>)}</TableShell></MarketState></MarketPage>;
 }
 
 export function PlayerCounterHistoryPage() {
@@ -217,7 +221,7 @@ export function PlayerCounterHistoryPage() {
     return () => { cancelled = true; };
   }, [id, userId]);
 
-  return <MarketPage title="Historique du comptoir"><MarketState loading={loading} error={error} empty={!transactions.length && !withdrawals.length} emptyMessage="Aucune transaction enregistree."><CounterBalanceSummary transactions={transactions} withdrawals={withdrawals} labels={{ net: "Gains totaux", withdrawn: "Retraits", estimatedBalance: "Solde net estime" }} />
+  return <MarketPage title="Historique du comptoir" description="Les règlements confirmés conservent le prix accepté au moment de l’échange. Les estimations de cette page ne permettent aucun retrait." actions={<Link className="realm-action" to="/finances">Caisse confirmée</Link>}><MarketState loading={loading} error={error} empty={!transactions.length && !withdrawals.length} emptyMessage="Aucune transaction enregistree."><CounterBalanceSummary transactions={transactions} withdrawals={withdrawals} labels={{ net: "Gains totaux", withdrawn: "Retraits", estimatedBalance: "Solde net estime" }} />
     <h2 className="mb-3 text-xl font-bold">Historique des retraits</h2><MarketState empty={!withdrawals.length} emptyMessage="Aucun retrait enregistre."><MarketWithdrawalsTable withdrawals={withdrawals} compact /></MarketState>
     <h2 className="mb-3 mt-8 text-xl font-bold">Historique des transactions</h2><MarketState empty={!transactions.length} emptyMessage="Aucune transaction enregistree."><MarketTransactionsTable transactions={transactions} compact /></MarketState></MarketState></MarketPage>;
 }

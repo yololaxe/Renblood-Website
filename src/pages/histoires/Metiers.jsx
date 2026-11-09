@@ -1,3 +1,4 @@
+import RealmHeader from "../../components/RealmHeader";
 // src/pages/Metier.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { getStaticJobs } from '../../data/catalog';
@@ -26,13 +27,13 @@ function JobCard({ job, level, xp }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             whileHover={{ y: -5 }}
-            className="flex flex-col h-full rounded-xl shadow-lg overflow-hidden cursor-pointer bg-gray-800 border border-gray-700 hover:border-teal-500/50 transition-all group"
+            className="flex flex-col h-full rounded-sm shadow-none overflow-hidden cursor-pointer bg-[#1b1b17] border border-stone-700 hover:border-teal-500/50 transition-all group"
         >
             {/* Niveau du joueur, si > 0 */}
             {level > 0 && (
                 <div
                     title={`${xp} XP`}
-                    className="absolute top-3 right-3 bg-teal-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold z-20 shadow-lg border border-teal-400"
+                    className="absolute top-3 right-3 bg-teal-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold z-20 shadow-none border border-teal-400"
                 >
                     {level}
                 </div>
@@ -79,18 +80,18 @@ function JobCard({ job, level, xp }) {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="p-5 bg-gray-800 border-t border-gray-700 text-sm text-gray-300 space-y-3"
+                        className="p-5 bg-[#1b1b17] border-t border-stone-700 text-sm text-stone-300 space-y-3"
                     >
                         <p className="italic border-l-2 border-teal-500 pl-3">{job.description}</p>
                         <div className="grid grid-cols-2 gap-2 mt-2">
-                            <div className="bg-gray-900/50 p-2 rounded border border-gray-700">
-                                <span className="block text-xs text-gray-500 uppercase font-bold">Difficulté</span>
+                            <div className="bg-[#11110f]/50 p-2 rounded border border-stone-700">
+                                <span className="block text-xs text-stone-500 uppercase font-bold">Difficulté</span>
                                 <span className={`font-medium ${job.difficulty === 'Facile' ? 'text-green-400' : job.difficulty === 'Moyenne' ? 'text-yellow-400' : 'text-red-400'}`}>
                                     {job.difficulty}
                                 </span>
                             </div>
-                            <div className="bg-gray-900/50 p-2 rounded border border-gray-700">
-                                <span className="block text-xs text-gray-500 uppercase font-bold">Gain</span>
+                            <div className="bg-[#11110f]/50 p-2 rounded border border-stone-700">
+                                <span className="block text-xs text-stone-500 uppercase font-bold">Gain</span>
                                 <span className="text-white truncate" title={job.potentialGain}>{job.potentialGain}</span>
                             </div>
                         </div>
@@ -181,34 +182,22 @@ export default function Metier() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+        <div className="min-h-screen bg-[#11110f] text-stone-200 pb-20">
             
             {/* Hero Header */}
-            <div className="relative bg-gray-800 border-b border-gray-700 py-16 px-4 mb-12 text-center overflow-hidden">
-                <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-5 pointer-events-none" />
-                <motion.h1 
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-500 to-blue-600 mb-4 relative z-10"
-                >
-                    Artisanat & Métiers
-                </motion.h1>
-                <p className="text-gray-400 max-w-2xl mx-auto relative z-10 text-lg">
-                    Explorez les carrières disponibles, apprenez les ficelles du métier et devenez un maître artisan.
-                </p>
-            </div>
+            <RealmHeader eyebrow="Les savoir-faire / Métiers" title="Artisanat & Métiers" description="Explorez les carrières disponibles, apprenez les ficelles du métier et devenez un maître artisan." />
 
-            <div className="max-w-7xl mx-auto px-6">
+            <div className="max-w-[1680px] mx-auto px-6">
                 {/* Search */}
                 <div className="max-w-md mx-auto mb-10">
-                    <div className="relative text-gray-400 focus-within:text-teal-400 transition-colors">
+                    <div className="relative text-stone-400 focus-within:text-teal-400 transition-colors">
                         <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl" />
                         <input
                             type="text"
                             placeholder="Rechercher un métier..."
                             value={query}
                             onChange={e => setQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-white shadow-lg transition"
+                            className="w-full pl-12 pr-4 py-3 bg-[#1b1b17] border border-stone-700 rounded-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-white shadow-none transition"
                         />
                     </div>
                 </div>
@@ -232,8 +221,8 @@ export default function Metier() {
                                 className={`
                                     px-5 py-2 rounded-full font-bold transition-all transform hover:scale-105 flex items-center gap-2
                                     ${activeTab === tab.name
-                                        ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30"
-                                        : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white border border-gray-700"
+                                        ? "bg-teal-600 text-white shadow-none shadow-teal-500/30"
+                                        : "bg-[#1b1b17] text-stone-400 hover:bg-stone-800 hover:text-white border border-stone-700"
                                     }
                                 `}
                             >

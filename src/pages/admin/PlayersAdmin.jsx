@@ -84,31 +84,31 @@ function PlayersAdmin() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+    <div className="min-h-screen bg-[#11110f] text-stone-200 pb-20">
       
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 py-8 px-6 mb-8">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <h1 className="text-3xl font-extrabold text-white flex items-center gap-3">
+      <div className="bg-[#1b1b17] border-b border-stone-700 py-8 px-6 mb-8">
+        <div className="max-w-[1520px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+          <h1 className="text-3xl font-extrabold text-white flex items-center gap-3 editorial-title">
             <FaUserCog className="text-blue-500" /> Gestion des Joueurs
           </h1>
           
           {/* Search Bar */}
           <div className="relative w-full md:w-96">
-            <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-stone-500" />
             <input
               type="text"
               placeholder="Rechercher un joueur..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-gray-900 border border-gray-600 rounded-full py-2 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              className="w-full bg-[#11110f] border border-stone-600 rounded-full py-2 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition"
             />
           </div>
         </div>
       </div>
 
       {/* Grid */}
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-[1520px] mx-auto px-6">
         <div className="grid grid-cols-1 gap-6">
           <AnimatePresence>
             {filteredPlayers.map((player) => {
@@ -121,15 +121,15 @@ function PlayersAdmin() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  className={`bg-gray-800 rounded-xl shadow-lg overflow-hidden border transition-all ${isSelected ? "border-blue-500 ring-2 ring-blue-500/30" : "border-gray-700 hover:border-gray-500"}`}
+                  className={`bg-[#1b1b17] rounded-sm shadow-none overflow-hidden border transition-all ${isSelected ? "border-amber-600 ring-2 ring-amber-500/30" : "border-stone-700 hover:border-gray-500"}`}
                 >
                   {/* Header Carte (Toujours visible) */}
                   <div 
-                    className="p-4 flex items-center justify-between cursor-pointer bg-gray-800 hover:bg-gray-750 transition-colors"
+                    className="p-4 flex items-center justify-between cursor-pointer bg-[#1b1b17] hover:bg-gray-750 transition-colors"
                     onClick={() => handleSelectPlayer(player.id)}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 font-bold border border-gray-600 overflow-hidden">
+                      <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center text-stone-400 font-bold border border-stone-600 overflow-hidden">
                         {player.discord_avatar ? (
                           <img src={`https://cdn.discordapp.com/avatars/${player.discord_id}/${player.discord_avatar}.png`} alt="Avatar" className="w-full h-full object-cover" />
                         ) : (
@@ -138,10 +138,10 @@ function PlayersAdmin() {
                       </div>
                       <div>
                         <h2 className="text-lg font-bold text-white">{player.pseudo_minecraft}</h2>
-                        <p className="text-xs text-gray-400">{player.rank} • {player.name} {player.surname}</p>
+                        <p className="text-xs text-stone-400">{player.rank} • {player.name} {player.surname}</p>
                       </div>
                     </div>
-                    <span className={`text-2xl transition-transform duration-300 ${isSelected ? "rotate-45 text-blue-400" : "text-gray-500"}`}>+</span>
+                    <span className={`text-2xl transition-transform duration-300 ${isSelected ? "rotate-45 text-amber-300" : "text-stone-500"}`}>+</span>
                   </div>
 
                   {/* Contenu Étendu (Mode Édition) */}
@@ -151,18 +151,18 @@ function PlayersAdmin() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-gray-700 bg-gray-900/50"
+                        className="border-t border-stone-700 bg-[#11110f]/50"
                       >
                         {/* Tabs Navigation */}
-                        <div className="flex space-x-6 px-6 pt-4 border-b border-gray-700">
+                        <div className="flex space-x-6 px-6 pt-4 border-b border-stone-700">
                           {['details', 'actions', 'quests'].map(tab => (
                             <button
                               key={tab}
                               onClick={() => setActiveTab(tab)}
                               className={`pb-2 px-2 capitalize font-medium transition-colors ${
                                 activeTab === tab 
-                                  ? "text-blue-400 border-b-2 border-blue-400" 
-                                  : "text-gray-400 hover:text-gray-200"
+                                  ? "text-amber-300 border-b-2 border-blue-400" 
+                                  : "text-stone-400 hover:text-stone-200"
                               }`}
                             >
                               {tab === 'details' ? 'Détails & Stats' : tab === 'actions' ? 'Traits & Actions' : 'Quêtes'}
@@ -199,16 +199,16 @@ function PlayersAdmin() {
                           )}
 
                           {/* Footer commun Actions */}
-                          <div className="mt-8 pt-6 border-t border-gray-700 flex flex-wrap justify-end gap-3">
+                          <div className="mt-8 pt-6 border-t border-stone-700 flex flex-wrap justify-end gap-3">
                             <button
                               onClick={() => handleOpenLicenceManager(player)}
-                              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 rounded-lg font-bold shadow-lg transition"
+                              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 rounded-lg font-bold shadow-none transition"
                             >
                               <FaFileContract /> Gérer les licences
                             </button>
                             <button
                               onClick={handleCancel}
-                              className="flex items-center gap-2 px-5 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold transition"
+                              className="flex items-center gap-2 px-5 py-2 bg-stone-800 hover:bg-gray-600 text-white rounded-lg font-bold transition"
                             >
                               <FaTimes /> Fermer
                             </button>

@@ -1,7 +1,7 @@
 // src/App.js
 import { Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, MotionConfig } from "framer-motion";
 import routes from "./routes/routes.jsx";
 import PrivateRoutes from "./routes/PrivateRoutes";
 import PublicRoutes from "./routes/PublicRoutes";
@@ -52,7 +52,8 @@ const AnimatedRoutes = () => {
 
 const App = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-900 text-gray-200">
+    <MotionConfig reducedMotion="user">
+      <div className="flex flex-col min-h-screen bg-[#11110f] text-stone-200">
       {/* 👇 NEW: on charge le script AdSense une seule fois pour toute l’app */}
       <AdProvider />
 
@@ -65,7 +66,8 @@ const App = () => {
         <AnimatedRoutes />
       </div>
       <Footer />
-    </div>
+      </div>
+    </MotionConfig>
   );
 };
 

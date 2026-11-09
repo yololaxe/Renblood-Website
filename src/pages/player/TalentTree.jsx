@@ -1,3 +1,4 @@
+import RealmHeader from "../../components/RealmHeader";
 // src/pages/TalentTree.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
@@ -171,23 +172,21 @@ export default function TalentTree() {
 
   if (!talentData) {
     return (
-      <p className="text-center text-gray-400 mt-20 text-lg">
+      <p className="text-center text-stone-400 mt-20 text-lg">
         Chargement...
       </p>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-8 text-white">
-      <h1 className="text-4xl font-extrabold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-green-300 to-blue-400">
-        🌳 Arbre des Talents – {talentData.name}
-      </h1>
+    <div className="max-w-[1680px] mx-auto px-5 py-16 sm:px-8 lg:px-12 text-white">
+      <RealmHeader eyebrow="Les talents / Spécialisation" title={talentData.name} description="Choisissez les aptitudes qui feront évoluer votre personnage. Les points disponibles sont indiqués ci-dessous." />
       <p className="text-center mb-8 text-lg">
         Points disponibles :{" "}
         <span className="font-bold text-green-300">{availablePoints}</span>
       </p>
 
-      <div className="grid grid-cols-3 gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
         {Object.entries(talentData.skills).map(([choice, skills], ci) => {
           const key = `choice_${ci + 1}`;
           return (
@@ -215,9 +214,9 @@ export default function TalentTree() {
                         }
                         className={`w-24 h-24 rounded-full flex items-center justify-center p-2 text-center text-sm font-medium transition-shadow ${
                           unlocked
-                            ? "bg-green-600 shadow-lg"
+                            ? "bg-green-600 shadow-none"
                             : blocked
-                            ? "bg-gray-700 cursor-not-allowed"
+                            ? "bg-stone-800 cursor-not-allowed"
                             : "bg-gray-600 hover:bg-gray-500 shadow-md"
                         }`}
                       >
@@ -227,7 +226,7 @@ export default function TalentTree() {
 
                     {ti < skills.length - 1 && (
                       <svg
-                        className="w-6 h-6 text-gray-400 mt-2"
+                        className="w-6 h-6 text-stone-400 mt-2"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -256,10 +255,10 @@ export default function TalentTree() {
           const unlocked = unlockedMastery;
 
           const btnClass = unlocked
-            ? "bg-green-600 shadow-lg"
+            ? "bg-green-600 shadow-none"
             : available
             ? "bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 shadow-md"
-            : "bg-gray-700 cursor-not-allowed";
+            : "bg-stone-800 cursor-not-allowed";
 
           return (
             <Tooltip key={code} text={meta.fr_description || ""}>

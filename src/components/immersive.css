@@ -1,0 +1,17 @@
+.kingdom-scene{position:relative;min-height:150svh;background:#11110f;border-block:1px solid #44403c;}
+.kingdom-scene-stage{position:sticky;top:0;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:5rem clamp(1.25rem,4vw,5rem) 2rem;overflow:hidden;perspective:1200px;}
+.kingdom-scene-copy{position:relative;z-index:1;max-width:1680px;width:100%;margin:0 auto 2rem;}
+.kingdom-scene-copy>p:first-child{color:#d6b970;font-size:.65rem;letter-spacing:.24em;margin-bottom:1rem;}
+.kingdom-scene-copy h2{font-size:clamp(2.5rem,6vw,6rem);font-weight:900;line-height:.92;letter-spacing:-.06em;color:#fafaf9;}
+.kingdom-scene-copy h2 span{color:#fcd34d;}
+.kingdom-scene-copy>p:last-child{color:#a8a29e;font-size:.9rem;margin-top:1rem;}
+.kingdom-scene-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(.5rem,1.2vw,1.5rem);width:100%;max-width:1680px;margin:auto;transform-style:preserve-3d;}
+.kingdom-scene-tile{position:relative;aspect-ratio:16/9;overflow:hidden;border:1px solid #57534e;background:#20201b;transform-style:preserve-3d;text-align:left;}
+.kingdom-scene-tile img{width:100%;height:100%;object-fit:cover;filter:saturate(.7);transition:filter .35s,transform .6s;}
+.kingdom-scene-tile:hover img{filter:saturate(1);transform:scale(1.06);}
+.kingdom-scene-tile>span{position:absolute;inset:auto 0 0;padding:1.5rem .75rem .6rem;background:linear-gradient(transparent,#11110f);font-size:.55rem;letter-spacing:.1em;color:#f5e8ba;display:flex;justify-content:space-between;}
+.kingdom-scene-caption{max-width:1680px;width:100%;margin:1.5rem auto 0;display:flex;justify-content:space-between;gap:1rem;color:#78716c;font-size:.6rem;letter-spacing:.12em;}
+.kingdom-scene-caption>span{color:#d6b970;letter-spacing:0;}
+.kingdom-scene--still{min-height:0;}.kingdom-scene--still .kingdom-scene-stage{position:relative;min-height:0;}
+@media(max-width:700px){.kingdom-scene{min-height:0;}.kingdom-scene-stage{position:relative;min-height:0;padding-top:3rem;}.kingdom-scene-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.kingdom-scene-caption{flex-direction:column;}.kingdom-scene-tile>span{font-size:.45rem;}}
+@media(prefers-reduced-motion:reduce){.kingdom-scene-tile img{transition:none;}}

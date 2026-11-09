@@ -1,3 +1,4 @@
+import RealmHeader from "../../components/RealmHeader";
 // src/pages/TalentSelection.jsx
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,11 +13,11 @@ import { categories, specials } from "../../data/metiers";
 
 function SkeletonGrid() {
   return (
-    <div className="p-10 bg-gray-900 min-h-screen">
-      <div className="h-12 bg-gray-800 rounded w-1/3 mx-auto animate-pulse mb-8" />
+    <div className="p-10 bg-[#11110f] min-h-screen">
+      <div className="h-12 bg-[#1b1b17] rounded w-1/3 mx-auto animate-pulse mb-8" />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {Array(8).fill(0).map((_, i) => (
-          <div key={i} className="h-64 bg-gray-800 rounded-xl animate-pulse" />
+          <div key={i} className="h-64 bg-[#1b1b17] rounded-sm animate-pulse" />
         ))}
       </div>
     </div>
@@ -116,25 +117,12 @@ export default function TalentSelection() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+    <div className="realm-page talent-catalog">
       
-      {/* --- HERO HEADER --- */}
-      <div className="relative bg-gray-800 border-b border-gray-700 py-12 px-4 mb-8 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-5 pointer-events-none" />
-        <motion.h1 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-4 relative z-10"
-        >
-          Maîtrise & Artisanat
-        </motion.h1>
-        <p className="text-gray-400 max-w-2xl mx-auto relative z-10">
-          Choisissez votre voie et développez vos compétences pour façonner le monde de Renblood.
-        </p>
-      </div>
+      <RealmHeader eyebrow="Le savoir-faire / Talents" title="L’art de se distinguer" description="Chaque métier ouvre un chemin. Développez vos aptitudes, choisissez vos spécialisations et faites votre place dans le royaume." />
 
       {/* --- FILTRES & ACTIONS --- */}
-      <div className="max-w-7xl mx-auto px-4 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="realm-content mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex flex-wrap justify-center gap-2">
           {categoriesList.map(cat => (
             <button
@@ -142,8 +130,8 @@ export default function TalentSelection() {
               onClick={() => setFilter(cat)}
               className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                 filter === cat 
-                  ? "bg-yellow-500 text-gray-900 shadow-lg scale-105" 
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white"
+                  ? "bg-yellow-500 text-gray-900 shadow-none scale-105" 
+                  : "bg-[#1b1b17] text-stone-400 hover:bg-stone-800 hover:text-white"
               }`}
             >
               {cat}
@@ -153,14 +141,14 @@ export default function TalentSelection() {
         
         <button
           onClick={() => { sessionStorage.removeItem(cacheKey); loadJobs(); }}
-          className="flex items-center gap-2 text-sm bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition shadow-md"
+          className="flex items-center gap-2 text-sm bg-amber-800 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition shadow-md"
         >
           <FaSync className={loading ? "animate-spin" : ""} /> Rafraîchir
         </button>
       </div>
 
       {/* --- GRILLE DES MÉTIERS --- */}
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="max-w-[1680px] mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {entries.map(([key, job], index) => {
           const meta = jobMetaMap[key] || { name: key, image: null, description: "", difficulty: "Moyenne" };
           const isLocked = job.xp === -1;
@@ -195,11 +183,13 @@ export default function TalentSelection() {
             <motion.div
               key={key}
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{once:true,amount:.1}}
+              transition={{ duration: .4, delay: Math.min(index % 4 * .06,.18) }}
               onClick={handleClick}
-              className={`relative bg-gray-800 rounded-xl overflow-hidden border border-gray-700 shadow-lg group transition-all duration-300 ${
-                isLocked ? "opacity-60 cursor-not-allowed grayscale" : "cursor-pointer hover:border-yellow-500/50 hover:shadow-2xl hover:-translate-y-1"
+              role="button" tabIndex={isLocked ? -1 : 0} aria-disabled={isLocked} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(); } }}
+              className={`relative bg-[#1b1b17] rounded-sm overflow-hidden border border-stone-700 shadow-none group transition-all duration-300 ${
+                isLocked ? "opacity-60 cursor-not-allowed grayscale" : "cursor-pointer hover:border-yellow-500/50 hover:shadow-none hover:-translate-y-1"
               }`}
             >
               {/* Image de fond */}
@@ -214,7 +204,7 @@ export default function TalentSelection() {
                 
                 {/* Badge Niveau */}
                 {!isLocked && (
-                  <div className="absolute top-3 right-3 z-20 bg-gray-900/90 backdrop-blur text-yellow-500 px-3 py-1 rounded-full text-xs font-bold border border-yellow-500/30 shadow-lg">
+                  <div className="absolute top-3 right-3 z-20 bg-[#11110f]/90 backdrop-blur text-amber-300 px-3 py-1 rounded-full text-xs font-bold border border-yellow-500/30 shadow-none">
                     Lvl {displayLevel}
                   </div>
                 )}
@@ -230,13 +220,13 @@ export default function TalentSelection() {
                   {isLocked && <FaLock className="text-red-500 mt-1" />}
                 </div>
 
-                <p className="text-sm text-gray-400 line-clamp-2 mb-4 h-10">
+                <p className="text-sm text-stone-400 line-clamp-2 mb-4 h-10">
                   {meta.description || "Aucune description disponible."}
                 </p>
 
                 {/* Barre XP */}
                 {!isLocked && !isCompleted && (
-                  <div className="w-full bg-gray-700 rounded-full h-2 mb-2 overflow-hidden">
+                  <div className="w-full bg-stone-800 rounded-full h-2 mb-2 overflow-hidden">
                     <div 
                       className="bg-gradient-to-r from-blue-500 to-cyan-400 h-full rounded-full transition-all duration-500"
                       style={{ width: `${pct}%` }}
@@ -252,7 +242,7 @@ export default function TalentSelection() {
                   }`}>
                     {meta.difficulty}
                   </span>
-                  <span className="text-gray-500">
+                  <span className="text-stone-500">
                     {isLocked ? "Verrouillé" : isCompleted ? "Maître" : `${xpCurrent}/${xpNeeded} XP`}
                   </span>
                 </div>

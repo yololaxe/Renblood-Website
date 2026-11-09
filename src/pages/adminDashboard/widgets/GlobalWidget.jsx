@@ -74,13 +74,13 @@ export default function GlobalWidget() {
     <div className="h-full flex flex-col gap-6">
       
       {/* --- SAISON ACTUELLE --- */}
-      <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600 flex items-center justify-between">
+      <div className="bg-stone-800/50 p-4 rounded-sm border border-stone-600 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="bg-blue-600 p-3 rounded-lg text-white">
+          <div className="bg-amber-800 p-3 rounded-lg text-white">
             <FaCalendarAlt size={20} />
           </div>
           <div>
-            <p className="text-xs text-gray-400 uppercase font-bold">Date Actuelle</p>
+            <p className="text-xs text-stone-400 uppercase font-bold">Date Actuelle</p>
             <p className="text-xl font-bold text-white">
               {season && year ? `${SEASON_LABELS[season]} ${year}` : "Chargement..."}
             </p>
@@ -90,7 +90,7 @@ export default function GlobalWidget() {
           <button onClick={() => changeSeason("prev")} className="p-2 bg-gray-600 hover:bg-gray-500 rounded-lg text-white transition" title="Saison précédente">
             <FaChevronLeft />
           </button>
-          <button onClick={() => changeSeason("next")} className="p-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition" title="Saison suivante">
+          <button onClick={() => changeSeason("next")} className="p-2 bg-amber-800 hover:bg-amber-700 rounded-lg text-white transition" title="Saison suivante">
             <FaChevronRight />
           </button>
         </div>
@@ -100,14 +100,14 @@ export default function GlobalWidget() {
       <div className="grid grid-cols-1 gap-4 flex-1">
         
         {/* Session Active */}
-        <div className={`p-4 rounded-xl border transition-all flex items-center justify-between ${oneSession ? "bg-green-900/20 border-green-500/50" : "bg-gray-700/30 border-gray-600"}`}>
+        <div className={`p-4 rounded-sm border transition-all flex items-center justify-between ${oneSession ? "bg-green-900/20 border-green-500/50" : "bg-stone-800/30 border-stone-600"}`}>
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-full ${oneSession ? "bg-green-500 text-white" : "bg-gray-600 text-gray-400"}`}>
+            <div className={`p-2 rounded-full ${oneSession ? "bg-green-500 text-white" : "bg-gray-600 text-stone-400"}`}>
               <FaClock />
             </div>
             <div>
               <p className="font-bold text-white text-sm">Session de Jeu</p>
-              <p className="text-xs text-gray-400">{oneSession ? "En cours" : "Arrêtée"}</p>
+              <p className="text-xs text-stone-400">{oneSession ? "En cours" : "Arrêtée"}</p>
             </div>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
@@ -117,14 +117,14 @@ export default function GlobalWidget() {
         </div>
 
         {/* Futures Modifs */}
-        <div className={`p-4 rounded-xl border transition-all flex items-center justify-between ${futureModif ? "bg-yellow-900/20 border-yellow-500/50" : "bg-gray-700/30 border-gray-600"}`}>
+        <div className={`p-4 rounded-sm border transition-all flex items-center justify-between ${futureModif ? "bg-yellow-900/20 border-yellow-500/50" : "bg-stone-800/30 border-stone-600"}`}>
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-full ${futureModif ? "bg-yellow-500 text-black" : "bg-gray-600 text-gray-400"}`}>
+            <div className={`p-2 rounded-full ${futureModif ? "bg-yellow-500 text-black" : "bg-gray-600 text-stone-400"}`}>
               <FaEdit />
             </div>
             <div>
               <p className="font-bold text-white text-sm">Modifs Futures</p>
-              <p className="text-xs text-gray-400">{futureModif ? "Autorisées" : "Bloquées"}</p>
+              <p className="text-xs text-stone-400">{futureModif ? "Autorisées" : "Bloquées"}</p>
             </div>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
@@ -139,7 +139,7 @@ export default function GlobalWidget() {
       <AnimatePresence>
         {status && (
           <motion.div
-            className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-green-600 text-white rounded-full shadow-lg text-sm font-bold z-50"
+            className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 bg-green-600 text-white rounded-full shadow-none text-sm font-bold z-50"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}

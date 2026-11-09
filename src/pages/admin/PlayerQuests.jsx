@@ -51,14 +51,14 @@ export default function PlayerQuests({ playerId }) {
     setPlayerQuests(current => current.filter(quest => quest.quest_id !== questId));
   };
 
-  if (loading) return <p className="text-center text-gray-400 py-10">Chargement des quêtes...</p>;
+  if (loading) return <p className="text-center text-stone-400 py-10">Chargement des quêtes...</p>;
 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-bold text-white mb-4">Suivi des Quêtes</h3>
       
       {playerQuests.length === 0 ? (
-        <p className="text-gray-500 italic bg-gray-800 p-4 rounded-lg text-center">Ce joueur n'a progressé dans aucune quête.</p>
+        <p className="text-stone-500 italic bg-[#1b1b17] p-4 rounded-lg text-center">Ce joueur n'a progressé dans aucune quête.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
           {playerQuests.map(pq => {
@@ -72,22 +72,22 @@ export default function PlayerQuests({ playerId }) {
                 className={`p-4 rounded-lg border flex flex-col justify-between transition-colors hover:border-gray-500 ${
                   isCompleted ? "bg-green-900/10 border-green-700/30" :
                   isInProgress ? "bg-blue-900/10 border-blue-700/30" :
-                  "bg-gray-700/20 border-gray-600"
+                  "bg-stone-800/20 border-stone-600"
                 }`}
               >
                 <div className="mb-3">
                   <p className="font-bold text-white text-base leading-tight mb-1">{questDetails.name}</p>
                   <div className="flex gap-2 text-xs">
-                    <span className="text-gray-400 font-mono bg-gray-800 px-1.5 py-0.5 rounded border border-gray-700">{pq.quest_id}</span>
-                    <span className="text-yellow-500/80">{questDetails.category}</span>
+                    <span className="text-stone-400 font-mono bg-[#1b1b17] px-1.5 py-0.5 rounded border border-stone-700">{pq.quest_id}</span>
+                    <span className="text-amber-300/80">{questDetails.category}</span>
                   </div>
                 </div>
                 
                 <div className="flex items-center justify-between gap-3">
                   <div className={`self-start px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 border ${
                     isCompleted ? "bg-green-900/50 text-green-400 border-green-700" :
-                    isInProgress ? "bg-blue-900/50 text-blue-400 border-blue-700" :
-                    "bg-gray-800 text-gray-500 border-gray-600"
+                    isInProgress ? "bg-blue-900/50 text-amber-300 border-blue-700" :
+                    "bg-[#1b1b17] text-stone-500 border-stone-600"
                   }`}>
                     {isCompleted ? <FaCheckCircle /> : isInProgress ? <FaRunning /> : <FaTimes />}
                     {pq.status === "IN_PROGRESS" ? "EN COURS" : pq.status === "COMPLETED" ? "TERMINÉE" : pq.status}

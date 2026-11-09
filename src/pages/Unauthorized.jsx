@@ -5,12 +5,12 @@ import { Link } from "react-router-dom";
 const Unauthorized = () => {
   return (
     <motion.div
-      className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-gray-200 px-4 text-center"
+      className="min-h-screen flex flex-col items-center justify-center bg-[#11110f] text-stone-200 px-4 text-center"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <h1 className="text-4xl font-bold text-red-500 mb-4">⛔ Accès refusé</h1>
+      <h1 className="text-4xl font-bold text-red-500 mb-4 editorial-title">⛔ Accès refusé</h1>
       <p className="text-lg mb-6">
         Tu n’as pas les droits requis pour accéder à cette page.
       </p>

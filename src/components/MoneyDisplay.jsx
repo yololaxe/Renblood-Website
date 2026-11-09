@@ -1,33 +1,13 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { formatMoney } from "../utils/money";
+import { formatMoney, compactMoney } from "../utils/money";
 
 export const MoneyDisplay = ({ value, amount = value }) => {
   const triggerRef = useRef(null);
   const tooltipRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [position, setPosition] = useState({ left: 0, top: 0, offsetX: 0 });
-
-  const convertMoney = (amount) => {
-    const or = Math.floor(amount / (64 * 64 * 64));
-    const remainingAfterOr = amount % (64 * 64 * 64);
-    const argent = Math.floor(remainingAfterOr / (64 * 64));
-    const remainingAfterArgent = remainingAfterOr % (64 * 64);
-    const bronze = Math.floor(remainingAfterArgent / 64);
-    const fer = remainingAfterArgent % 64;
-
-    const tooltipParts = [];
-    if (or > 0) tooltipParts.push(`${or} pièce${or > 1 ? "s" : ""} d'or`);
-    if (argent > 0) tooltipParts.push(`${argent} pièce${argent > 1 ? "s" : ""} d'argent`);
-    if (bronze > 0) tooltipParts.push(`${bronze} pièce${bronze > 1 ? "s" : ""} de bronze`);
-    if (fer > 0) tooltipParts.push(`${fer} pièce${fer > 1 ? "s" : ""} de fer`);
-
-    return {
-      tooltip: tooltipParts.length > 0 ? tooltipParts.join(", ") : "0 pièce de fer",
-      display: `${or > 0 ? `${or}O ` : ""}${argent > 0 ? `${argent}A ` : ""}${bronze > 0 ? `${bronze}B ` : ""}${fer > 0 ? `${fer}F` : ""}`.trim(),
-    };
-  };
 
   const updatePosition = useCallback(() => {
     if (!triggerRef.current) return;
@@ -73,7 +53,7 @@ export const MoneyDisplay = ({ value, amount = value }) => {
     }
   }, [isHovered, position.left, position.top, position.offsetX]);
 
-  const { display } = convertMoney(Math.max(0, Math.floor(Number(amount) || 0)));
+  const display = compactMoney(amount);
   const tooltip = formatMoney(amount);
   const tooltipElement = (
     <AnimatePresence>

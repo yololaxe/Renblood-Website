@@ -1,3 +1,4 @@
+import RealmHeader from "../../components/RealmHeader";
 // src/pages/Politique.jsx
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,25 +16,13 @@ export default function Politiques() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+    <div className="min-h-screen bg-[#11110f] text-stone-200 pb-20">
       
       {/* Hero Header */}
-      <div className="relative bg-gray-800 border-b border-gray-700 py-16 px-4 mb-12 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-5 pointer-events-none" />
-        <motion.h1 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-500 to-blue-700 mb-4 relative z-10"
-        >
-          Système Politique
-        </motion.h1>
-        <p className="text-gray-400 max-w-2xl mx-auto relative z-10 text-lg">
-          Découvrez les rouages du pouvoir, les titres et les responsabilités qui régissent chaque région.
-        </p>
-      </div>
+      <RealmHeader eyebrow="Le royaume / Pouvoirs" title="Système Politique" description="Découvrez les rouages du pouvoir, les titres et les responsabilités qui régissent chaque région." />
 
       {/* Filtres Lieux */}
-      <div className="max-w-6xl mx-auto px-6 mb-10">
+      <div className="max-w-[1520px] mx-auto px-6 mb-10">
         <div className="flex flex-wrap justify-center gap-3">
           {lieuxDisponibles.map((lieu) => (
             <button
@@ -42,8 +31,8 @@ export default function Politiques() {
               className={`
                 px-5 py-2 rounded-full font-bold transition-all transform hover:scale-105 flex items-center gap-2
                 ${lieuSelectionne === lieu
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white border border-gray-700"
+                  ? "bg-amber-800 text-white shadow-none shadow-blue-500/30"
+                  : "bg-[#1b1b17] text-stone-400 hover:bg-stone-800 hover:text-white border border-stone-700"
                 }
               `}
             >
@@ -54,7 +43,7 @@ export default function Politiques() {
       </div>
 
       {/* Liste des Rôles (Cartes) */}
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-[1520px] mx-auto px-6">
         <AnimatePresence mode="wait">
           <motion.div
             key={lieuSelectionne}
@@ -71,18 +60,18 @@ export default function Politiques() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="bg-gray-800 rounded-xl border border-gray-700 shadow-lg overflow-hidden hover:border-blue-500/50 transition-all group"
+                  className="bg-[#1b1b17] rounded-sm border border-stone-700 shadow-none overflow-hidden hover:border-amber-600/50 transition-all group"
                 >
                   {/* Header Carte */}
-                  <div className="bg-gray-900/50 p-5 border-b border-gray-700 flex justify-between items-start">
+                  <div className="bg-[#11110f]/50 p-5 border-b border-stone-700 flex justify-between items-start">
                     <div>
-                      <h2 className="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors flex items-center gap-2">
+                      <h2 className="text-2xl font-bold text-white group-hover:text-amber-300 transition-colors flex items-center gap-2">
                         <FaChessRook className="text-blue-500" /> {role.titre}
                       </h2>
-                      <p className="text-sm text-gray-400 mt-1 italic">{role.role || "Aucun rôle défini"}</p>
+                      <p className="text-sm text-stone-400 mt-1 italic">{role.role || "Aucun rôle défini"}</p>
                     </div>
                     {role.revenu && (
-                      <div className="bg-yellow-900/20 text-yellow-500 px-3 py-1 rounded-full text-xs font-bold border border-yellow-500/30 flex items-center gap-1">
+                      <div className="bg-yellow-900/20 text-amber-300 px-3 py-1 rounded-full text-xs font-bold border border-yellow-500/30 flex items-center gap-1">
                         <FaCoins /> {role.revenu}
                       </div>
                     )}
@@ -94,10 +83,10 @@ export default function Politiques() {
                     {/* Privilèges */}
                     {role.privileges?.length > 0 && (
                       <div>
-                        <h3 className="text-blue-300 font-bold mb-2 flex items-center gap-2"><FaCrown /> Privilèges</h3>
+                        <h3 className="text-amber-200 font-bold mb-2 flex items-center gap-2"><FaCrown /> Privilèges</h3>
                         <ul className="grid grid-cols-1 gap-1">
                           {role.privileges.map((p, j) => (
-                            <li key={j} className="flex items-start gap-2 text-gray-300">
+                            <li key={j} className="flex items-start gap-2 text-stone-300">
                               <span className="text-blue-500 mt-1">•</span> {p}
                             </li>
                           ))}
@@ -111,7 +100,7 @@ export default function Politiques() {
                         <h3 className="text-red-300 font-bold mb-2 flex items-center gap-2"><FaScroll /> Prérequis</h3>
                         <ul className="grid grid-cols-1 gap-1">
                           {role.requis.map((r, j) => (
-                            <li key={j} className="flex items-start gap-2 text-gray-300">
+                            <li key={j} className="flex items-start gap-2 text-stone-300">
                               <span className="text-red-500 mt-1">•</span> {r}
                             </li>
                           ))}
@@ -120,7 +109,7 @@ export default function Politiques() {
                     )}
 
                     {/* Footer Info */}
-                    <div className="pt-4 border-t border-gray-700 flex justify-between text-xs text-gray-500">
+                    <div className="pt-4 border-t border-stone-700 flex justify-between text-xs text-stone-500">
                       <span className="flex items-center gap-1"><FaHourglassHalf /> Durée : {role.temps || "Illimité"}</span>
                       <span>Arrivée : {role.arrivee || "Nomination"}</span>
                     </div>
@@ -128,7 +117,7 @@ export default function Politiques() {
                 </motion.div>
               ))
             ) : (
-              <div className="col-span-full text-center py-20 text-gray-500">
+              <div className="col-span-full text-center py-20 text-stone-500">
                 Aucun rôle politique trouvé pour ce lieu.
               </div>
             )}

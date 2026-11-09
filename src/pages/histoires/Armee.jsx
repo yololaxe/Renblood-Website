@@ -1,3 +1,4 @@
+import RealmHeader from "../../components/RealmHeader";
 // src/pages/Armee.jsx
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,7 +22,7 @@ export default function Armee() {
   };
 
   const colors = {
-    Humains: "text-blue-400 border-blue-500/30 bg-blue-900/20",
+    Humains: "text-amber-300 border-amber-600/30 bg-blue-900/20",
     Créatures: "text-green-400 border-green-500/30 bg-green-900/20",
     Mystique: "text-purple-400 border-purple-500/30 bg-purple-900/20",
   };
@@ -32,28 +33,16 @@ export default function Armee() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+    <div className="min-h-screen bg-[#11110f] text-stone-200 pb-20">
       
       {/* Hero Header */}
-      <div className="relative bg-gray-800 border-b border-gray-700 py-16 px-4 mb-12 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-5 pointer-events-none" />
-        <motion.h1 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-200 via-gray-400 to-gray-600 mb-4 relative z-10"
-        >
-          Forces Militaires
-        </motion.h1>
-        <p className="text-gray-400 max-w-2xl mx-auto relative z-10 text-lg">
-          La hiérarchie des défenseurs du royaume, des simples soldats aux commandants légendaires.
-        </p>
-      </div>
+      <RealmHeader eyebrow="Le royaume / Armée" title="Forces Militaires" description="La hiérarchie des défenseurs du royaume, des simples soldats aux commandants légendaires." />
 
       {/* Grid des Rangs */}
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="max-w-[1680px] mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
         {["Humains", "Créatures", "Mystique"].map((type) => (
           <div key={type} className="space-y-4">
-            <div className={`flex items-center gap-3 text-xl font-bold uppercase tracking-wider pb-4 border-b border-gray-700 ${colors[type].split(" ")[0]}`}>
+            <div className={`flex items-center gap-3 text-xl font-bold uppercase tracking-wider pb-4 border-b border-stone-700 ${colors[type].split(" ")[0]}`}>
               {icons[type]} {type}
             </div>
             
@@ -88,14 +77,14 @@ export default function Armee() {
             onClick={() => setSelectedRank(null)}
           >
             <motion.div
-              className="bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl border border-gray-600 overflow-hidden relative"
+              className="bg-[#1b1b17] w-full max-w-md rounded-sm shadow-none border border-stone-600 overflow-hidden relative"
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header Modal */}
-              <div className={`p-6 text-center border-b border-gray-700 ${colors[selectedType].replace("bg-opacity-20", "bg-opacity-50")}`}>
+              <div className={`p-6 text-center border-b border-stone-700 ${colors[selectedType].replace("bg-opacity-20", "bg-opacity-50")}`}>
                 <button
                   onClick={() => setSelectedRank(null)}
                   className="absolute top-4 right-4 text-white/70 hover:text-white transition"
@@ -111,14 +100,14 @@ export default function Armee() {
 
               {/* Content */}
               <div className="p-6 space-y-6">
-                <div className="bg-gray-900/50 p-4 rounded-xl border border-gray-700 flex items-start gap-3">
-                  <FaInfoCircle className="text-gray-400 mt-1 flex-shrink-0" />
-                  <p className="text-gray-300 text-sm leading-relaxed">
+                <div className="bg-[#11110f]/50 p-4 rounded-sm border border-stone-700 flex items-start gap-3">
+                  <FaInfoCircle className="text-stone-400 mt-1 flex-shrink-0" />
+                  <p className="text-stone-300 text-sm leading-relaxed">
                     {data[`Description (${selectedType})`]?.[selectedRank] || "Pas de description disponible."}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-center gap-2 text-yellow-500 font-bold bg-yellow-900/20 py-3 rounded-lg border border-yellow-500/30">
+                <div className="flex items-center justify-center gap-2 text-amber-300 font-bold bg-yellow-900/20 py-3 rounded-lg border border-yellow-500/30">
                   <FaHourglassHalf />
                   <span>Expérience requise : {data["Année"]?.[selectedRank] || "?"} ans</span>
                 </div>

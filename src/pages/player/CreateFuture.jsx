@@ -133,18 +133,18 @@ export default function CreateFuturePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 p-6 pb-20">
+    <div className="min-h-screen bg-[#11110f] text-stone-200 p-6 pb-20">
       
       {/* Header */}
-      <div className="max-w-7xl mx-auto mb-8 flex items-center gap-4">
+      <div className="max-w-[1680px] mx-auto mb-8 flex items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-white">Planifier une Action</h1>
-          <p className="text-gray-400">Choisissez une activité pour la prochaine session.</p>
+          <h1 className="text-3xl font-extrabold text-white editorial-title">Planifier une Action</h1>
+          <p className="text-stone-400">Choisissez une activité pour la prochaine session.</p>
         </div>
       </div>
 
       {/* Grid */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="max-w-[1680px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {FUTURE_TEMPLATES.map((tpl, index) => (
           <motion.div
             key={tpl.type}
@@ -152,7 +152,7 @@ export default function CreateFuturePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
             whileHover={{ y: -5, boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)" }}
-            className="flex flex-col bg-gray-800 rounded-xl overflow-hidden border border-gray-700 shadow-lg group"
+            className="flex flex-col bg-[#1b1b17] rounded-sm overflow-hidden border border-stone-700 shadow-none group"
           >
             {/* Card Header */}
             <div className={`bg-gradient-to-r ${tpl.color} px-5 py-4 relative overflow-hidden`}>
@@ -167,40 +167,40 @@ export default function CreateFuturePage() {
               
               {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-900/50 p-2 rounded border border-gray-700">
-                  <span className="block text-xs text-gray-500 uppercase font-bold mb-1 flex items-center gap-1"><FaLock size={10}/> Restriction</span>
-                  <span className="text-gray-200 font-medium">{tpl.restriction}</span>
+                <div className="bg-[#11110f]/50 p-2 rounded border border-stone-700">
+                  <span className="block text-xs text-stone-500 uppercase font-bold mb-1 flex items-center gap-1"><FaLock size={10}/> Restriction</span>
+                  <span className="text-stone-200 font-medium">{tpl.restriction}</span>
                 </div>
-                <div className="bg-gray-900/50 p-2 rounded border border-gray-700">
-                  <span className="block text-xs text-gray-500 uppercase font-bold mb-1 flex items-center gap-1"><FaCoins size={10}/> Coût</span>
+                <div className="bg-[#11110f]/50 p-2 rounded border border-stone-700">
+                  <span className="block text-xs text-stone-500 uppercase font-bold mb-1 flex items-center gap-1"><FaCoins size={10}/> Coût</span>
                   <span className="text-yellow-400 font-medium">{tpl.cost}</span>
                 </div>
-                <div className="bg-gray-900/50 p-2 rounded border border-gray-700">
-                  <span className="block text-xs text-gray-500 uppercase font-bold mb-1 flex items-center gap-1"><FaDice size={10}/> Chance</span>
-                  <span className="text-blue-400 font-medium">{tpl.chance}</span>
+                <div className="bg-[#11110f]/50 p-2 rounded border border-stone-700">
+                  <span className="block text-xs text-stone-500 uppercase font-bold mb-1 flex items-center gap-1"><FaDice size={10}/> Chance</span>
+                  <span className="text-amber-300 font-medium">{tpl.chance}</span>
                 </div>
-                <div className="bg-gray-900/50 p-2 rounded border border-gray-700">
-                  <span className="block text-xs text-gray-500 uppercase font-bold mb-1 flex items-center gap-1"><FaGift size={10}/> Gain</span>
+                <div className="bg-[#11110f]/50 p-2 rounded border border-stone-700">
+                  <span className="block text-xs text-stone-500 uppercase font-bold mb-1 flex items-center gap-1"><FaGift size={10}/> Gain</span>
                   <span className="text-green-400 font-medium truncate" title={tpl.reward}>{tpl.reward}</span>
                 </div>
               </div>
 
-              <p className="text-gray-400 italic border-l-2 border-gray-600 pl-3 py-1">
+              <p className="text-stone-400 italic border-l-2 border-stone-600 pl-3 py-1">
                 {tpl.detail}
               </p>
 
               {/* Question Input */}
               {tpl.question && (
-                <div className="mt-4 pt-4 border-t border-gray-700">
+                <div className="mt-4 pt-4 border-t border-stone-700">
                   <label className="block mb-2 text-white font-semibold flex items-center gap-2">
-                    <FaQuestionCircle className="text-blue-400" />
+                    <FaQuestionCircle className="text-amber-300" />
                     {tpl.question}
                   </label>
                   <input
                     type="text"
                     value={answers[tpl.type] || ""}
                     onChange={(e) => handleChange(tpl.type, e.target.value)}
-                    className="w-full px-4 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
+                    className="w-full px-4 py-2 bg-[#11110f] border border-stone-600 rounded-lg text-white focus:border-amber-600 focus:ring-1 focus:ring-amber-500 outline-none transition"
                     placeholder="Votre réponse..."
                   />
                 </div>
@@ -208,13 +208,13 @@ export default function CreateFuturePage() {
             </div>
 
             {/* Card Footer */}
-            <div className="p-4 bg-gray-900 border-t border-gray-700">
+            <div className="p-4 bg-[#11110f] border-t border-stone-700">
               <button
                 disabled={!!loadingType}
                 onClick={() => handleCreate(tpl)}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold transition shadow-lg ${
+                className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-bold transition shadow-none ${
                   loadingType === tpl.type
-                    ? "bg-gray-700 text-gray-400 cursor-wait"
+                    ? "bg-stone-800 text-stone-400 cursor-wait"
                     : "bg-white text-gray-900 hover:bg-gray-200"
                 }`}
               >

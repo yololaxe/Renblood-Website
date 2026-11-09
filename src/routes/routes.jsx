@@ -1,10 +1,16 @@
 // src/routes/routes.js
 import React, { lazy } from "react";
 
+const SupportReceipt = lazy(() => import("../pages/admin/SupportReceipt.jsx"));
+const EconomyDesk=lazy(()=>import("../pages/admin/EconomyDesk.jsx"));
+const Finance = lazy(() => import("../pages/Finance.jsx"));
 const Home = lazy(() => import("../pages/Home.jsx"));
 const HomeTest = lazy(() => import("../pages/HomeTest.jsx"));
 const Players = lazy(() => import("../pages/Players.jsx"));
 const Map = lazy(() => import("../pages/Map.jsx"));
+const Onboarding = lazy(() => import("../pages/Onboarding.jsx"));
+const ProfileSettings = lazy(() => import("../pages/ProfileSettings.jsx"));
+const RegistrationAdmin = lazy(() => import("../pages/RegistrationAdmin.jsx"));
 const Auth = lazy(() => import("../pages/Auth.jsx"));
 const TalentSelection = lazy(() => import("../pages/player/TalentSelection.jsx"));
 const TalentTree = lazy(() => import("../pages/player/TalentTree.jsx"));
@@ -54,6 +60,12 @@ const PlayerOwnedCountersPage = lazy(() => import("../pages/markets/PlayerMarket
 const PlayerCounterHistoryPage = lazy(() => import("../pages/markets/PlayerMarketPages.jsx").then((m) => ({ default: m.PlayerCounterHistoryPage })));
 
 const routes = [
+  { path: "/welcome", element: <Onboarding /> },
+  { path: "/account/profile", element: <ProfileSettings /> },
+  { path: "/admin/registration", element: <RegistrationAdmin />, private: true, requiredRole: "Admin" },
+  {path:"/support/economie",element:<SupportReceipt/>,private:true,requiredRole:"Moderateur"},
+  {path:"/admin/economie",element:<EconomyDesk/>,private:true,requiredRole:"Admin"},
+  { path: "/finances", element: <Finance />, private: true, requiredRole: "Etranger" },
   { path: "/", element: <Home /> },
   { path: "/home", element: <Home /> },
   { path: "/home-test", element: <HomeTest /> },

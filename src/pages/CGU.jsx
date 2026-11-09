@@ -3,13 +3,13 @@ import { motion } from "framer-motion";
 
 export default function CGU() {
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-300 p-8 md:p-16">
+    <div className="min-h-screen bg-[#11110f] text-stone-300 p-8 md:p-16">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700"
+        className="max-w-4xl mx-auto bg-[#1b1b17] p-8 rounded-sm shadow-none border border-stone-700"
       >
-        <h1 className="text-3xl font-bold text-white mb-6 border-b border-gray-600 pb-4">
+        <h1 className="text-3xl font-bold text-white mb-6 border-b border-stone-600 pb-4 editorial-title">
           Conditions Générales d'Utilisation (CGU)
         </h1>
 

@@ -115,7 +115,7 @@ const normalizeAuditPayload = (payload) => ({
 });
 
 function ModerationStatusBadge({ status }) {
-  return <span className={`rounded-full px-2 py-1 text-xs ${statusTone[status] || "bg-gray-800 text-gray-200"}`}>{status || "—"}</span>;
+  return <span className={`rounded-full px-2 py-1 text-xs ${statusTone[status] || "bg-[#1b1b17] text-stone-200"}`}>{status || "—"}</span>;
 }
 
 function RiskScoreBadge({ value }) {
@@ -127,12 +127,12 @@ function RiskScoreBadge({ value }) {
 function ActionDialog({ open, title, description, reasonRequired = false, reason, setReason, confirmLabel, confirmTone = "bg-red-600 hover:bg-red-500", loading, onCancel, onConfirm }) {
   if (!open) return null;
   return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-    <div className="w-full max-w-xl rounded-2xl border border-gray-700 bg-gray-900 p-6 shadow-2xl">
+    <div className="w-full max-w-xl rounded-sm border border-stone-700 bg-[#11110f] p-6 shadow-none">
       <h2 className="text-xl font-bold text-white">{title}</h2>
-      <p className="mt-3 text-sm text-gray-300">{description}</p>
-      {reasonRequired && <textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Raison obligatoire" className="mt-4 min-h-28 w-full rounded-lg border border-gray-600 bg-gray-950 px-3 py-2 text-sm text-gray-100 outline-none focus:border-amber-500" />}
+      <p className="mt-3 text-sm text-stone-300">{description}</p>
+      {reasonRequired && <textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Raison obligatoire" className="mt-4 min-h-28 w-full rounded-lg border border-stone-600 bg-gray-950 px-3 py-2 text-sm text-gray-100 outline-none focus:border-amber-500" />}
       <div className="mt-5 flex justify-end gap-3">
-        <button type="button" onClick={onCancel} className="rounded-lg bg-gray-700 px-4 py-2 text-sm font-semibold text-white">Annuler</button>
+        <button type="button" onClick={onCancel} className="rounded-lg bg-stone-800 px-4 py-2 text-sm font-semibold text-white">Annuler</button>
         <button type="button" disabled={loading || (reasonRequired && !reason.trim())} onClick={onConfirm} className={`rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 ${confirmTone}`}>{loading ? "Traitement..." : confirmLabel}</button>
       </div>
     </div>
@@ -143,8 +143,8 @@ function ModerationActions({ counter, onDisable, onEnable, onFlag, detailBase = 
   const counterStatus = moderationStatusValue(counter);
   const isDisabled = counterStatus === "DISABLED" || field(counter, "active") === false;
   return <div className="flex flex-wrap gap-2">
-    <Link className="text-blue-400 hover:text-blue-300" to={`${detailBase}/${counterId(counter)}`}>Voir detail</Link>
-    <Link className="text-gray-300 hover:text-white" to={`/admin/markets/counters/${counterId(counter)}`}>Voir historique</Link>
+    <Link className="text-amber-300 hover:text-amber-200" to={`${detailBase}/${counterId(counter)}`}>Voir detail</Link>
+    <Link className="text-stone-300 hover:text-white" to={`/admin/markets/counters/${counterId(counter)}`}>Voir historique</Link>
     {!isDisabled && <button type="button" onClick={() => onDisable(counter)} className="text-red-400 hover:text-red-300">Desactiver</button>}
     {isDisabled && <button type="button" onClick={() => onEnable(counter)} className="text-green-400 hover:text-green-300">Reactiver</button>}
     <button type="button" onClick={() => onFlag(counter)} className="text-amber-400 hover:text-amber-300">Marquer a verifier</button>
@@ -234,7 +234,7 @@ export function AdminReferenceItemsPage() {
     }
   };
   const disable = async (item) => { await api.disableReferenceItem(item.id); list.load(); };
-  return <AdminLayout title="Items de reference" actions={<button onClick={() => { setEditing(null); setFormOpen(true); }} className="rounded-lg bg-blue-600 px-4 py-2 font-bold">Ajouter un item</button>}>{formOpen && <ReferenceItemForm item={editing} existingItems={list.data} onSave={save} saving={saving} onCancel={() => setFormOpen(false)} />}<MarketState loading={list.loading || userLoading} error={list.error} empty={!list.data.length}><ReferenceItemsTable items={list.data} onEdit={(item) => { setEditing(item); setFormOpen(true); }} onDisable={disable} /></MarketState><Toast {...toast} onClose={() => setToast({})} /></AdminLayout>;
+  return <AdminLayout title="Items de reference" actions={<button onClick={() => { setEditing(null); setFormOpen(true); }} className="rounded-lg bg-amber-800 px-4 py-2 font-bold">Ajouter un item</button>}>{formOpen && <ReferenceItemForm item={editing} existingItems={list.data} onSave={save} saving={saving} onCancel={() => setFormOpen(false)} />}<MarketState loading={list.loading || userLoading} error={list.error} empty={!list.data.length}><ReferenceItemsTable items={list.data} onEdit={(item) => { setEditing(item); setFormOpen(true); }} onDisable={disable} /></MarketState><Toast {...toast} onClose={() => setToast({})} /></AdminLayout>;
 }
 
 export function AdminCityModifiersPage() {
@@ -246,8 +246,8 @@ export function AdminCityModifiersPage() {
   const edit = (item) => { setEditing(item); setForm({ modifier: item.modifier, reason: item.reason || "", active: item.active }); };
   const save = async (e) => { e.preventDefault(); await api.updateCityModifier(editing.id, { ...form, modifier: Number(form.modifier) }); setEditing(null); list.load(); };
   return <AdminLayout title="Modificateurs economiques" description="Un modificateur de 1.10 augmente les prix de 10 %. Un modificateur de 0.90 les reduit de 10 %."><MarketFilters fields={[{ name: "city", label: cities.loading ? "Chargement des villes..." : "Ville", options: CityOptions({ cities: cities.data }) }, { name: "category", label: "Categorie", options: MARKET_CATEGORIES }]} values={list.filters} onChange={filterChange(list.setFilters)} onReset={() => list.setFilters({})} />
-    {editing && <form onSubmit={save} className="mb-6 flex flex-wrap gap-3 rounded-xl border border-gray-700 bg-gray-800 p-4"><input type="number" step="0.01" min="0" value={form.modifier} onChange={(e) => setForm({ ...form, modifier: e.target.value })} className="rounded bg-gray-900 px-3 py-2" /><input value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="Raison" className="min-w-64 rounded bg-gray-900 px-3 py-2" /><label className="flex items-center gap-2"><input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} /> Actif</label><button className="rounded bg-blue-600 px-4">Enregistrer</button><button type="button" onClick={() => setEditing(null)} className="rounded bg-gray-700 px-4">Annuler</button></form>}
-    <MarketState loading={list.loading || cities.loading || userLoading} error={list.error || cities.error} empty={!list.data.length}><TableShell headers={["Ville", "Categorie", "Modificateur", "Raison", "Actif", "Actions"]}>{list.data.map((item) => <tr key={item.id}><Cell>{resolveCityName(item, cities.data)}</Cell><Cell>{item.category}</Cell><Cell>{Number(item.modifier).toFixed(2)}</Cell><Cell>{item.reason}</Cell><Cell><Bool value={item.active} /></Cell><Cell><button onClick={() => edit(item)} className="text-blue-400">Modifier</button></Cell></tr>)}</TableShell></MarketState></AdminLayout>;
+    {editing && <form onSubmit={save} className="mb-6 flex flex-wrap gap-3 rounded-sm border border-stone-700 bg-[#1b1b17] p-4"><input type="number" step="0.01" min="0" value={form.modifier} onChange={(e) => setForm({ ...form, modifier: e.target.value })} className="rounded bg-[#11110f] px-3 py-2" /><input value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="Raison" className="min-w-64 rounded bg-[#11110f] px-3 py-2" /><label className="flex items-center gap-2"><input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} /> Actif</label><button className="rounded bg-amber-800 px-4">Enregistrer</button><button type="button" onClick={() => setEditing(null)} className="rounded bg-stone-800 px-4">Annuler</button></form>}
+    <MarketState loading={list.loading || cities.loading || userLoading} error={list.error || cities.error} empty={!list.data.length}><TableShell headers={["Ville", "Categorie", "Modificateur", "Raison", "Actif", "Actions"]}>{list.data.map((item) => <tr key={item.id}><Cell>{resolveCityName(item, cities.data)}</Cell><Cell>{item.category}</Cell><Cell>{Number(item.modifier).toFixed(2)}</Cell><Cell>{item.reason}</Cell><Cell><Bool value={item.active} /></Cell><Cell><button onClick={() => edit(item)} className="text-amber-300">Modifier</button></Cell></tr>)}</TableShell></MarketState></AdminLayout>;
 }
 
 export function AdminCalculatedPricesPage() {
@@ -301,7 +301,7 @@ export function AdminMerchantCounterDetailsPage() {
   }, [id, userLoading]);
   useEffect(() => { load(); }, [load]);
   const toggle = async (key, value) => { await api.updateMerchantCounter(id, { [key]: value }); load(); };
-  return <AdminLayout title={counter?.name || "Detail du comptoir"}><MarketState loading={loading || userLoading} error={error}><div className="mb-8 grid gap-4 rounded-xl border border-gray-700 bg-gray-800 p-5 md:grid-cols-3"><p>Type: <MarketTypeBadge type={counter?.type} /></p><p>Ville: {field(counter, "cityName", "city_name", "city")}</p><p>Proprietaire: <OwnerTypeBadge type={field(counter, "ownerType", "owner_type")} /> {ownerNameValue(counter)}</p><p>Coordonnees: {[counter?.world, counter?.x, counter?.y, counter?.z].filter((v) => v !== undefined).join(" / ")}</p>{[["active", "Comptoir actif"], ["buyModeEnabled", "Mode achat"], ["sellModeEnabled", "Mode vente"]].map(([key, label]) => <label key={key} className="flex items-center gap-2"><input type="checkbox" checked={Boolean(field(counter, key, key.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`)))} onChange={(e) => toggle(key, e.target.checked)} /> {label}</label>)}</div>
+  return <AdminLayout title={counter?.name || "Detail du comptoir"}><MarketState loading={loading || userLoading} error={error}><div className="mb-8 grid gap-4 rounded-sm border border-stone-700 bg-[#1b1b17] p-5 md:grid-cols-3"><p>Type: <MarketTypeBadge type={counter?.type} /></p><p>Ville: {field(counter, "cityName", "city_name", "city")}</p><p>Proprietaire: <OwnerTypeBadge type={field(counter, "ownerType", "owner_type")} /> {ownerNameValue(counter)}</p><p>Coordonnees: {[counter?.world, counter?.x, counter?.y, counter?.z].filter((v) => v !== undefined).join(" / ")}</p>{[["active", "Comptoir actif"], ["buyModeEnabled", "Mode achat"], ["sellModeEnabled", "Mode vente"]].map(([key, label]) => <label key={key} className="flex items-center gap-2"><input type="checkbox" checked={Boolean(field(counter, key, key.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`)))} onChange={(e) => toggle(key, e.target.checked)} /> {label}</label>)}</div>
     <h2 className="mb-3 text-xl font-bold">Items du comptoir</h2><TableShell headers={["Item", "Nom", "Achat", "Vente", "Prix auto", "Achat manuel", "Vente manuelle", "Stock", "Quantite", "Modificateur"]}>{toList(counter?.items).map((item) => <tr key={item.id || field(item, "itemId", "item_id")}><Cell>{field(item, "itemId", "item_id")}</Cell><Cell>{field(item, "displayName", "display_name")}</Cell><Cell><Bool value={field(item, "buyEnabled", "buy_enabled")} /></Cell><Cell><Bool value={field(item, "sellEnabled", "sell_enabled")} /></Cell><Cell><Bool value={field(item, "autoPrice", "auto_price")} /></Cell><Cell><MoneyDisplay amount={field(item, "manualBuyPrice", "manual_buy_price")} /></Cell><Cell><MoneyDisplay amount={field(item, "manualSellPrice", "manual_sell_price")} /></Cell><Cell>{field(item, "stockMode", "stock_mode")}</Cell><Cell>{field(item, "stockQuantity", "stock_quantity")}</Cell><Cell>{field(item, "localModifier", "local_modifier")}</Cell></tr>)}</TableShell>
     <h2 className="mb-3 mt-8 text-xl font-bold">Gains et retraits</h2><CounterBalanceSummary transactions={transactions} withdrawals={withdrawals} />
     <h3 className="mb-3 text-lg font-bold">Historique des retraits</h3><MarketState empty={!withdrawals.length} emptyMessage="Aucun retrait enregistre."><MarketWithdrawalsTable withdrawals={withdrawals} compact /></MarketState>
@@ -446,7 +446,7 @@ export function AdminMarketModerationDetailsPage() {
       <button type="button" onClick={() => openAction("disable")} className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-500">Desactiver</button>
       <button type="button" onClick={() => openAction("enable")} className="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-500">Reactiver</button>
       <button type="button" onClick={() => openAction("flag")} className="rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white hover:bg-amber-500">Marquer a verifier</button>
-      <Link to={`/admin/markets/counters/${counterId(currentCounter)}`} className="rounded-lg bg-gray-700 px-4 py-2 font-semibold text-white hover:bg-gray-600">Voir la fiche standard</Link>
+      <Link to={`/admin/markets/counters/${counterId(currentCounter)}`} className="rounded-lg bg-stone-800 px-4 py-2 font-semibold text-white hover:bg-gray-600">Voir la fiche standard</Link>
     </div>
 
     <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -456,28 +456,28 @@ export function AdminMarketModerationDetailsPage() {
       <MarketDashboardCard label="Risk score" value={<RiskScoreBadge value={riskScoreValue(currentCounter)} />} />
     </div>
 
-    <div className="mb-8 grid gap-4 rounded-xl border border-gray-700 bg-gray-800 p-5 lg:grid-cols-2">
+    <div className="mb-8 grid gap-4 rounded-sm border border-stone-700 bg-[#1b1b17] p-5 lg:grid-cols-2">
       <div className="space-y-2">
-        <p className="text-sm text-gray-300">Nom : <span className="font-semibold text-white">{currentCounter?.name || "—"}</span></p>
-        <p className="text-sm text-gray-300">Type : <MarketTypeBadge type={currentCounter?.type} /></p>
-        <p className="text-sm text-gray-300">Proprietaire : <OwnerTypeBadge type={field(currentCounter, "ownerType", "owner_type")} /> {ownerNameValue(currentCounter)}</p>
-        <p className="text-sm text-gray-300">Ville : {field(currentCounter, "cityName", "city_name", "city") || "Sans ville"}</p>
-        <p className="text-sm text-gray-300">Position Minecraft : {[field(currentCounter, "world"), field(currentCounter, "x"), field(currentCounter, "y"), field(currentCounter, "z")].filter((value) => value !== undefined && value !== null).join(" / ") || "—"}</p>
+        <p className="text-sm text-stone-300">Nom : <span className="font-semibold text-white">{currentCounter?.name || "—"}</span></p>
+        <p className="text-sm text-stone-300">Type : <MarketTypeBadge type={currentCounter?.type} /></p>
+        <p className="text-sm text-stone-300">Proprietaire : <OwnerTypeBadge type={field(currentCounter, "ownerType", "owner_type")} /> {ownerNameValue(currentCounter)}</p>
+        <p className="text-sm text-stone-300">Ville : {field(currentCounter, "cityName", "city_name", "city") || "Sans ville"}</p>
+        <p className="text-sm text-stone-300">Position Minecraft : {[field(currentCounter, "world"), field(currentCounter, "x"), field(currentCounter, "y"), field(currentCounter, "z")].filter((value) => value !== undefined && value !== null).join(" / ") || "—"}</p>
       </div>
       <div className="space-y-2">
-        <p className="text-sm text-gray-300">Derniere transaction : <span className="text-white">{dateTime(field(currentCounter, "lastTransactionAt", "last_transaction_at"))}</span></p>
-        <p className="text-sm text-gray-300">Derniere interaction proprio : <span className="text-white">{dateTime(field(currentCounter, "lastOwnerInteractionAt", "last_owner_interaction_at"))}</span></p>
-        <p className="text-sm text-gray-300">Raison de desactivation : <span className="text-white">{field(currentCounter, "moderationReason", "moderation_reason") || "—"}</span></p>
-        <p className="text-sm text-gray-300">Raison de flag : <span className="text-white">{field(currentCounter, "flaggedReason", "flagged_reason") || "—"}</span></p>
-        <p className="text-sm text-gray-300">Desactive par : <span className="text-white">{field(currentCounter, "disabledBy", "disabled_by") || field(user, "pseudo_minecraft", "username", "email") || "—"}</span></p>
+        <p className="text-sm text-stone-300">Derniere transaction : <span className="text-white">{dateTime(field(currentCounter, "lastTransactionAt", "last_transaction_at"))}</span></p>
+        <p className="text-sm text-stone-300">Derniere interaction proprio : <span className="text-white">{dateTime(field(currentCounter, "lastOwnerInteractionAt", "last_owner_interaction_at"))}</span></p>
+        <p className="text-sm text-stone-300">Raison de desactivation : <span className="text-white">{field(currentCounter, "moderationReason", "moderation_reason") || "—"}</span></p>
+        <p className="text-sm text-stone-300">Raison de flag : <span className="text-white">{field(currentCounter, "flaggedReason", "flagged_reason") || "—"}</span></p>
+        <p className="text-sm text-stone-300">Desactive par : <span className="text-white">{field(currentCounter, "disabledBy", "disabled_by") || field(user, "pseudo_minecraft", "username", "email") || "—"}</span></p>
       </div>
     </div>
 
     <CounterBalanceSummary transactions={currentTransactions} withdrawals={currentWithdrawals} />
 
-    <div className="mb-8 rounded-xl border border-gray-700 bg-gray-800 p-5">
+    <div className="mb-8 rounded-sm border border-stone-700 bg-[#1b1b17] p-5">
       <h2 className="mb-3 text-xl font-bold">Risques detectes</h2>
-      {risks.length ? <ul className="space-y-2 text-sm text-amber-200">{risks.map((risk) => <li key={risk} className="rounded-lg border border-amber-800/60 bg-amber-950/20 px-3 py-2">{risk}</li>)}</ul> : <p className="text-sm text-gray-400">Aucun signal fort detecte pour le moment.</p>}
+      {risks.length ? <ul className="space-y-2 text-sm text-amber-200">{risks.map((risk) => <li key={risk} className="rounded-lg border border-amber-800/60 bg-amber-950/20 px-3 py-2">{risk}</li>)}</ul> : <p className="text-sm text-stone-400">Aucun signal fort detecte pour le moment.</p>}
     </div>
 
     <h2 className="mb-3 text-xl font-bold">Items en vente</h2>

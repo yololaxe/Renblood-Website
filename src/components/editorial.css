@@ -1,0 +1,17 @@
+.site-page{background:#11110f;min-height:60vh;color:#e7e5e4;}
+.site-page .editorial-title{color:#fafaf9;letter-spacing:-.055em;line-height:1.05;}
+.site-page :is(input,textarea,select){accent-color:#d6b970;}
+.site-page :is(input,textarea,select):focus-visible{outline-color:#fcd34d;}
+.site-page button:not(:disabled),.site-page a{touch-action:manipulation;}
+.site-page th{color:#bfa46a;letter-spacing:.08em;font-size:.7rem;text-transform:uppercase;}
+.site-page td,.site-page th{border-color:#44403c;}
+.site-page h2,.site-page h3{letter-spacing:-.025em;}
+.editorial-entered{animation:editorial-rise .65s cubic-bezier(.2,.65,.25,1) both;}
+@keyframes editorial-rise{from{opacity:.25;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.talent-catalog .group{border-radius:0;box-shadow:none;border-width:0 0 1px;background:#191916;}
+.talent-catalog .group:hover{border-color:#d6b970;}
+.realm-atlas .realm-heading{padding-bottom:3rem;}
+.site-page .home-title{font-size:clamp(3.25rem,8vw,8rem);font-weight:900;line-height:.9;letter-spacing:-.065em;}
+.site-page .home-title .word-mask{display:inline-block;overflow:hidden;padding-bottom:.15em;margin-bottom:-.15em;vertical-align:bottom;}
+.site-page .home-title .word-mask>span{display:inline-block;}
+@media(prefers-reduced-motion:reduce){.editorial-entered{animation:none;}}

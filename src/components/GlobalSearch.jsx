@@ -36,6 +36,7 @@ const publicPages = [
 ];
 
 const authenticatedPages = [
+  { label: "Suivre un reçu", description: "Support économique et notes de modération", path: "/support/economie", type: "Support", minRole: "Moderateur" },
   { label: "Mon personnage", description: "Profil, statistiques, traits et licences", path: "/character", type: "Joueur", minRole: "Esclave", keywords: "stats fiche argent inventaire discord licence action trait" },
   { label: "Mes talents", description: "Arbre des talents", path: "/talents", type: "Page", minRole: "Esclave", keywords: "compétence build progression" },
   { label: "Sessions", description: "Sessions et futurs", path: "/sessions", type: "Page", minRole: "Esclave", keywords: "préparer session futur rp" },
@@ -105,6 +106,7 @@ export default function GlobalSearch({ open, onClose }) {
   const [dynamicResults, setDynamicResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const isAdmin = userRank === "Admin";
+  const searchCatalog = open && query.trim().length >= 2;
 
   useEffect(() => {
     if (!open) return;
@@ -113,7 +115,11 @@ export default function GlobalSearch({ open, onClose }) {
   }, [open]);
 
   useEffect(() => {
-    if (!open) return undefined;
+    if (!searchCatalog) {
+      setLoading(false);
+      setDynamicResults([]);
+      return undefined;
+    }
     let active = true;
 
     const loadResults = async () => {
@@ -177,11 +183,12 @@ export default function GlobalSearch({ open, onClose }) {
       }
     };
 
-    loadResults();
+    const delay = window.setTimeout(loadResults, 250);
     return () => {
       active = false;
+      window.clearTimeout(delay);
     };
-  }, [isAdmin, open, userId, userRank]);
+  }, [isAdmin, searchCatalog, userId, userRank]);
 
   const results = useMemo(() => {
     const allowedAuthenticatedPages = userId

@@ -14,62 +14,32 @@ const axiosInstance = axios.create({
   timeout: 15000,
 });
 
-let isRefreshing = false;
-let failedQueue = [];
+let refreshPromise = null;
 
-const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) prom.reject(error);
-    else prom.resolve(token);
-  });
-  failedQueue = [];
+const refreshToken = async (user) => {
+  if (!refreshPromise) {
+    refreshPromise = user.getIdToken(true).finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
 };
 
 axiosInstance.interceptors.request.use(
   async (config) => {
+    if (config._tokenRetry) return config;
+
     const user = auth.currentUser;
     if (!user) return config;
 
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => {
-        failedQueue.push({
-          resolve: (token) => {
-            config.headers["Authorization"] = `Bearer ${token}`;
-            resolve(config);
-          },
-          reject,
-        });
-      });
-    }
-
     try {
-      const idToken = await user.getIdToken(true);
+      const idToken = await user.getIdToken();
       config.headers["Authorization"] = `Bearer ${idToken}`;
       return config;
     } catch (error) {
-      isRefreshing = true;
-
-      return new Promise((resolve, reject) => {
-        failedQueue.push({
-          resolve: (token) => {
-            config.headers["Authorization"] = `Bearer ${token}`;
-            resolve(config);
-          },
-          reject,
-        });
-
-        user
-          .getIdToken(true)
-          .then((token) => {
-            processQueue(null, token);
-            isRefreshing = false;
-          })
-          .catch((err) => {
-            processQueue(err, null);
-            isRefreshing = false;
-            reject(err);
-          });
-      });
+      const idToken = await refreshToken(user);
+      config.headers["Authorization"] = `Bearer ${idToken}`;
+      return config;
     }
   },
   (error) => Promise.reject(error)
@@ -84,8 +54,18 @@ axiosInstance.interceptors.response.use(
     }
 
     const status = error.response?.status;
-    if (status === 401) {
+    if (status === 401 && !error.config?._tokenRetry && auth.currentUser) {
       console.warn("API: auth invalide ou expirée");
+      const retryConfig = { ...error.config, _tokenRetry: true };
+      return refreshToken(auth.currentUser)
+        .then((token) => {
+          retryConfig.headers = {
+            ...retryConfig.headers,
+            Authorization: `Bearer ${token}`,
+          };
+          return axiosInstance(retryConfig);
+        })
+        .catch(() => Promise.reject(error));
     }
 
     if (status === 500) {

@@ -66,20 +66,20 @@ export default function RecalculateMarketPricesButton({ onSuccess, disabled = fa
     </button>
 
     {open && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={close}>
-      <section className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-gray-700 bg-gray-800 p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+      <section className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-sm border border-stone-700 bg-[#1b1b17] p-6 shadow-none" onClick={(event) => event.stopPropagation()}>
         <h2 className="text-2xl font-bold text-white">Confirmer le recalcul des prix</h2>
-        <p className="mt-3 text-gray-300">Cette action va recalculer les prix du marché pour toutes les villes, tous les items de référence actifs et tous les types de comptoirs.</p>
+        <p className="mt-3 text-stone-300">Cette action va recalculer les prix du marché pour toutes les villes, tous les items de référence actifs et tous les types de comptoirs.</p>
 
-        <div className="mt-5 rounded-xl border border-amber-700 bg-amber-950/40 p-4 text-amber-100">
+        <div className="mt-5 rounded-sm border border-amber-700 bg-amber-950/40 p-4 text-amber-100">
           <strong>Attention :</strong> cette action peut modifier les prix visibles par les joueurs et les prix utilisés par les Comptoirs marchands après synchronisation Minecraft.
         </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <div><h3 className="font-bold text-white">Conséquences possibles</h3><ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-gray-300">{consequences.map((item) => <li key={item}>{item}</li>)}</ul></div>
-          <div><h3 className="font-bold text-white">À vérifier avant confirmation</h3><ul className="mt-3 space-y-2 text-sm text-gray-300">{checklist.map((item) => <li key={item} className="flex gap-2"><span className="text-amber-400">□</span><span>{item}</span></li>)}</ul></div>
+          <div><h3 className="font-bold text-white">Conséquences possibles</h3><ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-stone-300">{consequences.map((item) => <li key={item}>{item}</li>)}</ul></div>
+          <div><h3 className="font-bold text-white">À vérifier avant confirmation</h3><ul className="mt-3 space-y-2 text-sm text-stone-300">{checklist.map((item) => <li key={item} className="flex gap-2"><span className="text-amber-400">□</span><span>{item}</span></li>)}</ul></div>
         </div>
 
-        {result && <div className="mt-6 rounded-xl border border-green-800 bg-green-950/40 p-4 text-green-100">
+        {result && <div className="mt-6 rounded-sm border border-green-800 bg-green-950/40 p-4 text-green-100">
           <p className="font-bold">Les prix du marché ont été recalculés avec succès.</p>
           <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
             <div>Statut : <strong>{result.status || "success"}</strong></div>
@@ -91,10 +91,10 @@ export default function RecalculateMarketPricesButton({ onSuccess, disabled = fa
           </dl>
         </div>}
 
-        {error && <div className="mt-6 rounded-xl border border-red-800 bg-red-950/40 p-4 text-red-100"><p className="font-bold">Le recalcul des prix a échoué.</p><p className="mt-2 text-sm">{error}</p></div>}
+        {error && <div className="mt-6 rounded-sm border border-red-800 bg-red-950/40 p-4 text-red-100"><p className="font-bold">Le recalcul des prix a échoué.</p><p className="mt-2 text-sm">{error}</p></div>}
 
         <div className="mt-6 flex justify-end gap-3">
-          <button type="button" disabled={loading} onClick={close} className="rounded-lg bg-gray-700 px-4 py-2 font-semibold text-white hover:bg-gray-600 disabled:opacity-50">{result ? "Fermer" : "Annuler"}</button>
+          <button type="button" disabled={loading} onClick={close} className="rounded-lg bg-stone-800 px-4 py-2 font-semibold text-white hover:bg-gray-600 disabled:opacity-50">{result ? "Fermer" : "Annuler"}</button>
           {!result && <button type="button" disabled={loading} onClick={confirm} className="rounded-lg bg-amber-600 px-4 py-2 font-bold text-white hover:bg-amber-500 disabled:cursor-wait disabled:opacity-60">{loading ? "Recalcul en cours…" : "Confirmer le recalcul"}</button>}
         </div>
       </section>

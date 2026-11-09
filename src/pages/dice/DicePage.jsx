@@ -162,13 +162,13 @@ export default function DicePage() {
   };
 
   return (
-    <div className={`h-screen bg-[url('/images/wood-texture.jpg')] bg-cover bg-center overflow-hidden flex ${isAdmin ? "flex-row" : "flex-col items-center justify-center"}`}>
+    <div className={`min-h-[calc(100svh-4rem)] w-full bg-[#11110f] overflow-x-hidden overflow-y-auto flex ${isAdmin ? "flex-col md:h-[calc(100svh-4rem)] md:flex-row md:overflow-hidden" : "flex-col justify-center"}`}>
       
       {/* --- PANNEAU GAUCHE (ADMIN: JOUEURS) --- */}
       {isAdmin && (
-        <aside className="w-72 bg-gray-900/90 backdrop-blur-md border-r border-gray-700 p-6 flex flex-col shadow-2xl z-20">
+        <aside className="max-h-48 w-full overflow-y-auto border-b border-stone-700 bg-[#11110f]/90 p-4 shadow-none backdrop-blur-md z-20 md:max-h-none md:w-72 md:overflow-visible md:border-b-0 md:border-r md:p-6">
           <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <FaUser className="text-blue-400" /> Joueurs
+            <FaUser className="text-amber-300" /> Joueurs
           </h2>
           
           {!selectedPlayer ? (
@@ -176,7 +176,7 @@ export default function DicePage() {
               {players.map((p) => (
                 <button
                   key={p.id}
-                  className="w-full text-left px-4 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-200 transition border border-gray-700 hover:border-blue-500"
+                  className="w-full text-left px-4 py-3 bg-[#1b1b17] hover:bg-stone-800 rounded-lg text-stone-200 transition border border-stone-700 hover:border-amber-600"
                   onClick={() => setSelectedPlayer(p)}
                 >
                   {p.pseudo_minecraft}
@@ -186,7 +186,7 @@ export default function DicePage() {
           ) : (
             <div className="flex-1 flex flex-col">
               <button
-                className="text-sm text-gray-400 hover:text-white mb-4 flex items-center gap-1"
+                className="text-sm text-stone-400 hover:text-white mb-4 flex items-center gap-1"
                 onClick={() => {
                   setSelectedPlayer(null);
                   setSelectedPlayerData(null);
@@ -194,9 +194,9 @@ export default function DicePage() {
               >
                 ← Retour liste
               </button>
-              <div className="bg-gray-800 p-4 rounded-xl border border-gray-600 mb-6 text-center">
+              <div className="bg-[#1b1b17] p-4 rounded-sm border border-stone-600 mb-6 text-center">
                 <h3 className="text-lg font-bold text-white">{selectedPlayer.pseudo_minecraft}</h3>
-                <p className="text-xs text-gray-400">{selectedPlayer.rank}</p>
+                <p className="text-xs text-stone-400">{selectedPlayer.rank}</p>
               </div>
               
               <div className="space-y-2 overflow-y-auto pr-2 custom-scrollbar">
@@ -205,8 +205,8 @@ export default function DicePage() {
                     key={a.key}
                     className={`w-full flex justify-between items-center px-4 py-3 rounded-lg transition border ${
                       selectedAttr === a.key
-                        ? "bg-blue-600 text-white border-blue-400 shadow-lg"
-                        : "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700"
+                        ? "bg-amber-800 text-white border-blue-400 shadow-none"
+                        : "bg-[#1b1b17] text-stone-300 border-stone-700 hover:bg-stone-800"
                     }`}
                     onClick={() => setSelectedAttr(a.key)}
                   >
@@ -223,17 +223,17 @@ export default function DicePage() {
       )}
 
       {/* --- ZONE CENTRALE (TAPIS DE JEU) --- */}
-      <main className="flex-1 relative flex flex-col items-center justify-center perspective-1000">
+      <main className="relative flex min-h-[65vh] flex-1 flex-col justify-center perspective-1000 md:min-h-0">
         {/* Overlay sombre pour lisibilité */}
         <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
         {/* Titre */}
-        <h1 className="text-5xl md:text-7xl font-black text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] mb-12 z-10 tracking-wider" style={{ fontFamily: "'Cinzel', serif" }}>
+        <h1 className="z-10 mb-8 px-4 text-center text-4xl font-black tracking-wider text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] sm:text-5xl md:mb-12 md:text-7xl editorial-title" style={{ fontFamily: "'Cinzel', serif" }}>
           Lancer de Dé
         </h1>
 
         {/* Zone de résultat (Dé 3D simulé) */}
-        <div className="relative w-64 h-64 flex items-center justify-center z-10 mb-12">
+        <div className="relative mb-8 flex h-48 w-48 items-center justify-center z-10 sm:mb-12 sm:h-56 sm:w-56 md:h-64 md:w-64">
           <AnimatePresence mode="wait">
             {rolling ? (
               <motion.div
@@ -254,17 +254,17 @@ export default function DicePage() {
                 className="relative"
               >
                 {/* Dé SVG stylisé */}
-                <div className={`w-48 h-48 rounded-3xl flex items-center justify-center shadow-2xl border-4 ${
+                <div className={`w-48 h-48 rounded-3xl flex items-center justify-center shadow-none border-4 ${
                   result === maxValue ? "bg-green-600 border-green-400" : 
                   result === minValue ? "bg-red-600 border-red-400" : 
-                  "bg-gray-800 border-gray-600"
+                  "bg-[#1b1b17] border-stone-600"
                 }`}>
                   <span className="text-8xl font-bold text-white drop-shadow-md">{result}</span>
                 </div>
                 
                 {/* Badge Modificateur */}
                 {currentMod !== 0 && (
-                  <div className="absolute -top-4 -right-4 bg-blue-600 text-white px-3 py-1 rounded-full font-bold shadow-lg border-2 border-blue-400">
+                  <div className="absolute -top-4 -right-4 bg-amber-800 text-white px-3 py-1 rounded-full font-bold shadow-none border-2 border-blue-400">
                     {currentMod > 0 ? "+" : ""}{currentMod}
                   </div>
                 )}
@@ -284,7 +284,7 @@ export default function DicePage() {
             whileTap={{ scale: 0.95 }}
             onClick={handleRoll}
             disabled={rolling}
-            className="px-12 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-2xl font-bold rounded-full shadow-[0_0_20px_rgba(99,102,241,0.6)] border-2 border-indigo-400 z-10 hover:shadow-[0_0_40px_rgba(99,102,241,0.8)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-4 text-xl font-bold text-white sm:px-12 sm:text-2xl shadow-[0_0_20px_rgba(99,102,241,0.6)] border-2 border-indigo-400 z-10 hover:shadow-[0_0_40px_rgba(99,102,241,0.8)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {rolling ? "..." : "LANCER"}
           </motion.button>
@@ -319,34 +319,34 @@ export default function DicePage() {
 
       {/* --- PANNEAU DROITE (ADMIN: CONFIG & HISTORIQUE) --- */}
       {isAdmin && (
-        <aside className="w-80 bg-gray-900/90 backdrop-blur-md border-l border-gray-700 p-6 flex flex-col shadow-2xl z-20">
+        <aside className="h-96 w-full overflow-y-auto border-t border-stone-700 bg-[#11110f]/90 p-4 shadow-none backdrop-blur-md z-20 md:h-auto md:w-80 md:overflow-visible md:border-l md:border-t-0 md:p-6">
           
           {/* Config */}
           <div className="mb-8">
             <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <FaCog className="text-yellow-500" /> Configuration
+              <FaCog className="text-amber-300" /> Configuration
             </h2>
             
             {/* Presets */}
             <div className="grid grid-cols-3 gap-2 mb-6">
-              <button onClick={() => applyPreset("percent")} className="flex flex-col items-center justify-center p-2 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-600 transition">
+              <button onClick={() => applyPreset("percent")} className="flex flex-col justify-center p-2 bg-[#1b1b17] hover:bg-stone-800 rounded-lg border border-stone-600 transition">
                 <FaPercentage className="text-green-400 mb-1" />
-                <span className="text-xs text-gray-300">1-100</span>
+                <span className="text-xs text-stone-300">1-100</span>
               </button>
-              <button onClick={() => applyPreset("d20")} className="flex flex-col items-center justify-center p-2 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-600 transition">
+              <button onClick={() => applyPreset("d20")} className="flex flex-col justify-center p-2 bg-[#1b1b17] hover:bg-stone-800 rounded-lg border border-stone-600 transition">
                 <FaDiceD20 className="text-purple-400 mb-1" />
-                <span className="text-xs text-gray-300">D20</span>
+                <span className="text-xs text-stone-300">D20</span>
               </button>
-              <button onClick={() => applyPreset("d6")} className="flex flex-col items-center justify-center p-2 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-600 transition">
+              <button onClick={() => applyPreset("d6")} className="flex flex-col justify-center p-2 bg-[#1b1b17] hover:bg-stone-800 rounded-lg border border-stone-600 transition">
                 <FaDiceD6 className="text-red-400 mb-1" />
-                <span className="text-xs text-gray-300">D6</span>
+                <span className="text-xs text-stone-300">D6</span>
               </button>
             </div>
 
             {/* Sliders Min/Max */}
-            <div className="space-y-4 bg-gray-800 p-4 rounded-xl border border-gray-700">
+            <div className="space-y-4 bg-[#1b1b17] p-4 rounded-sm border border-stone-700">
               <div>
-                <div className="flex justify-between text-sm text-gray-400 mb-1">
+                <div className="flex justify-between text-sm text-stone-400 mb-1">
                   <span>Min</span>
                   <span className="text-white font-bold">{minValue}</span>
                 </div>
@@ -357,7 +357,7 @@ export default function DicePage() {
                 />
               </div>
               <div>
-                <div className="flex justify-between text-sm text-gray-400 mb-1">
+                <div className="flex justify-between text-sm text-stone-400 mb-1">
                   <span>Max</span>
                   <span className="text-white font-bold">{maxValue}</span>
                 </div>
@@ -373,15 +373,15 @@ export default function DicePage() {
           {/* Historique */}
           <div className="flex-1 flex flex-col overflow-hidden">
             <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <FaHistory className="text-gray-400" /> Historique
+              <FaHistory className="text-stone-400" /> Historique
             </h2>
             <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
               {history.length === 0 ? (
-                <p className="text-gray-500 text-sm italic text-center mt-4">Aucun lancer récent.</p>
+                <p className="text-stone-500 text-sm italic text-center mt-4">Aucun lancer récent.</p>
               ) : (
                 history.map((h, i) => (
-                  <div key={i} className="flex justify-between items-center bg-gray-800 p-3 rounded-lg border border-gray-700">
-                    <span className="text-xs text-gray-500">{h.time}</span>
+                  <div key={i} className="flex justify-between items-center bg-[#1b1b17] p-3 rounded-lg border border-stone-700">
+                    <span className="text-xs text-stone-500">{h.time}</span>
                     <span className="text-lg font-bold text-white">{h.value}</span>
                   </div>
                 ))

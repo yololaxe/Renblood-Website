@@ -3,13 +3,13 @@ import { motion } from "framer-motion";
 
 export default function LegalMentions() {
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-300 p-8 md:p-16">
+    <div className="min-h-screen bg-[#11110f] text-stone-300 p-8 md:p-16">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-3xl mx-auto bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700"
+        className="max-w-3xl mx-auto bg-[#1b1b17] p-8 rounded-sm shadow-none border border-stone-700"
       >
-        <h1 className="text-3xl font-bold text-white mb-6 border-b border-gray-600 pb-4">
+        <h1 className="text-3xl font-bold text-white mb-6 border-b border-stone-600 pb-4 editorial-title">
           Mentions Légales
         </h1>
 
@@ -21,7 +21,7 @@ export default function LegalMentions() {
           <p className="mt-2 italic">
             [Votre Nom ou Pseudonyme si particulier]<br/>
             [Adresse ou "Adresse transmise à l'hébergeur"]<br/>
-            Contact : <a href="mailto:leroyaumederenblood@gmail.com" className="text-blue-400 hover:underline">leroyaumederenblood@gmail.com</a>
+            Contact : <a href="mailto:leroyaumederenblood@gmail.com" className="text-amber-300 hover:underline">leroyaumederenblood@gmail.com</a>
           </p>
         </section>
 
@@ -55,7 +55,7 @@ export default function LegalMentions() {
             Les informations recueillies (via Discord ou formulaire) sont enregistrées dans un fichier informatisé par l'éditeur pour la gestion des joueurs et du Roleplay.
           </p>
           <p className="mt-2">
-            Conformément à la loi « informatique et libertés », vous pouvez exercer votre droit d'accès aux données vous concernant et les faire rectifier en contactant : <a href="mailto:leroyaumederenblood@gmail.com" className="text-blue-400 hover:underline">leroyaumederenblood@gmail.com</a>.
+            Conformément à la loi « informatique et libertés », vous pouvez exercer votre droit d'accès aux données vous concernant et les faire rectifier en contactant : <a href="mailto:leroyaumederenblood@gmail.com" className="text-amber-300 hover:underline">leroyaumederenblood@gmail.com</a>.
           </p>
         </section>
 

@@ -1,3 +1,6 @@
+import CharacterPortrait from "../components/character/CharacterPortrait";
+import { useUser } from "../context/UserContext";
+import RealmHeader from "../components/RealmHeader";
 // src/pages/Character.jsx
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -76,8 +79,8 @@ const STAT_GROUPS = {
   },
   social: {
     label: "Social & Mental",
-    color: "text-blue-400",
-    border: "border-blue-500/30",
+    color: "text-amber-300",
+    border: "border-amber-600/30",
     bg: "bg-blue-500/10",
     stats: [
       { key: "mana", icon: <FaMagic />, label: "Mana" },
@@ -133,7 +136,7 @@ const JobCard = ({ label, xp, level, maxLevel, nextXp, image }) => {
     : Math.min(100, Math.max(0, ((xp - prevXp) / (nextXp - prevXp)) * 100));
 
   return (
-    <div className="h-full bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-sm hover:shadow-md transition-all group relative overflow-hidden flex flex-col justify-between">
+    <div className="h-full bg-[#191916] p-4 rounded-sm border border-stone-700 shadow-sm hover:shadow-md transition-all group relative overflow-hidden flex flex-col justify-between">
       {/* Background Image (Optional, low opacity) */}
       {image && (
         <div 
@@ -145,20 +148,20 @@ const JobCard = ({ label, xp, level, maxLevel, nextXp, image }) => {
       <div className="relative z-10">
         <div className="flex justify-between items-center mb-2">
           <h4 className="font-bold text-white text-lg">{label}</h4>
-          <span className="text-xs font-mono bg-gray-900 px-2 py-1 rounded text-yellow-500 border border-gray-600">
+          <span className="text-xs font-mono bg-stone-950 px-2 py-1 rounded text-amber-300 border border-stone-600">
             Lvl {level}
           </span>
         </div>
         
         {/* Progress Bar */}
-        <div className="w-full h-3 bg-gray-900 rounded-full overflow-hidden border border-gray-700">
+        <div className="w-full h-3 bg-stone-950 rounded-full overflow-hidden border border-stone-700">
           <div 
-            className={`h-full transition-all duration-500 ${isMaxed ? 'bg-gradient-to-r from-yellow-500 to-yellow-300' : 'bg-blue-600'}`}
+            className={`h-full transition-all duration-500 ${isMaxed ? 'bg-gradient-to-r from-yellow-500 to-yellow-300' : 'bg-amber-800'}`}
             style={{ width: `${progressPercent}%` }}
           />
         </div>
         
-        <div className="flex justify-between text-xs text-gray-400 mt-1">
+        <div className="flex justify-between text-xs text-stone-400 mt-1">
           <span>{xp === -1 ? "Verrouillé" : `${xp} XP`}</span>
           <span>{isMaxed ? "Max" : `${nextXp} XP`}</span>
         </div>
@@ -168,6 +171,7 @@ const JobCard = ({ label, xp, level, maxLevel, nextXp, image }) => {
 };
 
 export default function Character() {
+  const { onboarding } = useUser();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [player, setPlayer] = useState(null);
@@ -197,50 +201,40 @@ export default function Character() {
     return [];
   };
 
-  // Chargement du profil
+  // Scope asynchronous responses and cache entries to the current Google account.
   useEffect(() => {
-    const unsub = listenToAuthChanges(async (user) => {
-      if (!user) return navigate("/auth");
-      setAuthUser(user);
-      setUserId(user.uid);
-
-      const d = await getPlayerDiscord(user.uid);
-      setDiscordInfo(d);
-      if (d?.discord_id) {
-        getOnlineDiscordMembers().then(setOnlineMembers);
-      }
-
-      const cache = sessionStorage.getItem("mcFullProfile");
-      if (cache) {
-        const p = JSON.parse(cache);
-        setPlayer(p);
-        if (p.id_minecraft) {
-          try {
-            const lics = await managePlayerLicences(p.id_minecraft, { action: "list" });
-            setLicences(extractLicences(lics));
-          } catch (err) {
-            console.error("Erreur chargement licences:", err);
-            setLicences([]);
-          }
-        }
-        setLoading(false);
-        return;
-      }
+    let generation = 0;
+    const unsub = listenToAuthChanges(async user => {
+      const current = ++generation;
+      if (!user) { navigate("/auth"); return; }
+      setAuthUser(user); setUserId(user.uid); setLoading(true); setError(null);
+      setLicences([]); setOnlineMembers([]); setDiscordInfo(null);
       try {
-        const data = await getPlayerFullProfile(user.uid);
+        let cached = null;
+        try {
+          const candidate = JSON.parse(sessionStorage.getItem("mcFullProfile") || "null");
+          if (candidate?.id === user.uid) cached = candidate;
+        } catch { sessionStorage.removeItem("mcFullProfile"); }
+        const [data, discord] = await Promise.all([
+          cached ? Promise.resolve(cached) : getPlayerFullProfile(user.uid),
+          getPlayerDiscord(user.uid).catch(() => null),
+        ]);
+        if (current !== generation) return;
+        if (!data || data.id !== user.uid) throw new Error("Profil indisponible");
+        setPlayer(data); setDiscordInfo(discord);
         sessionStorage.setItem("mcFullProfile", JSON.stringify(data));
-        setPlayer(data);
+        if (discord?.discord_id) getOnlineDiscordMembers().then(members => { if (current === generation) setOnlineMembers(members); }).catch(() => {});
         if (data.id_minecraft) {
-          const lics = await managePlayerLicences(data.id_minecraft, { action: "list" });
-          setLicences(extractLicences(lics));
+          try {
+            const lics = await managePlayerLicences(data.id_minecraft, { action: "list" });
+            if (current === generation) setLicences(extractLicences(lics));
+          } catch { if (current === generation) setLicences([]); }
         }
       } catch {
-        setError("Impossible de charger les données.");
-      } finally {
-        setLoading(false);
-      }
+        if (current === generation) setError("Impossible de charger votre personnage. Réessayez depuis Mon profil.");
+      } finally { if (current === generation) setLoading(false); }
     });
-    return () => unsub && unsub();
+    return () => { generation++; unsub(); };
   }, [navigate]);
 
   const handleReloadStats = async () => {
@@ -281,7 +275,7 @@ export default function Character() {
 
   if (loading)
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen bg-stone-950">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-yellow-500"></div>
       </div>
     );
@@ -330,16 +324,17 @@ export default function Character() {
   const unlockedJobsCount = Object.values(experiences.jobs || {}).filter(job => job.xp !== -1).length;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+    <div className="realm-page">
+      <RealmHeader eyebrow="Le dossier / Personnage" title="Votre place dans le royaume" description="Identité, aptitudes et savoir-faire : retrouvez les détails de votre personnage et sa progression." />
       {/* --- HERO HEADER --- */}
-      <div className="relative bg-gray-800 border-b border-gray-700 shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-purple-900/20 pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 py-8 md:py-12 relative z-10">
+      <div className="realm-profile relative border-b border-stone-700">
+        <div className="hidden" />
+        <div className="max-w-[1680px] mx-auto px-5 sm:px-8 lg:px-12 py-8 md:py-12 relative z-10">
           <div className="flex flex-col items-center gap-6 md:flex-row md:items-start md:gap-8">
             {/* Avatar */}
             <div className="relative group flex-shrink-0">
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-gray-700 overflow-hidden shadow-xl bg-gray-900">
-                {discordInfo?.discord_id ? (
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-stone-700 overflow-hidden shadow-xl bg-stone-950">
+                {onboarding?.profile?.portrait ? <CharacterPortrait portrait={onboarding.profile.portrait} /> : discordInfo?.discord_id ? (
                   <img
                     src={`https://cdn.discordapp.com/avatars/${discordInfo.discord_id}/${discordInfo.discord_avatar}.png`}
                     alt="Avatar"
@@ -352,37 +347,37 @@ export default function Character() {
                 )}
               </div>
               {/* Discord Status Badge */}
-              <div className={`absolute bottom-2 right-2 w-6 h-6 rounded-full border-2 border-gray-800 ${discordInfo?.discord_id ? 'bg-green-500' : 'bg-gray-500'}`} title={discordInfo?.discord_id ? "Discord Lié" : "Discord Non Lié"} />
+              <div className={`absolute bottom-2 right-2 w-6 h-6 rounded-full border-2 border-stone-800 ${discordInfo?.discord_id ? 'bg-green-500' : 'bg-gray-500'}`} title={discordInfo?.discord_id ? "Discord Lié" : "Discord Non Lié"} />
             </div>
 
             {/* Info Principales */}
             <div className="flex-1 w-full text-center md:text-left space-y-3">
               <div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight break-words">
-                  {name} <span className="text-yellow-500">{surname}</span>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight break-words editorial-title">
+                  {name} <span className="text-amber-300">{surname}</span>
                 </h1>
-                <p className="text-lg sm:text-xl text-blue-300 font-medium mt-1 flex flex-wrap items-center justify-center md:justify-start gap-2">
-                  <span className="bg-blue-900/30 px-3 py-1 rounded-full border border-blue-500/30">{rank}</span>
-                  <span className="text-gray-500">•</span>
-                  <span className="italic text-gray-400 break-all">{pseudo_minecraft}</span>
+                <p className="text-lg sm:text-xl text-amber-200 font-medium mt-1 flex flex-wrap items-center justify-center md:justify-start gap-2">
+                  <span className="bg-blue-900/30 px-3 py-1 rounded-full border border-amber-600/30">{rank}</span>
+                  <span className="text-stone-500">•</span>
+                  <span className="italic text-stone-400 break-all">{pseudo_minecraft}</span>
                 </p>
               </div>
               
-              <p className="text-gray-400 max-w-2xl mx-auto md:mx-0 leading-relaxed italic break-words">
+              <p className="text-stone-400 max-w-2xl mx-auto md:mx-0 leading-relaxed italic break-words">
                 "{description || "Un aventurier mystérieux..."}"
               </p>
 
               {/* Ressources */}
               <div className="flex flex-wrap justify-center md:justify-start gap-3 sm:gap-4 mt-4">
-                <div className="bg-gray-900/80 px-4 py-2 rounded-lg border border-gray-600 flex items-center gap-2 shadow-sm">
+                <div className="bg-stone-950/80 px-4 py-2 rounded-lg border border-stone-600 flex items-center gap-2 shadow-sm">
                   <MoneyDisplay value={money} />
                 </div>
                 <div className="bg-purple-900/30 px-4 py-2 rounded-lg border border-purple-500/30 flex items-center gap-2 text-purple-200 shadow-sm">
                   <FaMagic /> <span>{divin || "Aucune divinité"}</span>
                 </div>
                 <ToolTip text={inventoryStat.tooltip}>
-                  <div className="bg-gray-900/80 px-4 py-2 rounded-lg border border-gray-600 flex items-center gap-2 shadow-sm">
-                    <FaBoxOpen className="text-yellow-500" />
+                  <div className="bg-stone-950/80 px-4 py-2 rounded-lg border border-stone-600 flex items-center gap-2 shadow-sm">
+                    <FaBoxOpen className="text-amber-300" />
                     <span>Inventaire : <strong className="text-white">{inventoryStat.total}</strong></span>
                     {inventoryStat.totalBonus > 0 && <span className="text-xs text-green-400">+{inventoryStat.totalBonus}</span>}
                   </div>
@@ -391,12 +386,13 @@ export default function Character() {
             </div>
 
             {/* Actions Rapides */}
-            <div className="flex w-full flex-col gap-3 sm:w-auto md:w-auto">
+            <div id="discord" className="flex w-full flex-col gap-3 sm:w-auto md:w-auto">
+              <button className="realm-action" onClick={() => navigate("/account/profile")}>Modifier mon profil</button>
               <LoadingButton
                 loading={refreshing}
                 loadingLabel="Actualisation..."
                 onClick={handleReloadStats}
-                className="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow-md"
+                className="flex items-center justify-center gap-2 bg-stone-800 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition shadow-md"
               >
                 <FaSync /> Actualiser
               </LoadingButton>
@@ -420,19 +416,19 @@ export default function Character() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 mt-6">
+      <div className="max-w-[1680px] mx-auto px-5 sm:px-8 lg:px-12 mt-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             { label: "Métiers actifs", value: unlockedJobsCount, icon: <FaStar />, color: "text-yellow-400" },
             { label: "Traits", value: traits.length, icon: <FaHeartbeat />, color: "text-green-400" },
-            { label: "Actions", value: actions.length, icon: <FaBolt />, color: "text-blue-400" },
+            { label: "Actions", value: actions.length, icon: <FaBolt />, color: "text-amber-300" },
             { label: "Licences", value: licences.length, icon: <FaFileContract />, color: "text-purple-400" },
           ].map(item => (
-            <div key={item.label} className="bg-gray-800/70 border border-gray-700 rounded-xl px-4 py-3 flex items-center gap-3 shadow-sm">
+            <div key={item.label} className="bg-[#191916]/70 border border-stone-700 rounded-sm px-4 py-3 flex items-center gap-3 shadow-sm">
               <span className={`text-xl ${item.color}`}>{item.icon}</span>
               <div>
                 <p className="text-xl font-bold text-white leading-none">{item.value}</p>
-                <p className="text-xs text-gray-400 mt-1">{item.label}</p>
+                <p className="text-xs text-stone-400 mt-1">{item.label}</p>
               </div>
             </div>
           ))}
@@ -440,16 +436,16 @@ export default function Character() {
       </div>
 
       {/* --- MAIN CONTENT --- */}
-      <div className="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6 xl:gap-8">
+      <div className="max-w-[1680px] mx-auto px-5 sm:px-8 lg:px-12 mt-6 grid grid-cols-1 xl:grid-cols-12 gap-6 xl:gap-8">
         <div className="xl:col-span-8 space-y-8">
           <section>
             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-              <FaBolt className="text-yellow-500" /> Caractéristiques
+              <FaBolt className="text-amber-300" /> Caractéristiques
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 items-stretch">
               {Object.entries(STAT_GROUPS).map(([groupKey, group]) => (
-                <div key={groupKey} className={`bg-gray-800 rounded-xl p-5 border ${group.border} shadow-lg h-full min-h-[260px] flex flex-col`}>
-                  <h3 className={`text-lg font-bold mb-4 ${group.color} border-b border-gray-700 pb-2`}>
+                <div key={groupKey} className={`realm-panel bg-[#191916] rounded-sm p-5 border ${group.border} shadow-none h-full min-h-[260px] flex flex-col`}>
+                  <h3 className={`text-lg font-bold mb-4 ${group.color} border-b border-stone-700 pb-2`}>
                     {group.label}
                   </h3>
                   <div className="space-y-3 flex-1">
@@ -475,55 +471,55 @@ export default function Character() {
         </div>
 
         <div className="xl:col-span-4 space-y-6 xl:sticky xl:top-24 xl:self-start">
-          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg h-full">
+          <div className="realm-panel bg-[#191916] rounded-sm p-6 border border-stone-700 shadow-none h-full">
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               🧬 Traits & Actions
             </h3>
             
             <div className="mb-6">
-              <h4 className="text-sm font-bold text-gray-400 uppercase mb-2">Traits</h4>
+              <h4 className="text-sm font-bold text-stone-400 uppercase mb-2">Traits</h4>
               <div className="flex flex-wrap gap-2">
                 {traits.length > 0 ? traits.map((t) => (
                   <span key={t.id} className="bg-green-900/40 text-green-300 border border-green-700/50 px-3 py-1 rounded-full text-sm">
                     {t.Name}
                   </span>
-                )) : <span className="text-gray-500 italic text-sm">Aucun trait</span>}
+                )) : <span className="text-stone-500 italic text-sm">Aucun trait</span>}
               </div>
             </div>
 
             <div>
-              <h4 className="text-sm font-bold text-gray-400 uppercase mb-2">Actions</h4>
+              <h4 className="text-sm font-bold text-stone-400 uppercase mb-2">Actions</h4>
               <div className="flex flex-wrap gap-2">
                 {actions.length > 0 ? actions.map((a) => (
-                  <span key={a.id} className="bg-blue-900/40 text-blue-300 border border-blue-700/50 px-3 py-1 rounded-full text-sm">
+                  <span key={a.id} className="bg-blue-900/40 text-amber-200 border border-blue-700/50 px-3 py-1 rounded-full text-sm">
                     {a.Name}
                   </span>
-                )) : <span className="text-gray-500 italic text-sm">Aucune action</span>}
+                )) : <span className="text-stone-500 italic text-sm">Aucune action</span>}
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg h-full">
+          <div className="realm-panel bg-[#191916] rounded-sm p-6 border border-stone-700 shadow-none h-full">
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <FaFileContract className="text-yellow-500" /> Licences
+              <FaFileContract className="text-amber-300" /> Licences
             </h3>
             
             <div className="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
               {licences.length === 0 ? (
-                <p className="text-gray-500 italic text-center py-4">Aucune licence active.</p>
+                <p className="text-stone-500 italic text-center py-4">Aucune licence active.</p>
               ) : (
                 licences.map((lic) => (
                   <div
                     key={lic.id}
                     onClick={() => setSelectedLicence(lic)}
-                    className="bg-gray-700/50 p-3 rounded-lg border border-gray-600 hover:bg-gray-700 hover:border-yellow-500/50 cursor-pointer transition flex items-center gap-3"
+                    className="bg-stone-800/50 p-3 rounded-lg border border-stone-600 hover:bg-stone-800 hover:border-yellow-500/50 cursor-pointer transition flex items-center gap-3"
                   >
-                    <div className="bg-gray-800 p-2 rounded-full text-blue-400">
+                    <div className="bg-[#191916] p-2 rounded-full text-amber-300">
                       <FaFileContract />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-white font-bold text-sm truncate">{lic.name}</h4>
-                      <p className="text-xs text-gray-400 truncate">Prop: {lic.owner_name}</p>
+                      <p className="text-xs text-stone-400 truncate">Prop: {lic.owner_name}</p>
                     </div>
                   </div>
                 ))
@@ -535,7 +531,7 @@ export default function Character() {
         <div className="xl:col-span-12">
           <section>
             <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-              <FaStar className="text-yellow-500" /> Métiers & Expérience
+              <FaStar className="text-amber-300" /> Métiers & Expérience
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
               {Object.entries(experiences.jobs || {}).map(([jobKey, job]) => {
@@ -580,39 +576,39 @@ export default function Character() {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-md w-full border border-gray-600 relative"
+              className="bg-[#191916] p-6 rounded-sm shadow-none max-w-md w-full border border-stone-600 relative"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => setSelectedLicence(null)}
-                className="absolute top-3 right-3 text-gray-400 hover:text-white transition"
+                className="absolute top-3 right-3 text-stone-400 hover:text-white transition"
               >
                 <FaTimes size={20} />
               </button>
-              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 border-b border-gray-700 pb-4">
-                <FaFileContract className="text-blue-400" />
+              <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 border-b border-stone-700 pb-4">
+                <FaFileContract className="text-amber-300" />
                 {selectedLicence.name}
               </h3>
-              <div className="space-y-4 text-gray-200">
-                <div className="flex justify-between border-b border-gray-700 pb-2">
-                  <span className="font-semibold text-gray-400">Propriétaire</span>
+              <div className="space-y-4 text-stone-200">
+                <div className="flex justify-between border-b border-stone-700 pb-2">
+                  <span className="font-semibold text-stone-400">Propriétaire</span>
                   <span>{selectedLicence.owner_name}</span>
                 </div>
-                <div className="flex justify-between border-b border-gray-700 pb-2">
-                  <span className="font-semibold text-gray-400">Exploitant</span>
+                <div className="flex justify-between border-b border-stone-700 pb-2">
+                  <span className="font-semibold text-stone-400">Exploitant</span>
                   <span>{selectedLicence.exploitant_name}</span>
                 </div>
-                <div className="flex justify-between border-b border-gray-700 pb-2">
-                  <span className="font-semibold text-gray-400">Prix</span>
+                <div className="flex justify-between border-b border-stone-700 pb-2">
+                  <span className="font-semibold text-stone-400">Prix</span>
                   <MoneyDisplay value={selectedLicence.price} />
                 </div>
-                <div className="flex justify-between border-b border-gray-700 pb-2">
-                  <span className="font-semibold text-gray-400">Validité</span>
+                <div className="flex justify-between border-b border-stone-700 pb-2">
+                  <span className="font-semibold text-stone-400">Validité</span>
                   <span className="text-sm">{selectedLicence.start_date} - {selectedLicence.end_date}</span>
                 </div>
                 {selectedLicence.details && (
-                  <div className="mt-4 p-4 bg-gray-700/50 rounded-lg border border-gray-600/50">
-                    <p className="text-sm italic text-gray-300">{selectedLicence.details}</p>
+                  <div className="mt-4 p-4 bg-stone-800/50 rounded-lg border border-stone-600/50">
+                    <p className="text-sm italic text-stone-300">{selectedLicence.details}</p>
                   </div>
                 )}
               </div>

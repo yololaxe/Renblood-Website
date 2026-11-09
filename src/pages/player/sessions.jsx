@@ -1,3 +1,4 @@
+import RealmHeader from "../../components/RealmHeader";
 // src/pages/SessionsPage.jsx
 import React, { useState, useEffect } from "react";
 import {
@@ -10,7 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaCalendarAlt, FaClock, FaUsers, FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaCalendarAlt, FaClock, FaUsers, FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaLock } from "react-icons/fa";
 
 const SEASON_LABELS = { 1: "Printemps", 2: "Été", 3: "Automne", 4: "Hiver" };
 const FUTURE_LABELS = {
@@ -87,14 +88,14 @@ export default function SessionsPage() {
 
   if (loading || !global) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center min-h-screen bg-stone-950">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-600"></div>
       </div>
     );
   }
 
   const canModifyFuture = global.future_modif_add_state;
-  const isRegistered = summary?.players.some((p) => p.id === userId);
+  const isRegistered = summary?.players?.some((p) => p.id === userId);
   const hasFuture = Boolean(myFuture);
 
   const handleRemoveFuture = async () => {
@@ -106,50 +107,19 @@ export default function SessionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 pb-20">
+    <div className="realm-page">
       
-      {/* --- HERO HEADER --- */}
-      <div className="relative bg-gray-800 border-b border-gray-700 py-12 px-4 mb-8 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-5 pointer-events-none" />
-        <motion.h1 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-4 relative z-10"
-        >
-          Chroniques des Sessions
-        </motion.h1>
-        <p className="text-gray-400 max-w-2xl mx-auto relative z-10">
-          Consultez l'historique, inscrivez-vous aux prochaines sessions et planifiez vos actions futures.
-        </p>
-      </div>
+      <RealmHeader eyebrow="La chronique / Sessions" title="La suite de votre histoire" description="Retrouvez les saisons du royaume, les rendez-vous à venir et les actions qui préparent votre prochain chapitre." image="/accueil/screen2.png" />
 
       {/* --- TIMELINE --- */}
-      <div className="max-w-5xl mx-auto px-4 mb-10">
-        <div className="flex justify-center space-x-4 overflow-x-auto pb-4 scrollbar-hide">
-          {around.map((item, i) => (
-            <button
-              key={i}
-              disabled={!item.exists}
-              onClick={() => item.exists && setSelectedId(item.id)}
-              className={`
-                flex flex-col items-center justify-center px-6 py-3 rounded-xl border transition-all duration-300 min-w-[140px]
-                ${item.exists
-                  ? selectedId === item.id
-                    ? "bg-blue-600 border-blue-500 text-white shadow-lg scale-105"
-                    : "bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white hover:border-gray-500"
-                  : "bg-gray-900/50 border-gray-800 text-gray-600 cursor-not-allowed opacity-50"}
-              `}
-            >
-              <span className="text-sm font-bold uppercase tracking-wider">{SEASON_LABELS[item.season]}</span>
-              <span className="text-2xl font-extrabold">{item.year}</span>
-              {!item.exists && <span className="text-[10px] mt-1">Bientôt</span>}
-            </button>
-          ))}
+      <div className="realm-content mb-6">
+        <div className="realm-timeline" aria-label="Choisir une saison">
+          {around.map((item,i) => <button key={`${item.year}-${item.season}`} disabled={!item.exists} aria-pressed={selectedId === item.id && item.exists} onClick={() => setSelectedId(item.id)} className="realm-season"><span>{SEASON_LABELS[item.season]}</span><strong>{item.year}</strong><small>{!item.exists ? "Non programmée" : item.year === global.year && item.season === global.season ? "Saison actuelle" : "Voir la session"}</small></button>)}
         </div>
       </div>
 
       {/* --- CONTENU SESSION --- */}
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="realm-content">
         <AnimatePresence mode="wait">
           {selectedId && summary ? (
             <motion.div
@@ -162,10 +132,10 @@ export default function SessionsPage() {
               
               {/* COLONNE GAUCHE : INFO SESSION */}
               <div className="lg:col-span-2 space-y-6">
-                <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg">
+                <div className="realm-panel bg-[#191916] rounded-sm p-6 border border-stone-700 shadow-none">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                      <FaCalendarAlt className="text-blue-400" /> 
+                      <FaCalendarAlt className="text-amber-300" /> 
                       {SEASON_LABELS[summary.season]} {summary.year}
                     </h2>
                     <span className={`px-3 py-1 rounded-full text-xs font-bold border ${isRegistered ? "bg-green-900/30 text-green-400 border-green-600" : "bg-red-900/30 text-red-400 border-red-600"}`}>
@@ -173,10 +143,10 @@ export default function SessionsPage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-4 text-gray-300 mb-6 bg-gray-900/50 p-4 rounded-lg border border-gray-700">
-                    <FaClock className="text-yellow-500" />
+                  <div className="flex items-center gap-4 text-stone-300 mb-6 bg-stone-950/50 p-4 rounded-lg border border-stone-700">
+                    <FaClock className="text-amber-300" />
                     <div>
-                      <span className="block text-xs text-gray-500 uppercase font-bold">Date réelle</span>
+                      <span className="block text-xs text-stone-500 uppercase font-bold">Date réelle</span>
                       <span className="font-mono text-lg">
                         {summary.session_date
                           ? new Date(summary.session_date).toLocaleString("fr-FR", {
@@ -188,18 +158,18 @@ export default function SessionsPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-bold text-gray-400 uppercase mb-3 flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-stone-400 uppercase mb-3 flex items-center gap-2">
                       <FaUsers /> Joueurs Inscrits ({summary.players.length})
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {summary.players.length > 0 ? (
                         summary.players.map((p) => (
-                          <span key={p.id} className="bg-gray-700 text-gray-200 px-3 py-1 rounded-full text-sm border border-gray-600">
+                          <span key={p.id} className="bg-stone-800 text-stone-200 px-3 py-1 rounded-full text-sm border border-stone-600">
                             {p.name}
                           </span>
                         ))
                       ) : (
-                        <span className="text-gray-500 italic">Aucun joueur inscrit pour le moment.</span>
+                        <span className="text-stone-500 italic">Aucun joueur inscrit pour le moment.</span>
                       )}
                     </div>
                   </div>
@@ -208,18 +178,18 @@ export default function SessionsPage() {
 
               {/* COLONNE DROITE : ACTIONS (FUTURES) */}
               <div className="space-y-6">
-                <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg h-full flex flex-col">
-                  <h3 className="text-xl font-bold text-white mb-4 border-b border-gray-700 pb-2">
+                <div className="realm-panel bg-[#191916] rounded-sm p-6 border border-stone-700 shadow-none h-full flex flex-col">
+                  <h3 className="text-xl font-bold text-white mb-4 border-b border-stone-700 pb-2">
                     Mes Actions Futures
                   </h3>
 
                   {canModifyFuture && isRegistered ? (
                     <div className="flex-1 flex flex-col justify-center">
                       {myFuture === undefined ? (
-                        <div className="animate-pulse h-20 bg-gray-700 rounded-lg" />
+                        <div className="animate-pulse h-20 bg-stone-800 rounded-lg" />
                       ) : hasFuture ? (
-                        <div className="bg-gray-700/50 p-4 rounded-xl border border-gray-600">
-                          <p className="text-sm text-gray-400 mb-1">Action planifiée :</p>
+                        <div className="bg-stone-800/50 p-4 rounded-sm border border-stone-600">
+                          <p className="text-sm text-stone-400 mb-1">Action planifiée :</p>
                           <p className="text-lg font-bold text-green-400 mb-4">
                             {FUTURE_LABELS[myFuture.type] || myFuture.type}
                           </p>
@@ -241,10 +211,10 @@ export default function SessionsPage() {
                         </div>
                       ) : (
                         <div className="text-center py-6">
-                          <p className="text-gray-400 mb-4">Vous n'avez pas encore défini d'action pour cette session.</p>
+                          <p className="text-stone-400 mb-4">Vous n'avez pas encore défini d'action pour cette session.</p>
                           <button
                             onClick={() => navigate(`/futures/create?session=${selectedId}`)}
-                            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold shadow-lg transition transform hover:scale-105"
+                            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-amber-800 hover:bg-amber-700 text-white rounded-sm font-bold shadow-none transition transform hover:scale-105"
                           >
                             <FaPlus /> Créer une action
                           </button>
@@ -252,7 +222,7 @@ export default function SessionsPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 py-10">
+                    <div className="flex flex-col items-center justify-center h-full text-center text-stone-500 py-10">
                       {!isRegistered ? (
                         <>
                           <FaTimesCircle className="text-4xl text-red-500 mb-2" />
@@ -272,7 +242,7 @@ export default function SessionsPage() {
             </motion.div>
           ) : (
             <div className="text-center py-20">
-              <p className="text-gray-500 text-lg">Sélectionnez une session ci-dessus pour voir les détails.</p>
+              <p className="text-stone-500 text-lg">Sélectionnez une session ci-dessus pour voir les détails.</p>
             </div>
           )}
         </AnimatePresence>

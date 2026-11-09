@@ -186,10 +186,10 @@ export default function PlayerEdit({
   return (
     <div className="space-y-6">
       {/* Save Button */}
-      <div className="flex justify-end sticky top-0 z-10 bg-gray-800/90 backdrop-blur-sm py-2 border-b border-gray-700">
+      <div className="flex justify-end sticky top-0 z-10 bg-[#1b1b17]/90 backdrop-blur-sm py-2 border-b border-stone-700">
         <motion.button
           whileHover={{ scale: 1.03 }}
-          className="inline-flex items-center space-x-2 bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-white font-semibold shadow-lg"
+          className="inline-flex items-center space-x-2 bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg text-white font-semibold shadow-none"
           onClick={handleSaveClick}
         >
           <FaSave /> <span>Enregistrer les modifications</span>
@@ -203,16 +203,16 @@ export default function PlayerEdit({
           layout
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-gray-800 rounded-xl shadow-md border border-gray-700 overflow-hidden"
+          className="bg-[#1b1b17] rounded-sm shadow-md border border-stone-700 overflow-hidden"
         >
           <button
-            className="w-full flex justify-between items-center bg-gray-750 px-6 py-4 hover:bg-gray-700 transition"
+            className="w-full flex justify-between items-center bg-gray-750 px-6 py-4 hover:bg-stone-800 transition"
             onClick={() => toggleSection(label)}
           >
             <h3 className="text-lg font-bold text-white flex items-center gap-3">
-              <span className="text-blue-400">{icon}</span> {label}
+              <span className="text-amber-300">{icon}</span> {label}
             </h3>
-            <span className="text-gray-400">
+            <span className="text-stone-400">
               {openSection === label ? <FaChevronUp /> : <FaChevronDown />}
             </span>
           </button>
@@ -224,7 +224,7 @@ export default function PlayerEdit({
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-gray-800"
+                className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-[#1b1b17]"
               >
                 {fields.map(({ key, icon: fieldIcon, label: lbl, type, options, rows, initialValue }) => {
                   const val = editedData[id]?.[key] ?? initialValue ?? player[key] ?? "";
@@ -232,18 +232,18 @@ export default function PlayerEdit({
                   return (
                     <div
                       key={key}
-                      className={`flex items-start rounded-lg p-3 transition cursor-pointer border ${isEd ? 'bg-gray-700 border-blue-500/50' : 'bg-gray-700/50 border-transparent hover:border-gray-600'}`}
+                      className={`flex items-start rounded-lg p-3 transition cursor-pointer border ${isEd ? 'bg-stone-800 border-amber-600/50' : 'bg-stone-800/50 border-transparent hover:border-stone-600'}`}
                       onClick={() => !isEd && startEdit(id, key, val)}
                     >
                       <span className="text-xl mr-3 mt-1">{fieldIcon}</span>
                       <div className="flex-1 min-w-0">
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">{lbl}</label>
+                        <label className="block text-xs font-bold text-stone-400 uppercase mb-1">{lbl}</label>
                         {isEd ? (
                           type === "textarea" ? (
                             <textarea
                               rows={rows}
                               autoFocus
-                              className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none text-sm"
+                              className="w-full bg-[#11110f] border border-stone-600 rounded p-2 text-white focus:border-amber-600 outline-none text-sm"
                               value={val}
                               onChange={(e) => changeField(id, key, e.target.value)}
                               onClick={(e) => e.stopPropagation()}
@@ -251,7 +251,7 @@ export default function PlayerEdit({
                           ) : type === "select" ? (
                             <select
                               autoFocus
-                              className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none text-sm"
+                              className="w-full bg-[#11110f] border border-stone-600 rounded p-2 text-white focus:border-amber-600 outline-none text-sm"
                               value={val}
                               onChange={(e) => changeField(id, key, e.target.value)}
                               onClick={(e) => e.stopPropagation()}
@@ -266,7 +266,7 @@ export default function PlayerEdit({
                             <input
                               autoFocus
                               type={type}
-                              className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none text-sm"
+                              className="w-full bg-[#11110f] border border-stone-600 rounded p-2 text-white focus:border-amber-600 outline-none text-sm"
                               value={val}
                               onChange={(e) =>
                                 changeField(id, key, type === "number" ? Number(e.target.value) : e.target.value)
@@ -275,12 +275,12 @@ export default function PlayerEdit({
                             />
                           )
                         ) : (
-                          <p className="text-white text-sm truncate">{val !== "" ? val : <span className="text-gray-500 italic">Vide</span>}</p>
+                          <p className="text-white text-sm truncate">{val !== "" ? val : <span className="text-stone-500 italic">Vide</span>}</p>
                         )}
                       </div>
                       {!isEd && (
                         <button
-                          className="ml-2 text-gray-500 hover:text-blue-400 transition"
+                          className="ml-2 text-stone-500 hover:text-amber-300 transition"
                           onClick={(e) => {
                             e.stopPropagation();
                             startEdit(id, key, val);
@@ -299,7 +299,7 @@ export default function PlayerEdit({
       ))}
 
       {/* Bonus résumé */}
-      <div className="bg-gray-800 rounded-xl shadow-md border border-gray-700 p-6">
+      <div className="bg-[#1b1b17] rounded-sm shadow-md border border-stone-700 p-6">
         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
           <FaMagic className="text-purple-400" /> Bonus actifs
         </h3>
@@ -319,9 +319,9 @@ export default function PlayerEdit({
             return (
               <div
                 key={statKey}
-                className="bg-gray-700/50 rounded-lg p-3 border border-gray-600 flex flex-col items-center text-center"
+                className="bg-stone-800/50 rounded-lg p-3 border border-stone-600 flex flex-col items-center text-center"
               >
-                <p className="text-gray-400 text-xs uppercase font-bold mb-1">{label}</p>
+                <p className="text-stone-400 text-xs uppercase font-bold mb-1">{label}</p>
                 <p className="text-white font-mono text-lg">
                   {total} <span className="text-green-400 text-sm">(+{totalBonus})</span>
                 </p>
