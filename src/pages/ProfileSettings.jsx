@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useUser } from "../context/UserContext";
-import RealmHeader from "../components/RealmHeader";
 import { IdentityFields, CharacterPreview } from "../components/character/ProfileFields";
 import MinecraftLink from "../components/character/MinecraftLink";
 import useProfileEditor from "../components/character/useProfileEditor";
@@ -20,10 +19,10 @@ function Settings() {
     catch (failure) { editor.report(failure); }
     finally { setCancelling(false); }
   };
-  return <main className="realm-page"><RealmHeader eyebrow="Le registre / Mon profil" title="Votre personnage, à votre image"
-    description="Complétez votre histoire et retrouvez vos associations de comptes. Votre progression reste attachée à ce dossier.">
-    {onboarding.player_ready && <Link className="realm-action" to="/character">Voir ma fiche en jeu</Link>}
-  </RealmHeader><div className="realm-content registration-layout"><div className="registration-workspace">
+  return <main className="realm-page registration-profile-page">
+    <header className="realm-content registration-profile-toolbar"><h1>Mon profil</h1>
+      {onboarding.player_ready && <Link className="registration-text-button" to="/character">Voir ma fiche en jeu ↗</Link>}
+    </header><div className="realm-content registration-layout"><div className="registration-workspace">
     {profile.status === "DRAFT" && <p className="registration-notice">Votre dossier est encore en brouillon. <Link to="/welcome">Terminer mon inscription</Link></p>}
     {profile.status === "PENDING" && <p className="registration-notice" role="status">Votre inscription attend la validation du staff. Vous pouvez encore compléter votre présentation.</p>}
     {profile.status === "ACTIVE" && !profile.minecraft.verified && <p className="registration-notice">Votre identité RP est enregistrée. Associez Minecraft ci-dessous pour activer votre personnage en jeu.</p>}

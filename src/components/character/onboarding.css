@@ -79,3 +79,8 @@
 @media (max-width:900px) { .registration-layout,.registration-entry { grid-template-columns:1fr; } .registration-preview { position:static; border-left:0; border-top:1px solid #44403c; padding:2rem 0 0; } .registration-preview>.character-portrait { max-width:150px; } }
 @media (max-width:540px) { .registration-fields { grid-template-columns:1fr; } .registration-portrait-options { grid-template-columns:repeat(3,minmax(0,1fr)); } .registration-steps { gap:.7rem; } .registration-steps button { display:block; font-size:.75rem; } .registration-steps button span { display:block; margin-bottom:.35rem; } .registration-actions { justify-content:stretch; } .registration-actions>.realm-action { width:100%; justify-content:center; } .registration-preview dl>div,.registration-summary dl>div { flex-wrap:wrap; } .registration-queue-heading label { flex-direction:column; align-items:stretch; width:100%; } }
 @media (prefers-reduced-motion:reduce) { .registration-portrait-options label { transition:none; } }
+
+.registration-profile-toolbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding-top:clamp(1.5rem,3vw,2.5rem);padding-bottom:1.25rem;}
+.registration-profile-toolbar h1{font:400 1.25rem/1.4 Georgia,serif;color:#e8dfce;margin:0;}
+.registration-profile-toolbar .registration-text-button{font-size:.8rem;min-height:44px;display:inline-flex;align-items:center;}
+.registration-profile-page .registration-layout{padding-top:1.5rem;}

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaBook, FaMapMarkerAlt, FaSearch, FaScroll, FaTimes, FaUser, FaWrench } from "react-icons/fa";
 import { getNpcsList, getPlayerQuests, getPlayers, getQuestsList } from "../services/api";
 import { useUser } from "../context/UserContext";
 import { staticContentResults } from "../data/globalSearchIndex";
+import "./global-search.css";
 
 const roleHierarchy = {
   Esclave: 0,
@@ -36,7 +37,7 @@ const publicPages = [
 ];
 
 const authenticatedPages = [
-  { label: "Suivre un reçu", description: "Support économique et notes de modération", path: "/support/economie", type: "Support", minRole: "Moderateur" },
+  { label: "Suivi des échanges", description: "Outil de l’équipe : rechercher un reçu et suivre un incident", path: "/support/economie", type: "Support", minRole: "Moderateur" },
   { label: "Mon personnage", description: "Profil, statistiques, traits et licences", path: "/character", type: "Joueur", minRole: "Esclave", keywords: "stats fiche argent inventaire discord licence action trait" },
   { label: "Mes talents", description: "Arbre des talents", path: "/talents", type: "Page", minRole: "Esclave", keywords: "compétence build progression" },
   { label: "Sessions", description: "Sessions et futurs", path: "/sessions", type: "Page", minRole: "Esclave", keywords: "préparer session futur rp" },
@@ -102,6 +103,9 @@ export default function GlobalSearch({ open, onClose }) {
   const { userId, userRank } = useUser();
   const navigate = useNavigate();
   const inputRef = useRef(null);
+  const dialogRef = useRef(null);
+  const searchId = useId();
+  const [selected, setSelected] = useState(0);
   const [query, setQuery] = useState("");
   const [dynamicResults, setDynamicResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -110,8 +114,17 @@ export default function GlobalSearch({ open, onClose }) {
 
   useEffect(() => {
     if (!open) return;
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
     setQuery("");
-    window.setTimeout(() => inputRef.current?.focus(), 50);
+    setSelected(0);
+    document.body.style.overflow = "hidden";
+    const frame = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => {
+      cancelAnimationFrame(frame);
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
   }, [open]);
 
   useEffect(() => {
@@ -194,14 +207,19 @@ export default function GlobalSearch({ open, onClose }) {
     const allowedAuthenticatedPages = userId
       ? authenticatedPages.filter((page) => roleHierarchy[userRank] >= roleHierarchy[page.minRole])
       : [];
-    const pages = [...publicPages, ...allowedAuthenticatedPages, ...(isAdmin ? adminPages : [])];
+    const pages = [...(userId ? [{ label: "Mon profil", description: "Identité RP et comptes associés", path: "/account/profile", type: "Page" }] : []), ...publicPages, ...allowedAuthenticatedPages, ...(isAdmin ? adminPages : [])];
     const allResults = [...shortcutResults, ...pages, ...staticContentResults, ...dynamicResults];
     const search = normalize(query.trim());
     if (!search) return allResults.slice(0, 12);
+    const relevance = result => {
+      const label = normalize(result.label);
+      return label === search ? 3 : label.startsWith(search) ? 2 : label.includes(search) ? 1 : 0;
+    };
     return allResults
       .filter((result) =>
         normalize(`${result.label} ${result.description} ${result.type} ${result.keywords || ""}`).includes(search)
       )
+      .sort((left, right) => relevance(right) - relevance(left))
       .slice(0, 20);
   }, [dynamicResults, isAdmin, query, userId, userRank]);
 
@@ -210,76 +228,62 @@ export default function GlobalSearch({ open, onClose }) {
     navigate(result.path);
   };
 
+  const activeIndex = Math.min(selected, Math.max(0, results.length - 1));
+  useEffect(() => {
+    document.getElementById(`${searchId}-result-${activeIndex}`)?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex, searchId, results]);
+
+  function dialogKeys(event) {
+    if (event.key === "Escape") { event.preventDefault(); onClose(); }
+    if (event.key === "Tab") {
+      const focusable = [...dialogRef.current.querySelectorAll('input, button:not([tabindex="-1"])')];
+      const first = focusable[0], last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+  }
+
   if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm p-4 pt-20" onClick={onClose}>
-      <div
-        className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-gray-600 bg-gray-800 shadow-2xl"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-center gap-3 border-b border-gray-700 bg-gray-900 px-4">
-          <FaSearch className="text-gray-400" />
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Escape") onClose();
-              if (event.key === "Enter" && results[0]) selectResult(results[0]);
-            }}
-            placeholder="Rechercher une règle, un PNJ, un lieu, une quête, un métier..."
-            className="flex-1 bg-transparent py-4 text-white outline-none placeholder:text-gray-500"
-          />
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-white" aria-label="Fermer la recherche">
-            <FaTimes />
-          </button>
-        </div>
-
-        <div className="max-h-[65vh] overflow-y-auto p-2">
-          {loading && dynamicResults.length === 0 ? (
-            <p className="p-6 text-center text-gray-400">Chargement de la recherche...</p>
-          ) : results.length === 0 ? (
-            <p className="p-6 text-center text-gray-400">Aucun résultat autorisé.</p>
-          ) : (
-            results.map((result, index) => (
-              <button
-                key={`${result.type}-${result.label}-${index}`}
-                onClick={() => selectResult(result)}
-                className="flex w-full items-center gap-4 rounded-xl p-3 text-left hover:bg-gray-700"
-              >
-                <span
-                  className={`rounded-lg p-3 ${
-                    result.type === "Admin"
-                      ? "bg-yellow-900/40 text-yellow-400"
-                      : result.type === "Joueur"
-                        ? "bg-blue-900/40 text-blue-400"
-                        : result.type === "PNJ"
-                          ? "bg-purple-900/40 text-purple-400"
-                          : result.type === "Quête"
-                            ? "bg-green-900/40 text-green-400"
-                            : result.type === "Règle"
-                              ? "bg-red-900/40 text-red-300"
-                              : "bg-gray-700 text-gray-300"
-                  }`}
-                >
-                  <ResultIcon type={result.type} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold text-white">{result.label}</span>
-                  <span className="block truncate text-xs text-gray-400">{result.description}</span>
-                </span>
-                <span className="rounded-full border border-gray-600 px-2 py-1 text-[10px] uppercase text-gray-400">
-                  {result.type}
-                </span>
-              </button>
-            ))
-          )}
-        </div>
-        <div className="border-t border-gray-700 px-4 py-2 text-xs text-gray-500">
-          Entrée pour ouvrir le premier résultat · Échap pour fermer · Les résultats respectent vos permissions
-        </div>
+  return <div className="kingdom-search-backdrop" onClick={onClose}>
+    <section className="kingdom-search" role="dialog" aria-modal="true" aria-labelledby={`${searchId}-title`}
+      ref={dialogRef} onClick={event => event.stopPropagation()} onKeyDown={dialogKeys}>
+      <div className="kingdom-search-heading">
+        <h2 id={`${searchId}-title`}>Rechercher dans le royaume</h2>
+        <button type="button" className="kingdom-search-close" onClick={onClose} aria-label="Fermer la recherche"><FaTimes /></button>
       </div>
-    </div>
-  );
+      <div className="kingdom-search-field">
+        <FaSearch aria-hidden="true" />
+        <input ref={inputRef} value={query} type="text" role="combobox" aria-label="Votre recherche"
+          aria-autocomplete="list" aria-expanded="true" aria-controls={`${searchId}-results`}
+          aria-activedescendant={results.length ? `${searchId}-result-${activeIndex}` : undefined}
+          autoComplete="off" spellCheck={false} placeholder="Que cherchez-vous ?"
+          onChange={event => { setQuery(event.target.value); setSelected(0); }}
+          onKeyDown={event => {
+            if (["ArrowDown", "ArrowUp"].includes(event.key)) {
+              event.preventDefault();
+              setSelected(current => results.length ? (Math.min(current, results.length - 1) + (event.key === "ArrowDown" ? 1 : -1) + results.length) % results.length : 0);
+            }
+            if (event.key === "Enter" && results[activeIndex]) { event.preventDefault(); selectResult(results[activeIndex]); }
+          }} />
+      </div>
+      <div className="kingdom-search-summary" role="status" aria-live="polite">
+        <span>{query.trim() ? `${results.length}${results.length === 20 ? "+" : ""} résultat${results.length === 1 ? "" : "s"}` : "Quelques pistes pour commencer"}</span>
+        {loading && <span className="kingdom-search-loading">Recherche dans le registre…</span>}
+      </div>
+      <div className="kingdom-search-results" id={`${searchId}-results`} role="listbox" aria-label="Résultats">
+        {results.map((result, index) => <button key={`${result.type}-${result.path}-${index}`} type="button"
+          id={`${searchId}-result-${index}`} role="option" aria-selected={index === activeIndex} tabIndex={-1}
+          className={`kingdom-search-result${index === activeIndex ? " is-selected" : ""}`}
+          onMouseDown={event => event.preventDefault()} onClick={() => selectResult(result)}>
+          <span className="kingdom-search-icon" aria-hidden="true"><ResultIcon type={result.type} /></span>
+          <span className="kingdom-search-copy"><strong>{result.label}</strong><small>{result.description}</small></span>
+          <span className="kingdom-search-type">{result.type}</span><span className="kingdom-search-arrow" aria-hidden="true">↗</span>
+        </button>)}
+      </div>
+      {results.length === 0 && <p className="kingdom-search-empty"><strong>Aucune piste pour « {query} ».</strong>Essayez le nom d’un lieu, d’un joueur, d’un métier ou d’une règle.</p>}
+      <footer className="kingdom-search-footer">
+        <span className="kingdom-search-keyboard"><kbd>↑ ↓</kbd> Parcourir</span><span className="kingdom-search-keyboard"><kbd>Entrée</kbd> Ouvrir</span><span><kbd>Échap</kbd> Fermer</span>
+      </footer>
+    </section>
+  </div>;
 }
