@@ -49,6 +49,7 @@ const guideGroups = [
     desc: "Territoires, lignées et pouvoirs.",
     links: [
       { to: "/map", label: "Carte", desc: "Villes, comtés et territoires." },
+      { to: "/histoires/personnages", label: "Registre des personnages", desc: "Personnes, fonctions et liens familiaux." },
       { to: "/histoires/familles", label: "Familles", desc: "Lignées, alliances et arbres." },
       { to: "/histoires/politique", label: "Politique", desc: "Pouvoirs et gouvernance." },
       { to: "/histoires/armee", label: "Armée", desc: "Forces militaires et défense." },
@@ -81,12 +82,13 @@ const guideGroups = [
       { to: "/histoires/journal", label: "Journal", desc: "Nouvelles, événements et mises à jour." },
       { to: "/histoires/livres", label: "Livres", desc: "Chroniques, récits et archives." },
       { to: "/histoires/guildes", label: "Vie des guildes", desc: "Organisations et mouvements." },
-      { to: "/histoires/familles", label: "Familles nobles", desc: "Alliances et influence." },
+      { to: "/histoires/familles", label: "Familles et notables", desc: "Grandes maisons et familles secondaires." },
     ],
   },
 ];
 
 const archiveLinks = [
+  { to: "/histoires/personnages", icon: <FaUsers />, label: "Les Personnages", desc: "Fiches, conjoints, fonctions et généalogies." },
   { to: "/histoires/livres", icon: <FaBook />, label: "Les Livres", desc: "Chroniques et légendes anciennes." },
   { to: "/histoires/familles", icon: <FaLandmark />, label: "Les Familles", desc: "Lignées nobles et alliances." },
   { to: "/histoires/lois", icon: <FaBalanceScale />, label: "Les Lois", desc: "Code pénal et règles de vie." },

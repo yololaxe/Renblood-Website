@@ -342,7 +342,7 @@ const lois = [
             titre: "Article 1",
             contenu: [
                 "1.1 Le Conseil du Peuple est l’assemblée civile du Royaume de Renblood. Il représente les grandes villes, les marquisats et les intérêts non militaires du royaume.",
-                "1.2 Il est composé de onze Magistrats et de deux Consuls. Les Magistrats sont élus par le peuple des territoires qu’ils représentent. Chaque grande ville dispose d’un Magistrat, tandis que chaque marquisat dispose de deux Magistrats.",
+                "1.2 Il est composé de treize sièges de Magistrat et de deux Consuls : six sièges pour les marquisats, cinq pour les grandes villes et deux pour les peuples non humains. Les Magistrats sont élus par le peuple des territoires qu’ils représentent. Chaque grande ville dispose d’un Magistrat, tandis que chaque marquisat dispose de deux Magistrats.",
                 "1.3 Le Conseil du Peuple a pour devoir de débattre, proposer et voter les lois civiles du royaume, ainsi que les actions publiques ne relevant pas directement de la guerre, de la défense royale ou du commandement militaire."
             ]
         },

@@ -2,6 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { FaSearchPlus, FaSearchMinus, FaCompress, FaSearch, FaLocationArrow, FaTimes, FaArrowLeft } from "react-icons/fa";
 import RealmHeader from "../components/RealmHeader";
+import { Link, useSearchParams } from "react-router-dom";
+import { PersonLink, LinkedText } from "../components/wiki/WikiLink";
+import { slug } from "../services/wiki.mjs";
+import "../components/wiki/wiki.css";
 import comtes from "../data/comtes";
 import "./map.css";
 
@@ -11,6 +15,7 @@ const iconFor = city => `/kit/${city.type.toLowerCase().replace(/ /g, "-")}.png`
 
 export default function Map() {
   const reduced = useReducedMotion();
+  const [wikiParams] = useSearchParams();
   const canvas = useRef(null);
   const drag = useRef(null);
   const [camera, setCamera] = useState({x:0,y:0,scale:1});
@@ -23,6 +28,12 @@ export default function Map() {
   const [selected, setSelected] = useState(null);
   const cities = useMemo(() => Object.entries(comtes).flatMap(([county,items]) => items.map(city => ({...city,county}))), []);
   const matches = useMemo(() => cities.filter(city => `${city.ville} ${city.county} ${city.type}`.toLocaleLowerCase("fr").includes(query.trim().toLocaleLowerCase("fr"))), [cities,query]);
+  useEffect(() => {
+    const target = wikiParams.get("lieu");
+    if (!target) return;
+    const place = cities.find(city => city.ville.toLocaleLowerCase("fr") === target.toLocaleLowerCase("fr"));
+    if (place) setSelected(place);
+  }, [cities, wikiParams]);
   const types = useMemo(() => [...new Set(cities.map(city=>city.type))], [cities]);
   const zoom = useCallback((factor, point={x:0,y:0}) => {
     setCamera(current => {
@@ -104,9 +115,9 @@ export default function Map() {
             {selected?<motion.div key={`${selected.county}-${selected.ville}`} initial={{opacity:0,y:reduced?0:12}} animate={{opacity:1,y:0}} exit={{opacity:0}} transition={{duration:.22}} className="atlas-city-details">
               <button className="atlas-back" onClick={()=>setSelected(null)}><FaArrowLeft /> Tous les lieux</button>
               <div className="atlas-city-heading"><img src={iconFor(selected)} alt=""/><p>{selected.type} / {selected.county}</p><h2>{selected.ville}</h2></div>
-              <dl>{[["Dirigeant",selected.chef],["Population",selected.habitant],["Garnison",selected.soldat],["Environnement",selected.environnement],["Guilde",selected.guilde]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value ?? "Non renseigné"}</dd></div>)}</dl>
-              {selected.conseil && <div className="atlas-council"><h3>Conseil municipal</h3><dl>{Object.entries(selected.conseil).map(([role,value])=><div key={role}><dt>{role}</dt><dd>{Array.isArray(value)?value.filter(Boolean).join(", ") || "—":value || "—"}</dd></div>)}</dl></div>}
-              <button className="realm-action" onClick={()=>focusCity(selected)}><FaLocationArrow /> Recentrer sur cette ville</button>
+              <dl>{[["Dirigeant",selected.chef],["Population",selected.habitant],["Garnison",selected.soldat],["Environnement",selected.environnement],["Guilde",selected.guilde]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{label === "Dirigeant" && value ? <PersonLink name={value} /> : value ?? "Non renseigné"}</dd></div>)}</dl>
+              {selected.conseil && <div className="atlas-council"><h3>Conseil municipal</h3><dl>{Object.entries(selected.conseil).map(([role,value])=><div key={role}><dt><LinkedText text={role}/></dt><dd>{Array.isArray(value)?value.filter(Boolean).join(", ") || "—":value || "—"}</dd></div>)}</dl></div>}
+              <Link className="realm-action" to={`/histoires/lieux/${slug(selected.ville)}`}>Le lieu et ses personnages ↗</Link><button className="realm-action" onClick={()=>focusCity(selected)}><FaLocationArrow /> Recentrer sur cette ville</button>
             </motion.div>:<motion.div key="directory" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="atlas-directory">
               <div className="atlas-directory-heading"><p>LE CARNET DES LIEUX</p><h2>Où allez-vous ?</h2></div>
               <label className="atlas-search"><FaSearch /><span className="sr-only">Chercher une ville ou un comté</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Ville, comté, type…" />{query && <button aria-label="Effacer la recherche" onClick={()=>setQuery("")}><FaTimes /></button>}</label>

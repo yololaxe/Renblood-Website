@@ -1,51 +1,8 @@
-import RealmHeader from "../../components/RealmHeader";
-// src/pages/Titres.jsx
-import React from "react";
-import { motion } from "framer-motion";
-import titresRoyaume from "../../data/Titre";
-import { FaMedal, FaScroll, FaCheckCircle } from "react-icons/fa";
-
+import { Link } from 'react-router-dom';
+import titles from '../../data/titre';
+import { slug } from '../../services/wiki.mjs';
+import { WikiPage, WikiHeader, WikiNav } from '../../components/wiki/WikiShell';
+import { LinkedText } from '../../components/wiki/WikiLink';
 export default function Titres() {
-  return (
-    <div className="min-h-screen bg-[#11110f] text-stone-200 pb-20">
-      
-      {/* Hero Header */}
-      <RealmHeader eyebrow="Le royaume / Distinctions" title="Titres & Distinctions" description="L'échelle sociale du royaume, des humbles serviteurs aux plus hauts dignitaires." />
-
-      {/* Liste des Titres */}
-      <div className="max-w-5xl mx-auto px-6 space-y-6">
-        {titresRoyaume.map((item, idx) => (
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.05 }}
-            className="bg-[#1b1b17] rounded-sm border border-stone-700 p-6 shadow-none hover:border-yellow-500/50 transition-all flex flex-col md:flex-row gap-6 items-start md:items-center"
-          >
-            {/* Badge Titre */}
-            <div className="flex-shrink-0 w-full md:w-48 bg-[#11110f] rounded-lg p-4 text-center border border-stone-600">
-              <FaMedal className="text-3xl text-amber-300 mx-auto mb-2" />
-              <h2 className="text-lg font-bold text-white">{item.titre}</h2>
-            </div>
-
-            {/* Contenu */}
-            <div className="flex-grow space-y-3">
-              <div className="flex items-start gap-3">
-                <FaScroll className="text-stone-500 mt-1 flex-shrink-0" />
-                <p className="text-stone-300 text-sm leading-relaxed">{item.description}</p>
-              </div>
-              
-              <div className="flex items-start gap-3 bg-green-900/10 p-3 rounded-lg border border-green-900/30">
-                <FaCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
-                <div>
-                  <span className="text-xs font-bold text-green-400 uppercase block mb-1">Conditions d'obtention</span>
-                  <p className="text-stone-300 text-sm">{item.requis}</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
+  return <WikiPage><WikiHeader section="Titres" title="Les rangs & distinctions." intro="Les statuts du royaume et leurs conditions documentées. Une charge politique se consulte séparément." /><div className="wiki-content"><WikiNav /><div className="wiki-titles-list">{titles.map((title, index) => <section className="wiki-title-entry" id={slug(title.titre)} key={title.titre}><span>{String(index + 1).padStart(2, '0')}</span><h2>{title.titre}</h2><div><p className="wiki-prose"><LinkedText text={title.description} /></p><p className="wiki-muted"><strong>Conditions documentées</strong><br /><LinkedText text={title.requis} /></p></div></section>)}</div><Link className="wiki-text-link" to="/histoires/politique">Comprendre les fonctions et les institutions ↗</Link></div></WikiPage>;
 }

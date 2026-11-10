@@ -1,197 +1,28 @@
-// src/pages/Arbre.jsx
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import Tree from "react-d3-tree";
-import { motion, AnimatePresence } from "framer-motion";
-import { getYearAndSeason } from "../../services/api";
-import { MoneyDisplay } from "../../components/MoneyDisplay";
-import familles from "../../data/famille";
-import personnages from "../../data/personnages";
-import { FaTimes, FaUser, FaBriefcase, FaRing, FaCoins, FaStar, FaSkull, FaBirthdayCake, FaInfoCircle } from "react-icons/fa";
-
+import { useState, useEffect } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { familiesById, familyPeople, peopleById } from '../../services/wiki.mjs';
+import { WikiPage, WikiHeader, WikiMissing } from '../../components/wiki/WikiShell';
+import PersonSummary from '../../components/wiki/PersonSummary';
+import FamilyGraph from '../../components/wiki/FamilyGraph';
 export default function Arbre() {
-  const { famille } = useParams();
-  const navigate = useNavigate();
-  const containerRef = useRef(null);
-
-  const [selectedNode, setSelectedNode] = useState(null);
-  const [globalData, setGlobalData] = useState({ year: null, season: null, label: "" });
-  const [translate, setTranslate] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-
-  const data = familles[famille];
-  const accent = data?.couleur || "#38bdf8";
-
+  const {
+      famille
+    } = useParams(),
+    [params, setParams] = useSearchParams(),
+    family = familiesById.get(famille);
+  const people = familyPeople(famille),
+    requested = params.get('personne');
+  const center = peopleById.get(requested) || people.find(p => p.id === 'P0088') || people.find(p => p.vital === 'alive') || people[0];
+  const [selected, setSelected] = useState(center?.id);
   useEffect(() => {
-    getYearAndSeason().then(setGlobalData).catch(console.error);
-  }, []);
-
-  // Centrer l'arbre au chargement
-  const centerTree = useCallback(() => {
-    if (containerRef.current) {
-      const { width, height } = containerRef.current.getBoundingClientRect();
-      setTranslate({ x: width / 2, y: height / 6 });
-    }
-  }, []);
-
-  useEffect(() => {
-    centerTree();
-    window.addEventListener("resize", centerTree);
-    return () => window.removeEventListener("resize", centerTree);
-  }, [centerTree]);
-
-  if (!data) {
-    return (
-      <div className="min-h-screen bg-[#11110f] flex flex-col items-center justify-center p-6 text-white">
-        <h1 className="text-3xl font-bold text-red-500 mb-4 editorial-title">Famille introuvable</h1>
-      </div>
-    );
-  }
-
-  // Rendu personnalisé des nœuds
-  const renderCustomNode = ({ nodeDatum, toggleNode }) => {
-    const isSelected = selectedNode?.name === nodeDatum.name;
-    const p = personnages[nodeDatum.keyName];
-    const isDead = p?.death !== -1 && p?.death !== -2;
-
-    return (
-      <g onClick={() => setSelectedNode(nodeDatum)}>
-        <circle 
-          r={25} 
-          fill={isSelected ? "#F59E0B" : isDead ? "#374151" : accent} 
-          stroke={isSelected ? "#fff" : "#1F2937"} 
-          strokeWidth={3}
-          className="cursor-pointer transition-all duration-300 hover:opacity-80"
-        />
-        {/* Icône ou Initiale */}
-        <text 
-          fill="white" 
-          stroke="none" // Force no stroke
-          x="0" 
-          dy="5" 
-          fontSize="14" 
-          fontWeight="bold" 
-          textAnchor="middle"
-          className="pointer-events-none"
-          style={{ textShadow: "none" }}
-        >
-          {nodeDatum.name.charAt(0)}
-        </text>
-
-        {/* Label simple en blanc sans ombre ni contour */}
-        <text 
-          fill="white" 
-          stroke="none" // Force no stroke
-          x="0" 
-          y="-35" 
-          fontSize="14" 
-          fontWeight="bold" 
-          textAnchor="middle"
-          className="pointer-events-none"
-          style={{ textShadow: "none" }}
-        >
-          {nodeDatum.name}
-        </text>
-      </g>
-    );
-  };
-
-  return (
-    <div className="h-screen w-screen bg-[#11110f] text-white overflow-hidden flex flex-col relative">
-      
-      {/* Header Flottant */}
-      <div className="absolute top-20 left-4 z-10 flex items-center gap-4 pointer-events-none">
-        <div className="bg-[#11110f]/80 backdrop-blur px-6 py-2 rounded-full border border-stone-700 shadow-xl pointer-events-auto ml-16"> {/* ml-16 pour laisser place au bouton retour global */}
-          <h1 className="text-xl font-bold text-white flex items-center gap-2 editorial-title">
-            <span style={{ color: accent }}>{data.nom}</span>
-            {globalData.year && <span className="text-sm font-normal text-stone-400">| {globalData.label} {globalData.year}</span>}
-          </h1>
-        </div>
-      </div>
-
-      {/* Canvas */}
-      <div className="flex-grow bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-800 to-gray-950" ref={containerRef}>
-        <Tree
-          data={data.data}
-          translate={translate}
-          zoom={zoom}
-          renderCustomNodeElement={renderCustomNode}
-          orientation="vertical"
-          pathFunc="step"
-          separation={{ siblings: 2, nonSiblings: 2.5 }}
-          nodeSize={{ x: 200, y: 150 }}
-          enableLegacyTransitions={true}
-          transitionDuration={300}
-          collapsible={false}
-        />
-      </div>
-
-      {/* Sidebar Détails */}
-      <AnimatePresence>
-        {selectedNode && (
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            className="absolute top-0 right-0 h-full w-full md:w-96 bg-[#1b1b17]/95 backdrop-blur-md border-l border-stone-700 shadow-none p-6 flex flex-col z-20 overflow-y-auto"
-          >
-            <button 
-              onClick={() => setSelectedNode(null)}
-              className="self-end text-stone-400 hover:text-white mb-4 p-2 bg-stone-800 rounded-full"
-            >
-              <FaTimes size={20} />
-            </button>
-
-            {(() => {
-              const key = selectedNode.keyName;
-              const p = personnages[key];
-              
-              if (!p) return <p className="text-center text-stone-500 mt-10">Aucune information disponible.</p>;
-
-              const age = p.born > 0 && globalData.year ? globalData.year - p.born : null;
-              const isDead = p.death !== -1 && p.death !== -2;
-
-              return (
-                <div className="space-y-6">
-                  {/* Header Perso */}
-                  <div className="text-center">
-                    <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center text-4xl font-bold mb-4 border-4 ${isDead ? "bg-stone-800 border-stone-600 text-stone-400" : "bg-stone-800 border-amber-600 text-white"}`} style={{ borderColor: isDead ? undefined : accent }}>
-                      {key.charAt(0)}
-                    </div>
-                    <h2 className="text-3xl font-bold text-white">{key}</h2>
-                    {p.titre && <span className="inline-block bg-[#11110f] px-3 py-1 rounded-full text-sm text-amber-300 mt-2 border border-stone-700">{p.titre}</span>}
-                  </div>
-
-                  {/* Description */}
-                  <div className="bg-stone-800/50 p-4 rounded-sm border border-stone-600 relative">
-                    <FaInfoCircle className="absolute top-4 right-4 text-stone-500" />
-                    <p className="text-stone-300 text-sm leading-relaxed italic">"{p.description}"</p>
-                  </div>
-
-                  {/* Stats Grid */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <StatBox icon={<FaBriefcase className="text-amber-300"/>} label="Métier" value={p.metier} />
-                    <StatBox icon={<FaRing className="text-pink-400"/>} label="Conjoint(e)" value={p.conjoint} />
-                    <StatBox icon={<FaCoins className="text-yellow-400"/>} label="Fortune" value={p.argent > -1 ? <MoneyDisplay value={p.argent * 262144} /> : "—"} />
-                    <StatBox icon={<FaStar className="text-purple-400"/>} label="Réputation" value={p.reputation > -1 ? p.reputation : "—"} />
-                    <StatBox icon={<FaBirthdayCake className="text-green-400"/>} label="Naissance" value={p.born > 0 ? p.born : "?"} />
-                    <StatBox icon={<FaSkull className={isDead ? "text-red-500" : "text-stone-500"}/>} label="Statut" value={isDead ? `Mort (${p.death})` : "Vivant"} />
-                    {age !== null && !isDead && <StatBox icon={<FaUser className="text-teal-400"/>} label="Âge" value={`${age} ans`} colSpan />}
-                  </div>
-                </div>
-              );
-            })()}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+    setSelected(center?.id);
+  }, [center?.id]);
+  if (!family || !center) return <WikiMissing kind="Cette généalogie" />;
+  const person = peopleById.get(selected) || center;
+  return <WikiPage className="wiki-tree-page"><WikiHeader section="Généalogie" title={`La lignée ${family.name}.`} intro="Suivez un lien de famille, puis recentrez l’arbre sur la personne qui vous intéresse.">
+    <Link className="wiki-text-link" to={`/histoires/familles/${family.id}`}>La maison et ses membres ↗</Link>
+  </WikiHeader><div className="wiki-content wiki-tree-layout"><FamilyGraph centerId={center.id} selectedId={person.id} onSelect={setSelected} />
+    <PersonSummary person={person} onCenter={() => setParams({
+        personne: person.id
+      })} /></div></WikiPage>;
 }
-
-const StatBox = ({ icon, label, value, colSpan }) => (
-  <div className={`bg-[#11110f]/50 p-3 rounded-lg border border-stone-700 flex flex-col items-center text-center ${colSpan ? "col-span-2" : ""}`}>
-    <div className="text-lg mb-1">{icon}</div>
-    <span className="text-xs text-stone-500 uppercase font-bold">{label}</span>
-    <span className="text-white font-medium text-sm truncate w-full">{value || "—"}</span>
-  </div>
-);

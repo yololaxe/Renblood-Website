@@ -7,6 +7,7 @@ const BackButton = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  if (/^\/histoires\/(familles|personnages|arbre|lieux|politique|guildes|livres|lois|titres|notions)(\/|$)/.test(location.pathname)) return null;
   // Ne pas afficher sur la page d'accueil pour éviter la confusion
   if (location.pathname === "/home" || location.pathname === "/" || location.pathname === "/home-test") {
     return null;

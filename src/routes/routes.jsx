@@ -40,6 +40,11 @@ const PlayerJobs = lazy(() => import("../pages/PlayerJobs.jsx"));
 const CreatePlayer = lazy(() => import("../pages/CreatePlayer.jsx"));
 const Quests = lazy(() => import("../pages/Quests.jsx"));
 const Arbre = lazy(() => import("../pages/histoires/Arbre.jsx"));
+const WikiConcept = lazy(() => import("../pages/histoires/WikiConcept.jsx"));
+const WikiPeople = lazy(() => import("../pages/histoires/WikiPeople.jsx"));
+const WikiPerson = lazy(() => import("../pages/histoires/WikiPerson.jsx"));
+const WikiFamily = lazy(() => import("../pages/histoires/WikiFamily.jsx"));
+const WikiPlace = lazy(() => import("../pages/histoires/WikiPlace.jsx"));
 const AdminDashboard = lazy(() => import("../pages/adminDashboard/AdminDashboard.jsx"));
 const SessionPlayersFuturesPage = lazy(() => import("../pages/adminDashboard/SessionPlayers.jsx"));
 const MoneyReport = lazy(() => import("../pages/adminDashboard/reporting/MoneyReport.jsx"));
@@ -93,6 +98,12 @@ const routes = [
   { path: "/histoires/livres", element: <Livres />},
   { path: "/histoires/livres/:livreId/chapitre/:chapitreId", element: <Chapitres />},
   { path: "/histoires/familles", element: <Familles />},
+  { path: "/histoires/familles/:familyId", element: <WikiFamily />},
+  { path: "/histoires/notions/:conceptId", element: <WikiConcept />},
+  { path: "/histoires/personnages", element: <WikiPeople />},
+  { path: "/histoires/personnages/:personId", element: <WikiPerson />},
+  { path: "/histoires/lieux/:placeId", element: <WikiPlace />},
+  { path: "/histoires/guildes/:guildId", element: <Guildes />},
   { path: "/histoires/arbre/:famille", element: <Arbre />},
   { path: "/histoires/lois", element: <Lois />},
   { path: "/histoires/armee", element: <Armee />},

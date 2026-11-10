@@ -1,3 +1,6 @@
+import { useLocation } from 'react-router-dom';
+import { LinkedText } from '../../components/wiki/WikiLink';
+import '../../components/wiki/wiki.css';
 import RealmHeader from "../../components/RealmHeader";
 // src/pages/Metier.jsx
 import React, { useState, useEffect, useMemo } from 'react';
@@ -17,11 +20,14 @@ const normalizeString = str =>
         .replace(/[̀-ͯ]/g, '')
         .toLowerCase();
 
-function JobCard({ job, level, xp }) {
+function JobCard({ job, level, xp, highlighted }) {
     const [open, setOpen] = useState(false);
+    useEffect(()=>{if(highlighted)setOpen(true);},[highlighted]);
 
     return (
         <motion.div
+            id={job.id}
+            style={{scrollMarginTop:"8.5rem"}}
             layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -82,7 +88,7 @@ function JobCard({ job, level, xp }) {
                         transition={{ duration: 0.3 }}
                         className="p-5 bg-[#1b1b17] border-t border-stone-700 text-sm text-stone-300 space-y-3"
                     >
-                        <p className="italic border-l-2 border-teal-500 pl-3">{job.description}</p>
+                        <p className="italic border-l-2 border-teal-500 pl-3"><LinkedText text={job.description}/></p>
                         <div className="grid grid-cols-2 gap-2 mt-2">
                             <div className="bg-[#11110f]/50 p-2 rounded border border-stone-700">
                                 <span className="block text-xs text-stone-500 uppercase font-bold">Difficulté</span>
@@ -103,6 +109,7 @@ function JobCard({ job, level, xp }) {
 }
 
 export default function Metier() {
+    const location=useLocation(),targetId=decodeURIComponent(location.hash.slice(1));
     const staticJobs = useMemo(() => getStaticJobs(), []);
     const categories = useMemo(
       () => [
@@ -121,6 +128,14 @@ export default function Metier() {
     const [query, setQuery] = useState('');
     const [user, setUser] = useState(null);
     const [jobStats, setJobStats] = useState({});
+    useEffect(()=>{
+      if(!targetId)return;
+      const category=categories.find(c=>c.jobs.some(job=>job.id===targetId));
+      const special=specials.some(job=>job.id===targetId);
+      if(category||special){setQuery('');setActiveTab(category?.name||'Spéciaux');}
+      const timer=setTimeout(()=>document.getElementById(targetId)?.scrollIntoView({block:'start'}),150);
+      return()=>clearTimeout(timer);
+    },[targetId,categories,specials]);
 
     const tabs = useMemo(
         () => [...categories, { name: 'Spéciaux', jobs: specials }],
@@ -242,6 +257,7 @@ export default function Metier() {
                                     <JobCard
                                         key={job.id}
                                         job={job}
+                                        highlighted={targetId===job.id}
                                         level={user ? stats.level : 0}
                                         xp={user ? stats.xp : 0}
                                     />

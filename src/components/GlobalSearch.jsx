@@ -23,6 +23,7 @@ const roleHierarchy = {
 };
 
 const publicPages = [
+  { label: "Registre des personnages", description: "Personnages du royaume, familles et liens", path: "/histoires/personnages", type: "Personnage", keywords: "lore wiki généalogie conjoint épouse époux" },
   { label: "Accueil", description: "Retour à l'accueil", path: "/", type: "Page", keywords: "home début rejoindre discord" },
   { label: "Guide", description: "Histoire, règles et informations du royaume", path: "/histoire", type: "Page", keywords: "information aide comment jouer débuter" },
   { label: "Joueurs", description: "Citoyens de Renblood", path: "/players", type: "Joueur", keywords: "personnage citoyen liste" },
@@ -92,7 +93,7 @@ const normalize = (value) =>
     .toLocaleLowerCase("fr");
 
 const ResultIcon = ({ type }) => {
-  if (type === "Joueur") return <FaUser />;
+  if (["Joueur", "Personnage"].includes(type)) return <FaUser />;
   if (type === "PNJ") return <FaMapMarkerAlt />;
   if (type === "Quête") return <FaScroll />;
   if (type === "Admin") return <FaWrench />;
@@ -110,7 +111,7 @@ export default function GlobalSearch({ open, onClose }) {
   const [dynamicResults, setDynamicResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const isAdmin = userRank === "Admin";
-  const searchCatalog = open && query.trim().length >= 2;
+  const searchCatalog = open && Boolean(userId) && query.trim().length >= 2;
 
   useEffect(() => {
     if (!open) return;

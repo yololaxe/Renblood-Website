@@ -100,7 +100,7 @@ const comtes = {
             }
         },
         {
-            "ville": "Valentine", "type": "Ville", "chef": "Henri LEMIEUX", "environnement": "Forêt", "caracteristique": "Marchandage, Chevaux, Bûcheron", "guilde": "Aucune", "Coords": [990, 1120], "habitant": 4500, "soldat": 110, "intercomunalite": "Fyvelune",
+            "ville": "Valentine", "type": "Grande-Ville", "chef": "Henri LEMIEUX", "environnement": "Forêt", "caracteristique": "Marchandage, Chevaux, Bûcheron", "guilde": "Aucune", "Coords": [990, 1120], "habitant": 4500, "soldat": 110, "intercomunalite": "Fyvelune",
             "conseil": {
                 "Maire d'une ville": "",
                 "Préfet": "",

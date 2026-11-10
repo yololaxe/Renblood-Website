@@ -2,7 +2,7 @@ const guildesData = [
     {
       id: 1,
       name: "La Guilde des Artisans",
-      leader: "Vernon ROK",
+      leader: "Florentin ROK",
       location: "Fyvelune (Eldia)",
       fortune: 48,
       reputation: 58,
@@ -65,7 +65,7 @@ const guildesData = [
     {
       id: 5,
       name: "La Guilde de la Lettre",
-      leader: "Michelle Ferand",
+      leader: "Connie Feran",
       location: "Isvanore (Mofrage)",
       fortune: 11,
       reputation: 44,
@@ -125,7 +125,7 @@ const guildesData = [
     {
       id: 9,
       name: "La Guilde de la Table",
-      leader: "Walda Banefort",
+      leader: "Espero Banefort",
       location: "Triomphe (Mofrage)",
       fortune: 31,
       reputation: 97,

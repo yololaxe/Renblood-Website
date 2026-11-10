@@ -1,165 +1,36 @@
-import RealmHeader from "../../components/RealmHeader";
-// src/pages/Guildes.jsx
-import React, { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { getStaticGuilds, getStaticCatalog } from "../../data/catalog";
-import EmptyState from "../../components/ui/EmptyState";
-import { FaUsers, FaMapMarkerAlt, FaCoins, FaStar, FaBuilding, FaUserTie, FaTimes, FaGlobe } from "react-icons/fa";
-
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { registry, guildsById, findLocation, guildPath } from '../../services/wiki.mjs';
+import { WikiPage, WikiHeader, WikiNav, WikiMissing } from '../../components/wiki/WikiShell';
+import { WikiLink, PersonLink, LinkedText } from '../../components/wiki/WikiLink';
+const summaries = {
+  'guilde-des-artisans': 'Les savoir-faire, la fabrication et les grands chantiers.',
+  'guilde-des-commercants': 'Le commerce et la représentation des marchands.',
+  'guilde-mystique': 'Les savoirs magiques, les artefacts et les traditions mystiques.',
+  'guilde-des-creatures': 'Les créatures et les spécialistes qui les connaissent.',
+  'guilde-de-la-lettre': 'Les lettres, le crédit et les institutions du savoir.',
+  'guilde-des-explorateurs': 'Les voyages et la découverte des terres lointaines.',
+  'guilde-des-mineurs': 'Les ressources du sous-sol et la vie des carrières.',
+  'guilde-maritime': 'La navigation, les navires et les métiers de la mer.',
+  'guilde-de-la-table': 'Les auberges, les festins et les métiers de la table.'
+};
 export default function Guildes() {
-  const [selectedGuild, setSelectedGuild] = useState(null);
-
-  const guildesList = useMemo(() => getStaticGuilds(), []);
-  const globalRoles = useMemo(() => getStaticCatalog("guildRoles"), []);
-
-  if (!guildesList.length) {
-    return (
-      <div className="min-h-screen bg-[#11110f] px-6 py-20 text-stone-200">
-        <div className="mx-auto max-w-3xl">
-          <EmptyState
-            title="Aucune guilde disponible"
-            message="Le catalogue des guildes est vide pour le moment. Vérifie la source de données ou réessaie plus tard."
-          />
-        </div>
-      </div>
-    );
+  const {
+      guildId
+    } = useParams(),
+    [params] = useSearchParams(),
+    guild = guildsById.get(guildId || params.get('guilde'));
+  if (guildId && !guild) return <WikiMissing kind="Cette guilde" />;
+  if (guild) {
+    const place = findLocation(guild.location);
+    return <WikiPage><WikiHeader section="Guildes" title={guild.name.replace(/^La /, '')} intro={summaries[guild.id]} aside={<img src={guild.image} alt="" className="wiki-guild-detail-image" />} />
+    <div className="wiki-content"><WikiNav /><div className="wiki-profile-layout"><div><section className="wiki-section"><p className="wiki-kicker">L’organisation</p><h2>Son rôle dans le royaume</h2><p className="wiki-prose">Les guildes réunissent les savoir-faire du royaume. Elles représentent leurs activités et sont consultées sur les questions économiques et professionnelles.</p>
+      <p className="wiki-prose">Leur influence ne leur donne pas automatiquement une voix au Conseil du Peuple. Un membre doit y exercer une charge officielle pour participer au vote.</p>
+      <Link className="wiki-text-link" to="/histoires/politique">Comprendre les institutions ↗</Link></section>
+      <section className="wiki-section"><h2>Avantages et accès documentés</h2><ul className="wiki-benefits">{guild.benefits.map((benefit, i) => <li key={i}><span>{String(i + 1).padStart(2, '0')}</span><LinkedText text={benefit} /></li>)}</ul>
+      <p className="wiki-muted">Ces éléments décrivent les règles du registre RP. Les conditions d’accès et leur mise en œuvre en jeu sont à vérifier auprès de la guilde.</p></section>
+    </div><aside className="wiki-profile-aside"><section className="wiki-section"><h2>Les liens de la guilde</h2><dl className="wiki-facts"><div><dt>Direction actuelle</dt><dd><PersonLink id={guild.leaderId} name={guild.leaderLabel} /></dd></div><div><dt>Siège</dt><dd>{place ? <WikiLink kind="place" id={place.id} /> : guild.location}</dd></div><div><dt>Membres documentés</dt><dd>{guild.members}</dd></div><div><dt>Bâtiments documentés</dt><dd>{guild.buildings}</dd></div></dl>
+      <Link className="wiki-text-link" to="/histoires/metiers">Découvrir les métiers ↗</Link></section><Link className="wiki-text-link" to="/histoires/guildes">← Toutes les guildes</Link></aside></div></div></WikiPage>;
   }
-
-  return (
-    <div className="min-h-screen bg-[#11110f] text-stone-200 pb-20">
-      
-      {/* Hero Header */}
-      <RealmHeader eyebrow="Le royaume / Organisations" title="Guildes & Organisations" description="Les piliers économiques et sociaux du royaume. Rejoignez une confrérie et gravissez les échelons." />
-
-      {/* Grid des Guildes */}
-      <div className="max-w-[1680px] mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-        {guildesList.map((g, index) => (
-          <motion.div
-            key={g.id || index}
-            layoutId={`guild-${g.id || index}`}
-            onClick={() => setSelectedGuild(g)}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            whileHover={{ y: -10 }}
-            className="group cursor-pointer bg-[#1b1b17] rounded-sm overflow-hidden shadow-none border border-stone-700 hover:border-green-500/50 transition-all"
-          >
-            <div className="h-48 overflow-hidden relative">
-              <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent z-10" />
-              <img
-                src={`/guildes/${g.image}`}
-                alt={g.name}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                onError={(e) => e.target.src = "/guildes/default.png"}
-              />
-              <div className="absolute bottom-4 left-4 z-20">
-                <h2 className="text-2xl font-bold text-white group-hover:text-green-400 transition-colors">{g.name}</h2>
-              </div>
-            </div>
-            <div className="p-4 flex justify-between items-center text-sm text-stone-400 bg-[#1b1b17]">
-              <span className="flex items-center gap-2"><FaMapMarkerAlt /> {g.location || "Inconnu"}</span>
-              <span className="flex items-center gap-2"><FaUsers /> {g.members || 0}</span>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Section Rôles Globaux */}
-      {globalRoles.length > 0 && (
-        <div className="max-w-[1520px] mx-auto px-6">
-          <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3 border-b border-stone-700 pb-4">
-            <FaGlobe className="text-amber-300" /> Rôles et Responsabilités
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {globalRoles.map((role, idx) => (
-              <motion.div
-                key={idx}
-                whileHover={{ scale: 1.01 }}
-                className="bg-[#1b1b17] rounded-sm p-6 border border-stone-700 hover:border-amber-600/30 transition shadow-md"
-              >
-                <h4 className="text-xl font-bold text-amber-200 mb-4 flex items-center gap-2">
-                  <FaUserTie /> {role.role}
-                </h4>
-                <ul className="space-y-2">
-                  {role.actions.map((act, j) => (
-                    <li key={j} className="flex items-start gap-2 text-stone-300 text-sm">
-                      <span className="text-blue-500 mt-1">•</span> {act}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Modal Détails */}
-      <AnimatePresence>
-        {selectedGuild && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedGuild(null)}
-          >
-            <motion.div
-              layoutId={`guild-${selectedGuild.id}`}
-              className="bg-[#1b1b17] w-full max-w-3xl rounded-sm shadow-none border border-stone-600 overflow-hidden relative flex flex-col md:flex-row"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setSelectedGuild(null)}
-                className="absolute top-4 right-4 z-30 p-2 bg-black/50 hover:bg-black/70 rounded-full text-white transition"
-              >
-                <FaTimes />
-              </button>
-
-              {/* Image Side */}
-              <div className="md:w-2/5 h-64 md:h-auto relative">
-                <img
-                  src={`/guildes/${selectedGuild.image}`}
-                  alt={selectedGuild.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => e.target.src = "/guildes/default.png"}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent md:bg-gradient-to-l" />
-                <div className="absolute bottom-4 left-4 md:hidden">
-                  <h2 className="text-3xl font-bold text-white">{selectedGuild.name}</h2>
-                </div>
-              </div>
-
-              {/* Content Side */}
-              <div className="p-8 md:w-3/5 flex flex-col">
-                <h2 className="text-3xl font-bold text-white mb-4 hidden md:block">{selectedGuild.name}</h2>
-                
-                <p className="text-stone-300 mb-8 leading-relaxed flex-grow">
-                  {selectedGuild.description}
-                </p>
-
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <StatItem icon={<FaMapMarkerAlt className="text-red-400"/>} label="QG" value={selectedGuild.location} />
-                  <StatItem icon={<FaCoins className="text-yellow-400"/>} label="Fortune" value={selectedGuild.fortune} />
-                  <StatItem icon={<FaStar className="text-purple-400"/>} label="Réputation" value={selectedGuild.reputation} />
-                  <StatItem icon={<FaUsers className="text-amber-300"/>} label="Membres" value={selectedGuild.members} />
-                  <StatItem icon={<FaBuilding className="text-orange-400"/>} label="Bâtiments" value={selectedGuild.buildings} colSpan />
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-    </div>
-  );
+  return <WikiPage><WikiHeader section="Guildes" title="Neuf guildes, un royaume." intro="Des organisations, des métiers et des personnes. Découvrez les liens qui font leur influence." />
+    <div className="wiki-content"><WikiNav /><div className="wiki-guild-grid">{registry.guilds.map((g, index) => <article className="wiki-guild-entry" key={g.id}><Link to={guildPath(g.id)} className="wiki-guild-cover"><img src={g.image} alt="" loading="lazy" /><span>{String(index + 1).padStart(2, '0')}</span></Link><div><h2><Link to={guildPath(g.id)}>{g.name.replace(/^La /, '')}</Link></h2><p>{summaries[g.id]}</p><dl><div><dt>Direction</dt><dd><PersonLink id={g.leaderId} name={g.leaderLabel} /></dd></div><div><dt>Siège</dt><dd>{findLocation(g.location) ? <WikiLink kind="place" id={findLocation(g.location).id} /> : g.location}</dd></div></dl><Link className="wiki-text-link" to={guildPath(g.id)}>Découvrir la guilde ↗</Link></div></article>)}</div></div></WikiPage>;
 }
-
-const StatItem = ({ icon, label, value, colSpan }) => (
-  <div className={`bg-[#11110f]/50 p-3 rounded-lg border border-stone-700 flex items-center gap-3 ${colSpan ? "col-span-2" : ""}`}>
-    <div className="text-lg">{icon}</div>
-    <div>
-      <span className="block text-xs text-stone-500 uppercase font-bold">{label}</span>
-      <span className="text-white font-medium">{value || "-"}</span>
-    </div>
-  </div>
-);
