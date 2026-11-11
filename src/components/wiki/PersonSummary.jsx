@@ -4,11 +4,12 @@ import { familiesById, relatives, personPath, lifespan, vitalLabel } from '../..
 import { PersonLink, WikiLink, LinkedText } from './WikiLink';
 export function PersonPortrait({
   person,
-  large = false
+  large = false,
+  draggable
 }) {
   const house = familiesById.get(person.houseId);
   return <div className={`wiki-portrait${large ? ' wiki-portrait--large' : ''}${person.vital === 'dead' ? ' is-deceased' : ''}`} aria-hidden="true">
-    {house?.blazon ? <img src={house.blazon} alt="" loading="lazy" /> : <FaUser />}<span>{person.vital === 'dead' ? '†' : person.name.split(' ').map(w => w.charAt(0)).slice(0, 2).join('')}</span>
+    {house?.blazon ? <img src={house.blazon} alt="" loading="lazy" draggable={draggable} /> : <FaUser />}<span>{person.vital === 'dead' ? '†' : person.name.split(' ').map(w => w.charAt(0)).slice(0, 2).join('')}</span>
   </div>;
 }
 export function PersonRow({

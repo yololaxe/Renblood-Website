@@ -87,3 +87,15 @@ Les réponses publiques invalides, les réponses d'aperçu tardives après sorti
 | W60 | Reprendre une revue et ouvrir l'aperçu d'une modification acceptée | Première fiche modifiée existante ouverte ; libellés de champs en français. Une fiche supprimée renvoie vers un registre utilisable. |
 
 Le carnet exporté contient les notes enregistrées ; le texte encore marqué « Note non enregistrée » n'en fait pas partie. La recette compte 60 cas. Les scénarios de publication de données réelles restent à effectuer par l'équipe en préproduction.
+
+## Glissement des arbres sans sélection parasite
+
+| Cas | Action | Attendu |
+|---|---|---|
+| W61 | Faire glisser un portrait, un nom puis le fond de l'arbre | Arbre déplacé ; aucun texte sélectionné, image déplacée ou personnage ouvert involontairement. |
+| W62 | Cliquer avec un léger mouvement, puis activer un personnage au clavier | Une sélection par clic ou activation clavier ; le léger mouvement ne devient pas un déplacement. |
+| W63 | Terminer le geste hors de l'arbre ou annuler un glissement tactile | Déplacement terminé, pas de geste bloqué ni de clic consommé au geste suivant, même après changement du mode tactile. |
+| W64 | Déplacer en plein écran, fermer par Échap et utiliser Recentrer | Geste utilisable en plein écran ; cadrage précédent retrouvé ; carte centrale réellement centrée. |
+| W65 | Molette simple, Ctrl + molette, puis glissement sur téléphone avec et sans mode tactile | Défilement de page préservé ; zoom volontaire conservé ; déplacement tactile actif uniquement lorsqu'il est choisi. |
+
+La recette comprend maintenant 65 cas. Les essais tactiles automatisés utilisent les événements tactiles natifs du navigateur de recette ; un essai sur vos téléphones reste utile pour les comportements propres à leur navigateur.

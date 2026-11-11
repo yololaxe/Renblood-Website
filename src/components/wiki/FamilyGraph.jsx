@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { familyConnection } from '../../services/wikiExplore.mjs';
 import { kinshipLayout, peopleById, relatives, findPerson, personPath } from '../../services/wiki.mjs';
+import useGraphPan from './useGraphPan';
 import { PersonPortrait, PersonRow } from './PersonSummary';
 const MIN = .25,
   MAX = 2;
@@ -27,7 +28,6 @@ export default function FamilyGraph({
     previousCamera = useRef(null);
   const connection = useMemo(() => compare && from && to ? familyConnection(from, to) : null, [compare, from, to]);
   const viewport = useRef(null),
-    pointer = useRef(null),
     restored = useRef(false),
     timer = useRef(null);
   const [camera, setCamera] = useState({
@@ -79,6 +79,15 @@ export default function FamilyGraph({
     };
   }, [fullScreen]);
   const storageKey = `renblood:tree:${displayCenter}:${generations}`;
+  const pan = useGraphPan({
+    camera,
+    setCamera,
+    touchEnabled: dragEnabled,
+    onMoveStart: () => {
+      restored.current = true;
+    },
+    scope: storageKey + ':' + mode + ':' + fullScreen
+  });
   const fit = useCallback(() => {
     if (!viewport.current) return;
     const {
@@ -91,7 +100,7 @@ export default function FamilyGraph({
     const scale = .95;
     setCamera({
       scale,
-      x: width / 2 - (node.x + 160) * scale,
+      x: width / 2 - (node.x + 80) * scale,
       y: height / 2 - (node.y + 61) * scale
     });
   }, [layout, displayCenter]);
@@ -209,29 +218,8 @@ export default function FamilyGraph({
         }}>Recentrer</button><button type="button" onClick={fitAll}>Vue d’ensemble</button><button type="button" aria-label="Agrandir l’arbre" onClick={() => zoom(1.15)}>+</button></div>
       <button type="button" className="wiki-graph-touch" aria-pressed={dragEnabled} onClick={() => setDragEnabled(v => !v)}>Déplacer au toucher</button>
     </div>
-    <div ref={viewport} className={`wiki-graph-viewport${dragEnabled ? ' can-drag' : ''}`} style={{
+    <div ref={viewport} className={`wiki-graph-viewport${dragEnabled ? ' can-drag' : ''}${pan.panning ? ' is-panning' : ''}`} {...pan.handlers} style={{
       touchAction: dragEnabled ? 'none' : 'pan-y'
-    }} onPointerDown={event => {
-      if (event.target.closest('button,a') || event.button !== 0 || event.pointerType === 'touch' && !dragEnabled) return;
-      restored.current = true;
-      pointer.current = {
-        x: event.clientX,
-        y: event.clientY,
-        camera
-      };
-      event.currentTarget.setPointerCapture(event.pointerId);
-    }} onPointerMove={event => {
-      if (!pointer.current) return;
-      const start = pointer.current;
-      setCamera({
-        ...start.camera,
-        x: start.camera.x + event.clientX - start.x,
-        y: start.camera.y + event.clientY - start.y
-      });
-    }} onPointerUp={() => {
-      pointer.current = null;
-    }} onPointerCancel={() => {
-      pointer.current = null;
     }}>
       <div className="wiki-graph-scene" style={{
         width: layout.width,
@@ -258,12 +246,12 @@ export default function FamilyGraph({
             setToText(node.person.name);
           } else onSelect?.(node.id);
         }} aria-label={`Consulter ${node.person.name}${node.id === centerId ? ', personnage central' : ''}`}>
-          <PersonPortrait person={node.person} /><strong>{node.person.name}</strong><small>{node.person.vital === 'dead' ? '† ' : ''}{node.person.birth || familiesLabel(node.person)}</small>
+          <PersonPortrait person={node.person} draggable={false} /><strong>{node.person.name}</strong><small>{node.person.vital === 'dead' ? '† ' : ''}{node.person.birth || familiesLabel(node.person)}</small>
         </button>)}
       </div>
     </div>
     <div className="wiki-kinship-list">{familyList.map(([label, people]) => <section key={label}><h3>{label}</h3>{people.length ? people.map(p => <PersonRow key={p.id} person={p} compact />) : <p className="wiki-muted">Aucun lien renseigné.</p>}</section>)}</div>
-    <p className="wiki-graph-help">Sélectionnez une personne pour consulter sa fiche. Sur ordinateur, Ctrl + molette permet de zoomer.{layout.truncated ? ' Certaines branches sont repliées pour garder l’arbre lisible.' : ''}</p>
+    <p className="wiki-graph-help">Cliquez pour consulter une personne ; faites glisser le fond, un portrait ou un nom pour déplacer l’arbre. Sur ordinateur, Ctrl + molette permet de zoomer.{layout.truncated ? ' Certaines branches sont repliées pour garder l’arbre lisible.' : ''}</p>
   </section>;
   return fullScreen ? createPortal(graph, document.body) : graph;
 }

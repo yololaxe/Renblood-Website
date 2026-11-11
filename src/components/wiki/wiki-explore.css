@@ -671,15 +671,18 @@
   --wiki-text: #e7e2d5;
   --wiki-muted: #ada38d
 
+
 }
 .wiki-admin-widget {
   --wiki-line: #403d34;
   --wiki-gold: #d1b16f;
   --wiki-muted: #b4ad9f
 
+
 }
 .wiki-graph--fullscreen {
   --wiki-gold: #d1b16f
+
 
 }
 .wiki-graph-node {
@@ -836,4 +839,19 @@
 .wiki-saved-note button:disabled {
   opacity: .45;
   cursor: not-allowed
+}
+.wiki-graph-viewport,.wiki-graph-viewport * {
+  user-select: none;
+  -webkit-user-select: none
+}
+.wiki-graph-viewport img {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none
+}
+.wiki-graph-viewport .wiki-graph-node {
+  cursor: grab
+}
+.wiki-graph-viewport.is-panning,.wiki-graph-viewport.is-panning * {
+  cursor: grabbing!important
 }

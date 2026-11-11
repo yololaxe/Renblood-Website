@@ -60,3 +60,11 @@ Les filtres de catégorie et de décision, le bouton « Suivant à examiner » e
 Un seul écouteur de stockage par onglet notifie les composants du carnet. Une erreur de lecture garde le dernier affichage valide et bloque l'écrasement à l'aveugle. Si une note enregistrée change dans un autre onglet pendant la saisie, le texte en cours reste affiché et un choix explicite permet de garder la version enregistrée ou de la remplacer.
 
 L'API publique vérifie maintenant l'ETag avant d'extraire le paquet complet. Une réponse 304 ne lit que la version courante ; pour une réponse 200, le contenu lu correspond exactement à la version utilisée dans son ETag, même si une publication concurrente survient.
+
+## Déplacement sur les portraits et les noms
+
+Le geste de déplacement peut commencer sur le fond, un portrait ou un nom. La sélection de texte et le glisser-déposer natif des images sont désactivés dans le cadre de l'arbre. Les autres fiches du site conservent leur comportement habituel.
+
+Un seuil de six pixels distingue le clic d'un déplacement. Le clic issu d'un déplacement est consommé pour ne pas ouvrir une personne par erreur ; les clics simples et les activations clavier restent natifs. La capture du pointeur assure la fin du geste hors du cadre. Les déplacements visuels sont regroupés par trame et la dernière position est appliquée à la fin du geste.
+
+Sur téléphone, la vue des proches reste le point d'entrée. Le bouton de déplacement tactile choisit entre glissement de l'arbre et défilement normal de la page. Annulation, changement de vue ou fermeture du plein écran nettoient le geste en cours. Recentrer utilise maintenant le véritable milieu de la carte centrale.
