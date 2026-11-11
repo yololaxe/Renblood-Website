@@ -687,3 +687,10 @@
     transition: none!important
   }
 }
+
+@media (max-width: 767px) {
+  .wiki-chronology .wiki-filterbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .wiki-chronology .wiki-filterbar .wiki-filter-search { grid-column: 1 / -1; }
+  .wiki-chronology .wiki-filterbar > label { min-width: 0; width: 100%; }
+  .wiki-chronology .wiki-filterbar select { min-width: 0; width: 100%; }
+}
