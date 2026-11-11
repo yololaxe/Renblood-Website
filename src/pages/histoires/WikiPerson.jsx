@@ -31,7 +31,7 @@ export default function WikiPerson() {
       <FamilyGraph centerId={personId} selectedId={personId} onSelect={id => {
             if (id !== personId) navigate(personPath(id));
           }} />
-      {events.length > 0 && <section className="wiki-section"><p className="wiki-kicker">Les archives</p><h2>Repères de son histoire</h2><ol className="wiki-timeline">{events.map(e => <li key={e.id}><span>{e.period || 'Période non renseignée'}</span><p><LinkedText text={e.text} /></p></li>)}</ol></section>}
+      {events.length > 0 && <section className="wiki-section"><p className="wiki-kicker">Les archives</p><h2>Repères de son histoire</h2><Link className="wiki-text-link" to={`/histoires/chronologie?vue=parcours&personne=${personId}`}>Tous ses repères dans la chronologie ↗</Link><ol className="wiki-timeline">{events.map(e => <li key={e.id}><span>{e.period || 'Période non renseignée'}</span><p><LinkedText text={e.text} /></p></li>)}</ol></section>}
     </div><aside className="wiki-profile-aside">
       <section className="wiki-section"><h2>Les liens proches</h2>{[['Conjoint·e', spouses], ['Parents', parents], ['Enfants', children]].map(([label, items]) => <div className="wiki-relative-group" key={label}><h3>{label}</h3>{items.length ? items.map(p => <PersonRow key={p.id} person={p} compact />) : <p className="wiki-muted">{label === 'Conjoint·e' && person.spouseLabel ? person.spouseLabel : 'Non renseigné'}</p>}</div>)}</section>
       {family && <Link className="wiki-action" to={`/histoires/arbre/${family.id}?personne=${person.id}`}>Explorer la lignée ↗</Link>}

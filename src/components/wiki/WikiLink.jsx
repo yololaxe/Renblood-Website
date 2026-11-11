@@ -1,7 +1,7 @@
 import { memo, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import { conceptsById, conceptPath, familiesById, peopleById, guildsById, rolesById, locationsById, findPerson, personPath, familyPath, guildPath, rolePath, placePath, normalize } from '../../services/wiki.mjs';
+import { conceptsById, conceptPath, familiesById, peopleById, guildsById, rolesById, locationsById, findPerson, personPath, familyPath, guildPath, rolePath, placePath, normalize, getWikiRevision } from '../../services/wiki.mjs';
 function entity(kind, id) {
   const item = {
     person: peopleById,
@@ -162,39 +162,45 @@ export function PersonLink({
   return person ? <WikiLink kind="person" id={person.id} {...props}>{props.children || person.name}</WikiLink> : <span>{name || 'Non renseigné'}</span>;
 }
 // Explicit tokens only: a rendered reference cannot execute HTML or match a substring of a name.
-const references = [...[...conceptsById.values()].map(c => ({
-  kind: 'concept',
-  id: c.id,
-  label: c.name
-})), ...[...rolesById.values()].map(r => ({
-  kind: 'role',
-  id: r.id,
-  label: r.name.replace(/ x2$/, '')
-})), ...[...familiesById.values()].filter(f => f.kind === 'great').map(f => ({
-  kind: 'family',
-  id: f.id,
-  label: f.name
-})), ...[...guildsById.values()].map(g => ({
-  kind: 'guild',
-  id: g.id,
-  label: g.name.replace(/^La /, '')
-})), ...[...locationsById.values()].map(p => ({
-  kind: 'place',
-  id: p.id,
-  label: p.name
-})), ...[...peopleById.values()].filter(p => p.name.includes(' ') && findPerson(p.name)?.id === p.id).map(p => ({
-  kind: 'person',
-  id: p.id,
-  label: p.name
-}))].sort((a, b) => b.label.length - a.label.length);
-const byLabel = new Map();
-for (const ref of references) if (!byLabel.has(normalize(ref.label))) byLabel.set(normalize(ref.label), ref);
-const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const pattern = new RegExp(`(?<![\\p{L}])(?:${references.map(ref => escapeRegex(ref.label)).join('|')})(?![\\p{L}])`, 'giu');
+let referenceVersion, pattern, byLabel;
+function prepareReferences() {
+  if (referenceVersion === getWikiRevision()) return;
+  referenceVersion = getWikiRevision();
+  const references = [...[...conceptsById.values()].map(c => ({
+    kind: 'concept',
+    id: c.id,
+    label: c.name
+  })), ...[...rolesById.values()].map(r => ({
+    kind: 'role',
+    id: r.id,
+    label: r.name.replace(/ x2$/, '')
+  })), ...[...familiesById.values()].filter(f => f.kind === 'great').map(f => ({
+    kind: 'family',
+    id: f.id,
+    label: f.name
+  })), ...[...guildsById.values()].map(g => ({
+    kind: 'guild',
+    id: g.id,
+    label: g.name.replace(/^La /, '')
+  })), ...[...locationsById.values()].map(p => ({
+    kind: 'place',
+    id: p.id,
+    label: p.name
+  })), ...[...peopleById.values()].filter(p => p.name.includes(' ') && findPerson(p.name)?.id === p.id).map(p => ({
+    kind: 'person',
+    id: p.id,
+    label: p.name
+  }))].sort((a, b) => b.label.length - a.label.length);
+  byLabel = new Map();
+  for (const ref of references) if (!byLabel.has(normalize(ref.label))) byLabel.set(normalize(ref.label), ref);
+  const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  pattern = new RegExp(`(?<![\\p{L}])(?:${references.map(ref => escapeRegex(ref.label)).join('|')})(?![\\p{L}])`, 'giu');
+}
 export const LinkedText = memo(function LinkedText({
   text = ''
 }) {
   if (!text) return null;
+  prepareReferences();
   const matches = [...text.matchAll(pattern)].slice(0, 18);
   let cursor = 0;
   const parts = [];

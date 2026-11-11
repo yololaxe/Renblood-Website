@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
-import books from '../../../data/wiki/books.json';
+import { books } from '../../../services/wiki.mjs';
+import { BookmarkButton } from '../../../components/wiki/WikiBookmarks';
 import { WikiPage, WikiMissing } from '../../../components/wiki/WikiShell';
 import { LinkedText } from '../../../components/wiki/WikiLink';
 export default function Chapitres() {
@@ -77,7 +78,7 @@ export default function Chapitres() {
     <div className="wiki-reader-layout"><aside className="wiki-reader-toc"><h2>Dans ce livre</h2><Contents book={book} chapter={chapter} active={active} /></aside>
       <article className="wiki-reading-body" ref={body}><header className="wiki-reading-heading"><p className="wiki-kicker">Chapitre {chapter.id} / {book.chapters.length}</p><h1>{chapter.title}</h1></header>
         <details className="wiki-reader-mobile-toc"><summary>Sommaire du livre et du chapitre</summary><Contents book={book} chapter={chapter} active={active} /></details>
-        {chapter.sections.map(section => <section className="wiki-reading-section" key={section.id} id={`section-${section.id}`}><h2><span>{section.id.padStart(2, '0')}</span>{section.title}</h2>{section.paragraphs.map((text, i) => <p key={i}><LinkedText text={text} /></p>)}<Link className="wiki-section-permalink" to={`${location.pathname}#section-${section.id}`} aria-label={`Lien vers ${section.title}`}>Lien vers ce passage ↗</Link></section>)}
+        {chapter.sections.map(section => <section className="wiki-reading-section" key={section.id} id={`section-${section.id}`}><h2><span>{section.id.padStart(2, '0')}</span>{section.title}</h2>{section.paragraphs.map((text, i) => <p key={i}><LinkedText text={text} /></p>)}<BookmarkButton compact type="Passage" path={`${location.pathname}#section-${section.id}`} label={`${book.title} · ${section.title}`} /><Link className="wiki-section-permalink" to={`${location.pathname}#section-${section.id}`} aria-label={`Lien vers ${section.title}`}>Lien vers ce passage ↗</Link></section>)}
         <nav className="wiki-reader-paging" aria-label="Chapitres">{previous ? <Link to={`/histoires/livres/${livreId}/chapitre/${previous.id}`}>← {previous.title}</Link> : <span />}{next ? <Link to={`/histoires/livres/${livreId}/chapitre/${next.id}`}>{next.title} →</Link> : <Link to="/histoires/livres">Retour à la bibliothèque ↗</Link>}</nav>
       </article><aside className="wiki-reader-side"><p className="wiki-kicker">Pour explorer</p><h2>Les repères du royaume</h2><Link to="/histoires/personnages">Le registre des personnages ↗</Link><Link to="/histoires/familles">Les maisons et leurs liens ↗</Link><Link to="/histoires/politique">Les institutions ↗</Link><Link to="/histoires/guildes">Les guildes ↗</Link></aside>
     </div>

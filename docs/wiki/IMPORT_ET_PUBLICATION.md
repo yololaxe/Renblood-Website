@@ -43,3 +43,11 @@ Le compilateur et les pages ne créent aucun Player, compte bancaire, stock, qu�
 Le patronyme Sand désigne les personnes nées hors mariage ; aucune famille commune ni parenté n’est déduite de ce nom. Sergio Lynster reste Maréchal des armées. Espero Banefort est aussi Consul du Royaume. La direction de la Lettre appartient à Connie Feran.
 
 Les scripts `prebuild:staging` et `prebuild:prod` exécutent les tests du wiki avant compilation. Les tests du jeu de données de référence vérifient les décisions connues ; une évolution intentionnelle du catalogue doit mettre à jour ces attentes lors de sa revue.
+
+## Atelier partagé et paquet public
+
+L'import peut maintenant ajouter `--package "CHEMIN_PRIVE/candidat-public.json"` pour produire le paquet `{ registry, books }` attendu par l'atelier admin. L'examen du rapport privé d'import précède la préparation du paquet ; le fichier de revue ou les sources brutes ne doivent pas être téléversés à sa place.
+
+Le widget **Atelier du wiki** du tableau de bord ouvre `/admin/wiki` : création d'un brouillon partagé, comparaison par champ, décisions explicites, aperçu privé avec la navigation réelle, publication contrôlée et restauration historique. Les Google Sheets restent des sources éditoriales en lecture ; l'atelier ne les modifie pas.
+
+Voir [Exploration et atelier](EXPLORATION_ET_ATELIER.md) pour les formats, limites, garanties de concurrence, stockage et fonctionnement de la chronologie et des repères.

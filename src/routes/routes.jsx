@@ -1,8 +1,7 @@
 // src/routes/routes.js
 import React, { lazy } from "react";
-
 const SupportReceipt = lazy(() => import("../pages/admin/SupportReceipt.jsx"));
-const EconomyDesk=lazy(()=>import("../pages/admin/EconomyDesk.jsx"));
+const EconomyDesk = lazy(() => import("../pages/admin/EconomyDesk.jsx"));
 const Finance = lazy(() => import("../pages/Finance.jsx"));
 const Home = lazy(() => import("../pages/Home.jsx"));
 const HomeTest = lazy(() => import("../pages/HomeTest.jsx"));
@@ -40,6 +39,9 @@ const PlayerJobs = lazy(() => import("../pages/PlayerJobs.jsx"));
 const CreatePlayer = lazy(() => import("../pages/CreatePlayer.jsx"));
 const Quests = lazy(() => import("../pages/Quests.jsx"));
 const Arbre = lazy(() => import("../pages/histoires/Arbre.jsx"));
+const WikiChronology = lazy(() => import("../pages/histoires/WikiChronology.jsx"));
+const WikiBookmarks = lazy(() => import("../pages/histoires/WikiBookmarks.jsx"));
+const WikiWorkshop = lazy(() => import("../pages/admin/WikiWorkshop.jsx"));
 const WikiConcept = lazy(() => import("../pages/histoires/WikiConcept.jsx"));
 const WikiPeople = lazy(() => import("../pages/histoires/WikiPeople.jsx"));
 const WikiPerson = lazy(() => import("../pages/histoires/WikiPerson.jsx"));
@@ -49,94 +51,312 @@ const AdminDashboard = lazy(() => import("../pages/adminDashboard/AdminDashboard
 const SessionPlayersFuturesPage = lazy(() => import("../pages/adminDashboard/SessionPlayers.jsx"));
 const MoneyReport = lazy(() => import("../pages/adminDashboard/reporting/MoneyReport.jsx"));
 const QuestEditor = lazy(() => import("../pages/adminDashboard/QuestEditor.jsx"));
-const AdminMarketDashboard = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then((m) => ({ default: m.AdminMarketDashboard })));
-const AdminReferenceItemsPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then((m) => ({ default: m.AdminReferenceItemsPage })));
-const AdminCityModifiersPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then((m) => ({ default: m.AdminCityModifiersPage })));
-const AdminCalculatedPricesPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then((m) => ({ default: m.AdminCalculatedPricesPage })));
-const AdminMerchantCountersPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then((m) => ({ default: m.AdminMerchantCountersPage })));
-const AdminMerchantCounterDetailsPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then((m) => ({ default: m.AdminMerchantCounterDetailsPage })));
-const AdminMarketModerationPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then((m) => ({ default: m.AdminMarketModerationPage })));
-const AdminMarketModerationDetailsPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then((m) => ({ default: m.AdminMarketModerationDetailsPage })));
-const AdminMarketTransactionsPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then((m) => ({ default: m.AdminMarketTransactionsPage })));
-const AdminMarketWithdrawalsPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then((m) => ({ default: m.AdminMarketWithdrawalsPage })));
-const AdminCalculationRunsPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then((m) => ({ default: m.AdminCalculationRunsPage })));
-const PublicMarketPricesPage = lazy(() => import("../pages/markets/PlayerMarketPages.jsx").then((m) => ({ default: m.PublicMarketPricesPage })));
-const PlayerOwnedCountersPage = lazy(() => import("../pages/markets/PlayerMarketPages.jsx").then((m) => ({ default: m.PlayerOwnedCountersPage })));
-const PlayerCounterHistoryPage = lazy(() => import("../pages/markets/PlayerMarketPages.jsx").then((m) => ({ default: m.PlayerCounterHistoryPage })));
-
-const routes = [
-  { path: "/welcome", element: <Onboarding /> },
-  { path: "/account/profile", element: <ProfileSettings /> },
-  { path: "/admin/registration", element: <RegistrationAdmin />, private: true, requiredRole: "Admin" },
-  {path:"/support/economie",element:<SupportReceipt/>,private:true,requiredRole:"Moderateur"},
-  {path:"/admin/economie",element:<EconomyDesk/>,private:true,requiredRole:"Admin"},
-  { path: "/finances", element: <Finance />, private: true, requiredRole: "Etranger" },
-  { path: "/", element: <Home /> },
-  { path: "/home", element: <Home /> },
-  { path: "/home-test", element: <HomeTest /> },
-  { path: "/auth", element: <Auth /> },
-  { path: "/unauthorized", element: <Unauthorized /> },
-
-  { path: "/histoire", element: <Information /> },
-  { path: "/players", element: <Players />},
-  { path: "/players-admin", element: <PlayersAdmin />, private: true, requiredRole: "Admin" },
-
-  { path: "/player-jobs/:playerId", element: <PlayerJobs />, private: true, requiredRole: "Admin" },
-  { path: "/create-player", element: <CreatePlayer />, private: true, requiredRole: "Admin" },
-  { path: "/reporting/money", element: <MoneyReport />,   private: true, requiredRole: "Admin" },
-
-  { path: "/map", element: <Map />},
-
-  { path: "/character", element: <Character />},
-  { path: "/talents", element: <TalentSelection />, private: true, requiredRole: "Esclave"},
-  { path: "/talents/:profession", element: <TalentTree />, private: true, requiredRole: "Esclave"},
-  { path: "/talent2/:profession", element: <TalentTree2 />, private: true, requiredRole: "Esclave"},
-  { path: "/sessions", element: <SessionsPage />, private: true, requiredRole: "Esclave"},
-  { path: "/quests", element: <Quests />, private: true, requiredRole: "Etranger"},
-
-  { path: "/futures/create", element: <CreateFuturePage />, private: true, requiredRole: "Esclave"},
-  { path: "/histoires/livres", element: <Livres />},
-  { path: "/histoires/livres/:livreId/chapitre/:chapitreId", element: <Chapitres />},
-  { path: "/histoires/familles", element: <Familles />},
-  { path: "/histoires/familles/:familyId", element: <WikiFamily />},
-  { path: "/histoires/notions/:conceptId", element: <WikiConcept />},
-  { path: "/histoires/personnages", element: <WikiPeople />},
-  { path: "/histoires/personnages/:personId", element: <WikiPerson />},
-  { path: "/histoires/lieux/:placeId", element: <WikiPlace />},
-  { path: "/histoires/guildes/:guildId", element: <Guildes />},
-  { path: "/histoires/arbre/:famille", element: <Arbre />},
-  { path: "/histoires/lois", element: <Lois />},
-  { path: "/histoires/armee", element: <Armee />},
-  { path: "/histoires/politique", element: <Politique />},
-  { path: "/histoires/titres", element: <Titres />},
-  { path: "/histoires/guildes", element: <Guildes />},
-  { path: "/histoires/metiers", element: <Metiers />},
-  { path: "/histoires/npcs", element: <Npcs />},
-  { path: "/histoires/journal", element: <Journal />},
-  { path: "/futures/edit/:id", element: <EditFuturePage />,   private: true, requiredRole: "Esclave" },
-
-
-  { path: "/admin-dashboard", element: <AdminDashboard />, private: true, requiredRole: "Admin" },
-  { path: "/admin/sessions/:sessionId/players-futures", element: <SessionPlayersFuturesPage  />, private: true, requiredRole: "Admin" },
-  { path: "/admin/quests", element: <QuestEditor />, private: true, requiredRole: "Admin" },
-  { path: "/admin/markets", element: <AdminMarketDashboard />, private: true, requiredRole: "Admin" },
-  { path: "/admin/markets/reference-items", element: <AdminReferenceItemsPage />, private: true, requiredRole: "Admin" },
-  { path: "/admin/markets/city-modifiers", element: <AdminCityModifiersPage />, private: true, requiredRole: "Admin" },
-  { path: "/admin/markets/calculated-prices", element: <AdminCalculatedPricesPage />, private: true, requiredRole: "Admin" },
-  { path: "/admin/markets/counters", element: <AdminMerchantCountersPage />, private: true, requiredRole: "Admin" },
-  { path: "/admin/markets/counters/:id", element: <AdminMerchantCounterDetailsPage />, private: true, requiredRole: "Admin" },
-  { path: "/admin/markets/moderation", element: <AdminMarketModerationPage />, private: true, requiredRole: "Admin" },
-  { path: "/admin/markets/moderation/:id", element: <AdminMarketModerationDetailsPage />, private: true, requiredRole: "Admin" },
-  { path: "/admin/markets/transactions", element: <AdminMarketTransactionsPage />, private: true, requiredRole: "Admin" },
-  { path: "/admin/markets/withdrawals", element: <AdminMarketWithdrawalsPage />, private: true, requiredRole: "Admin" },
-  { path: "/admin/markets/calculation-runs", element: <AdminCalculationRunsPage />, private: true, requiredRole: "Admin" },
-  { path: "/market-prices", element: <PublicMarketPricesPage /> },
-  { path: "/account/merchant-counters", element: <PlayerOwnedCountersPage />, private: true, requiredRole: "Esclave" },
-  { path: "/account/merchant-counters/:id", element: <PlayerCounterHistoryPage />, private: true, requiredRole: "Esclave" },
-
-  { path: "/dice", element: <DicePage />},
-  { path: "/legal", element: <LegalMentions />},
-  { path: "/tos", element: <CGU />},
-];
-
+const AdminMarketDashboard = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then(m => ({
+  default: m.AdminMarketDashboard
+})));
+const AdminReferenceItemsPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then(m => ({
+  default: m.AdminReferenceItemsPage
+})));
+const AdminCityModifiersPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then(m => ({
+  default: m.AdminCityModifiersPage
+})));
+const AdminCalculatedPricesPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then(m => ({
+  default: m.AdminCalculatedPricesPage
+})));
+const AdminMerchantCountersPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then(m => ({
+  default: m.AdminMerchantCountersPage
+})));
+const AdminMerchantCounterDetailsPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then(m => ({
+  default: m.AdminMerchantCounterDetailsPage
+})));
+const AdminMarketModerationPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then(m => ({
+  default: m.AdminMarketModerationPage
+})));
+const AdminMarketModerationDetailsPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then(m => ({
+  default: m.AdminMarketModerationDetailsPage
+})));
+const AdminMarketTransactionsPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then(m => ({
+  default: m.AdminMarketTransactionsPage
+})));
+const AdminMarketWithdrawalsPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then(m => ({
+  default: m.AdminMarketWithdrawalsPage
+})));
+const AdminCalculationRunsPage = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then(m => ({
+  default: m.AdminCalculationRunsPage
+})));
+const PublicMarketPricesPage = lazy(() => import("../pages/markets/PlayerMarketPages.jsx").then(m => ({
+  default: m.PublicMarketPricesPage
+})));
+const PlayerOwnedCountersPage = lazy(() => import("../pages/markets/PlayerMarketPages.jsx").then(m => ({
+  default: m.PlayerOwnedCountersPage
+})));
+const PlayerCounterHistoryPage = lazy(() => import("../pages/markets/PlayerMarketPages.jsx").then(m => ({
+  default: m.PlayerCounterHistoryPage
+})));
+const routes = [{
+  path: "/histoires/chronologie",
+  element: <WikiChronology />
+}, {
+  path: "/histoires/reperes",
+  element: <WikiBookmarks />
+}, {
+  path: "/admin/wiki",
+  element: <WikiWorkshop />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/welcome",
+  element: <Onboarding />
+}, {
+  path: "/account/profile",
+  element: <ProfileSettings />
+}, {
+  path: "/admin/registration",
+  element: <RegistrationAdmin />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/support/economie",
+  element: <SupportReceipt />,
+  private: true,
+  requiredRole: "Moderateur"
+}, {
+  path: "/admin/economie",
+  element: <EconomyDesk />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/finances",
+  element: <Finance />,
+  private: true,
+  requiredRole: "Etranger"
+}, {
+  path: "/",
+  element: <Home />
+}, {
+  path: "/home",
+  element: <Home />
+}, {
+  path: "/home-test",
+  element: <HomeTest />
+}, {
+  path: "/auth",
+  element: <Auth />
+}, {
+  path: "/unauthorized",
+  element: <Unauthorized />
+}, {
+  path: "/histoire",
+  element: <Information />
+}, {
+  path: "/players",
+  element: <Players />
+}, {
+  path: "/players-admin",
+  element: <PlayersAdmin />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/player-jobs/:playerId",
+  element: <PlayerJobs />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/create-player",
+  element: <CreatePlayer />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/reporting/money",
+  element: <MoneyReport />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/map",
+  element: <Map />
+}, {
+  path: "/character",
+  element: <Character />
+}, {
+  path: "/talents",
+  element: <TalentSelection />,
+  private: true,
+  requiredRole: "Esclave"
+}, {
+  path: "/talents/:profession",
+  element: <TalentTree />,
+  private: true,
+  requiredRole: "Esclave"
+}, {
+  path: "/talent2/:profession",
+  element: <TalentTree2 />,
+  private: true,
+  requiredRole: "Esclave"
+}, {
+  path: "/sessions",
+  element: <SessionsPage />,
+  private: true,
+  requiredRole: "Esclave"
+}, {
+  path: "/quests",
+  element: <Quests />,
+  private: true,
+  requiredRole: "Etranger"
+}, {
+  path: "/futures/create",
+  element: <CreateFuturePage />,
+  private: true,
+  requiredRole: "Esclave"
+}, {
+  path: "/histoires/livres",
+  element: <Livres />
+}, {
+  path: "/histoires/livres/:livreId/chapitre/:chapitreId",
+  element: <Chapitres />
+}, {
+  path: "/histoires/familles",
+  element: <Familles />
+}, {
+  path: "/histoires/familles/:familyId",
+  element: <WikiFamily />
+}, {
+  path: "/histoires/notions/:conceptId",
+  element: <WikiConcept />
+}, {
+  path: "/histoires/personnages",
+  element: <WikiPeople />
+}, {
+  path: "/histoires/personnages/:personId",
+  element: <WikiPerson />
+}, {
+  path: "/histoires/lieux/:placeId",
+  element: <WikiPlace />
+}, {
+  path: "/histoires/guildes/:guildId",
+  element: <Guildes />
+}, {
+  path: "/histoires/arbre/:famille",
+  element: <Arbre />
+}, {
+  path: "/histoires/lois",
+  element: <Lois />
+}, {
+  path: "/histoires/armee",
+  element: <Armee />
+}, {
+  path: "/histoires/politique",
+  element: <Politique />
+}, {
+  path: "/histoires/titres",
+  element: <Titres />
+}, {
+  path: "/histoires/guildes",
+  element: <Guildes />
+}, {
+  path: "/histoires/metiers",
+  element: <Metiers />
+}, {
+  path: "/histoires/npcs",
+  element: <Npcs />
+}, {
+  path: "/histoires/journal",
+  element: <Journal />
+}, {
+  path: "/futures/edit/:id",
+  element: <EditFuturePage />,
+  private: true,
+  requiredRole: "Esclave"
+}, {
+  path: "/admin-dashboard",
+  element: <AdminDashboard />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/sessions/:sessionId/players-futures",
+  element: <SessionPlayersFuturesPage />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/quests",
+  element: <QuestEditor />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/markets",
+  element: <AdminMarketDashboard />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/markets/reference-items",
+  element: <AdminReferenceItemsPage />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/markets/city-modifiers",
+  element: <AdminCityModifiersPage />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/markets/calculated-prices",
+  element: <AdminCalculatedPricesPage />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/markets/counters",
+  element: <AdminMerchantCountersPage />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/markets/counters/:id",
+  element: <AdminMerchantCounterDetailsPage />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/markets/moderation",
+  element: <AdminMarketModerationPage />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/markets/moderation/:id",
+  element: <AdminMarketModerationDetailsPage />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/markets/transactions",
+  element: <AdminMarketTransactionsPage />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/markets/withdrawals",
+  element: <AdminMarketWithdrawalsPage />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/markets/calculation-runs",
+  element: <AdminCalculationRunsPage />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/market-prices",
+  element: <PublicMarketPricesPage />
+}, {
+  path: "/account/merchant-counters",
+  element: <PlayerOwnedCountersPage />,
+  private: true,
+  requiredRole: "Esclave"
+}, {
+  path: "/account/merchant-counters/:id",
+  element: <PlayerCounterHistoryPage />,
+  private: true,
+  requiredRole: "Esclave"
+}, {
+  path: "/dice",
+  element: <DicePage />
+}, {
+  path: "/legal",
+  element: <LegalMentions />
+}, {
+  path: "/tos",
+  element: <CGU />
+}];
 export default routes;

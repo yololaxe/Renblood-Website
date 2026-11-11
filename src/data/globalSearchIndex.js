@@ -35,7 +35,7 @@ const army = Object.entries(armee).filter(([, v]) => Array.isArray(v)).flatMap((
   type: "Règle",
   keywords: "grade militaire armée"
 })));
-export const staticContentResults = [...wikiSearchResults, ...jobs, ...titles, ...laws, ...army, {
+export const getStaticContentResults = () => [...wikiSearchResults, ...jobs, ...titles, ...laws, ...army, {
   label: "Zeubillage n'est plus : vive Shaleton !",
   description: "Journal du Conseil, édition de l’an 336",
   path: "/histoires/journal",

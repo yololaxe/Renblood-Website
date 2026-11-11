@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { registry, normalize } from '../../services/wiki.mjs';
+import { registry, peopleById } from '../../services/wiki.mjs';
 import { WikiPage, WikiHeader, WikiNav, WikiEmpty } from '../../components/wiki/WikiShell';
+import { searchWiki } from '../../services/wikiSearch.mjs';
 import { PersonRow } from '../../components/wiki/PersonSummary';
 export default function WikiPeople() {
   const [params, setParams] = useSearchParams();
@@ -9,7 +10,17 @@ export default function WikiPeople() {
     family = params.get('famille') || '',
     notable = params.get('notables') === '1';
   const requestedPage = Math.max(1, Math.floor(Number(params.get('page')) || 1));
-  const matches = useMemo(() => registry.people.filter(p => (!family || p.familyId === family || p.houseId === family) && (!notable || p.notable || p.houseId) && normalize([p.name, p.title, p.publicOffice, p.occupation, p.location, ...p.aliases].join(' ')).includes(normalize(query))), [query, family, notable]);
+  const catalog = useMemo(() => registry.people.map(p => ({
+    id: p.id,
+    label: p.name,
+    aliases: p.aliases,
+    description: [p.title, p.publicOffice, p.occupation, p.location].filter(Boolean).join(' · '),
+    path: '/histoires/personnages/' + p.id
+  })), []);
+  const matches = useMemo(() => searchWiki(catalog.filter(item => {
+    const p = peopleById.get(item.id);
+    return (!family || p.familyId === family || p.houseId === family) && (!notable || p.notable || p.houseId);
+  }), query, registry.people.length).map(item => peopleById.get(item.id)), [query, family, notable, catalog]);
   const page = Math.min(requestedPage, Math.max(1, Math.ceil(matches.length / 36)));
   const update = (key, value) => {
     const next = new URLSearchParams(params);

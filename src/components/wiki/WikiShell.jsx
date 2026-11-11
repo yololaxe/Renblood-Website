@@ -1,6 +1,8 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import './wiki.css';
+import './wiki-explore.css';
+import { BookmarkButton } from './WikiBookmarks';
 import useWikiPosition from './useWikiPosition';
 export function WikiPage({
   children,
@@ -17,7 +19,8 @@ export function WikiHeader({
   aside
 }) {
   const reduced = useReducedMotion(),
-    navigate = useNavigate();
+    navigate = useNavigate(),
+    location = useLocation();
   return <header className="wiki-header"><div className="wiki-content">
     <nav className="wiki-breadcrumb" aria-label="Fil de navigation"><button type="button" onClick={() => navigate(window.history.state?.idx > 0 ? -1 : "/histoire")} aria-label="Revenir à la page précédente">← Retour</button><span aria-hidden="true">/</span><Link to="/histoire">Guide</Link><span aria-hidden="true">/</span><span>{section}</span></nav>
     <motion.div className="wiki-heading" initial={reduced ? false : {
@@ -29,7 +32,7 @@ export function WikiHeader({
       }} transition={{
         duration: .25
       }}>
-      <div><h1>{title}</h1>{intro && <p className="wiki-intro">{intro}</p>}{children}</div>{aside && <div className="wiki-heading-aside">{aside}</div>}
+      <div><h1>{title}</h1>{intro && <p className="wiki-intro">{intro}</p>}{children}{location.pathname.startsWith('/histoires/') && location.pathname !== '/histoires/reperes' && <div className="wiki-header-save"><BookmarkButton path={location.pathname + location.search + location.hash} label={title} type={section} /></div>}</div>{aside && <div className="wiki-heading-aside">{aside}</div>}
     </motion.div>
   </div></header>;
 }
@@ -45,5 +48,5 @@ export function WikiMissing({
   return <WikiPage><WikiHeader section="Archives" title="Fiche introuvable" intro={`${kind} n’est pas dans le registre public.`} /><div className="wiki-content wiki-section"><Link className="wiki-action" to="/histoires/personnages">Consulter le registre ↗</Link></div></WikiPage>;
 }
 export function WikiNav() {
-  return <nav className="wiki-subnav" aria-label="Registres du royaume"><Link to="/histoires/personnages">Personnages</Link><Link to="/histoires/familles">Familles</Link><Link to="/histoires/politique">Politique</Link><Link to="/histoires/guildes">Guildes</Link><Link to="/histoires/livres">Bibliothèque</Link></nav>;
+  return <nav className="wiki-subnav" aria-label="Registres du royaume"><Link to="/histoires/personnages">Personnages</Link><Link to="/histoires/familles">Familles</Link><Link to="/histoires/politique">Politique</Link><Link to="/histoires/guildes">Guildes</Link><Link to="/histoires/livres">Bibliothèque</Link><Link to="/histoires/chronologie">Chronologie</Link><Link to="/histoires/reperes">Mes repères</Link></nav>;
 }

@@ -11,7 +11,7 @@
     "deploy:prod": "npm run build:prod && firebase deploy --only hosting:prod --project renblood-website",
     "deploy:staging": "npm run build:staging && firebase deploy --only hosting:staging --project renblood-website",
     "test:onboarding": "node --test src/services/profileDraft.test.mjs",
-    "test:wiki": "node --test src/services/wiki.test.mjs scripts/wiki/compile.test.mjs",
+    "test:wiki": "node --test src/services/wiki.test.mjs scripts/wiki/compile.test.mjs src/services/wikiExplore.test.mjs",
     "prebuild:staging": "npm run test:wiki",
     "prebuild:prod": "npm run test:wiki"
   },

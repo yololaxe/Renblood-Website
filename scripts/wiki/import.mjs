@@ -32,4 +32,5 @@ await atomic(report, {
 });
 await atomic(resolve(output, 'books.json'), books);
 await atomic(resolve(output, 'registry.json'), registry);
+if (args.package) await atomic(resolve(args.package), { registry, books });
 console.log(`Wiki public préparé : ${registry.people.length} personnages, ${registry.relations.length} liens, ${registry.families.length} familles, ${books.length} livres. Version ${registry.version}`);

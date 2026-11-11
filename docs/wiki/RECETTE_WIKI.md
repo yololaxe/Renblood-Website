@@ -31,3 +31,30 @@ Les tests automatisés accompagnent cette recette ; ils ne valident pas à eux s
 | W25 | Navigation en tant que visiteur et joueur connecté | Le wiki public est identique ; les fonctionnalités privées gardent leurs protections existantes. |
 
 Les autres divergences de ressources, titres et identités non arbitrées restent conservées à leur valeur précédente lorsqu’elle existait sur le site.
+
+## Exploration et atelier — complément du 11 novembre 2026
+
+Les essais de publication ci-dessous se font d'abord en préproduction, avec un paquet public de recette et restauration de la version précédente. Le banc automatisé utilise un service en mémoire et un hôte admin isolé ; la connexion Google réelle reste à tester avec votre compte staff.
+
+| Cas | Action | Attendu |
+|---|---|---|
+| W26 | Guide → Chronologie ; choisir le troisième âge | Cinq récits datés ; lien vers leur section exacte. |
+| W27 | Filtrer la frise par maison puis lieu | Seuls les événements dont le récit cite ces entités sont affichés. |
+| W28 | Ouvrir Parcours personnels | Les âges ne deviennent pas des années du royaume ; dates ambiguës signalées. |
+| W29 | Garder une fiche puis un passage de livre | Deux entrées accessibles dans Mes repères avec leurs liens précis. |
+| W30 | Ajouter une note puis recharger et ouvrir un second onglet | Note conservée localement ; changements répercutés entre onglets. |
+| W31 | Filtrer et retirer un repère | Liste et bouton de la fiche mis à jour, sans doublon. |
+| W32 | Refuser le stockage du navigateur | Message explicite ; le wiki reste utilisable. |
+| W33 | Rechercher « Dolroes Wyne » et « Herbert Rolingford » | Bonnes identités ; résultat exact prioritaire quand la graphie est correcte. |
+| W34 | Rechercher un alias validé et un prénom homonyme | Alias reconnu ; identités homonymes distinctes. |
+| W35 | Arbre → Relier Herbert Rollingford à Philipe | Filiation mise en évidence et détaillée ; unions en pointillés. |
+| W36 | Comparer deux personnes sans chemin documenté | Absence de documentation expliquée ; aucune parenté inventée. |
+| W37 | Plein écran, clavier Tab/Échap puis retour | Focus contenu puis restauré ; cadrage précédent retrouvé. |
+| W38 | Téléphone : vue Proches, comparaison et plein écran | Aucun débordement ; déplacement tactile volontaire. |
+| W39 | Admin → widget Atelier du wiki | Brouillons récents, version publique, accès à l'atelier et tableau de qualité. |
+| W40 | Importer un export brut ou ajouter un champ secret au JSON | Refus avant création d'un brouillon exploitable. |
+| W41 | Importer un paquet valide, accepter et conserver des champs | Avant/après lisible ; décisions persistantes et partagées entre admins. |
+| W42 | Prévisualiser puis quitter | Bandeau privé ; aucune modification publique ; version publique rétablie à la sortie. |
+| W43 | Publier une revue complète avec confirmation | Version publique basculée, auteur/motif/historique enregistrés ; lecteurs actualisés au rechargement. |
+| W44 | Deux admins éditent le même brouillon ou publient depuis une ancienne base | Conflit explicite ; aucune dernière écriture silencieuse. |
+| W45 | Restaurer la version précédente avec un motif | Contenu antérieur rétabli ; versions immuables et restauration journalisée. |
