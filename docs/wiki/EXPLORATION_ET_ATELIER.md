@@ -36,3 +36,13 @@ Le tableau de qualité liste les biographies, lieux, statuts et dates de décès
 Le site charge une version publique au démarrage et utilise le registre embarqué si l'API est indisponible. Il ne consulte pas les Sheets et ne sonde pas la version à chaque fiche. Les publications sont visibles aux lecteurs qui rechargent le site ; le cache HTTP public est limité à 60 secondes. Les données des joueurs, banques, inventaires et PNJ sont indépendantes.
 
 Le backend embarque `wiki/seed.json`, copie du paquet public approuvé, pour initialiser cet environnement sans migration des données de jeu. Une future nouvelle référence embarquée doit être mise à jour avec le registre front. Les collections de l'atelier sont `wiki_state`, `wiki_versions` et `wiki_drafts`.
+
+## Garanties complémentaires de fiabilisation
+
+Le chargement d'un registre vérifie entièrement son format avant de remplacer les données et index en mémoire. Une réponse invalide conserve la version déjà affichée. La reprise asynchrone d'un aperçu est annulée lorsqu'on le quitte ou que l'identité change. Un stockage navigateur refusé n'empêche pas l'aperçu dans l'onglet.
+
+Les changements de version remontent les pages publiques du wiki et actualisent la recherche ; ils ne remontent plus l'ensemble de l'application. Le menu et son état restent présents. L'atelier conserve ses confirmations après publication/restauration ; une erreur ultérieure de synchronisation est distinguée de l'opération déjà confirmée.
+
+La publication réserve une révision d'état et un identifiant d'opération unique avant la bascule publique. La libération d'une réservation expirée incrémente cette révision : une ancienne requête ne peut plus poursuivre sa bascule, même si le même contenu a été restauré entre-temps. La finalisation d'un brouillon vérifie aussi l'identifiant de l'opération ; elle n'écrase pas une revue reprise par un autre administrateur. Les opérations interrompues se rapprochent de l'historique public avant une reprise. Seules les versions effectivement publiées sont proposées à la restauration.
+
+L'import contrôle aussi les références de dirigeants des lieux, les membres du gouvernement, les identifiants de sièges et de textes de livres, et les coordonnées des lieux. Les décisions éditoriales et le contenu de référence demeurent inchangés.

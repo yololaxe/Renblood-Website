@@ -1,5 +1,5 @@
 // src/App.js
-import { Suspense } from "react";
+import { Suspense, useSyncExternalStore } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence, MotionConfig } from "framer-motion";
 import routes from "./routes/routes.jsx";
@@ -11,12 +11,15 @@ import PageTransition from "./components/PageTransition";
 import BackButton from "./components/BackButton";
 import LoadingState from "./components/LoadingState";
 import "./index.css";
+import { subscribeWiki, getWikiRevision } from "./services/wiki.mjs";
 import WikiRuntime from "./components/wiki/WikiRuntime";
 import AdProvider from "./components/ads/AdProvider";
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const wikiRevision = useSyncExternalStore(subscribeWiki, getWikiRevision, getWikiRevision);
+  const pageKey = location.pathname + (location.pathname.startsWith("/histoires/") ? ":" + wikiRevision : "");
   return <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
+      <Routes location={location} key={pageKey}>
         {routes.map(({
         path,
         element,

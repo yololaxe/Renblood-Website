@@ -1,10 +1,11 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaBook, FaMapMarkerAlt, FaSearch, FaScroll, FaTimes, FaUser, FaWrench } from "react-icons/fa";
 import { getNpcsList, getPlayerQuests, getPlayers, getQuestsList } from "../services/api";
 import { useUser } from "../context/UserContext";
 import { getStaticContentResults } from "../data/globalSearchIndex";
 import "./global-search.css";
+import { subscribeWiki, getWikiRevision } from "../services/wiki.mjs";
 import { searchWiki } from "../services/wikiSearch.mjs";
 const roleHierarchy = {
   Esclave: 0,
@@ -227,6 +228,7 @@ export default function GlobalSearch({
     userId,
     userRank
   } = useUser();
+  const wikiRevision = useSyncExternalStore(subscribeWiki, getWikiRevision, getWikiRevision);
   const navigate = useNavigate();
   const inputRef = useRef(null);
   const dialogRef = useRef(null);
@@ -316,7 +318,7 @@ export default function GlobalSearch({
     }] : []), ...publicPages, ...allowedAuthenticatedPages, ...(isAdmin ? adminPages : [])];
     const allResults = [...shortcutResults, ...pages, ...getStaticContentResults(), ...dynamicResults];
     return searchWiki(allResults, query, query.trim() ? 20 : 12);
-  }, [dynamicResults, isAdmin, query, userId, userRank]);
+  }, [dynamicResults, isAdmin, query, userId, userRank, wikiRevision]);
   const selectResult = result => {
     onClose();
     navigate(result.path);

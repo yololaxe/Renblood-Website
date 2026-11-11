@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../services/axiosInstance';
-import { registry, normalize } from '../../services/wiki.mjs';
+import { registry, normalize, subscribeWiki, getWikiRevision } from '../../services/wiki.mjs';
 import { wikiQuality } from '../../services/wikiQuality.mjs';
 import { WikiPage, WikiHeader, WikiEmpty } from '../../components/wiki/WikiShell';
-import { beginWikiPreview, endWikiPreview, refreshWiki } from '../../components/wiki/WikiRuntime';
+import { beginWikiPreview, endWikiPreview } from '../../components/wiki/WikiRuntime';
 const labels = {
   people: 'Personnages',
   families: 'Familles',
@@ -64,7 +64,8 @@ export default function WikiWorkshop() {
   useEffect(() => {
     run(load);
   }, []);
-  const issues = useMemo(() => wikiQuality(registry), []);
+  const wikiRevision = useSyncExternalStore(subscribeWiki, getWikiRevision, getWikiRevision);
+  const issues = useMemo(() => wikiQuality(registry), [wikiRevision]);
   const changes = (draft?.changes || []).filter(change => (!status || (decisions[change.key] || 'pending') === status) && normalize(`${change.label} ${change.id} ${change.field} ${labels[change.collection]}`).includes(normalize(query)));
   const reviewed = (draft?.changes || []).filter(change => decisions[change.key]).length;
   const accepted = (draft?.changes || []).filter(change => decisions[change.key] === 'accept').length;
@@ -111,17 +112,20 @@ export default function WikiWorkshop() {
     setMessage('Brouillon partagé créé. Aucun changement public.');
   }
   return <WikiPage className="wiki-workshop"><WikiHeader section="Administration" title="L’atelier du wiki." intro="Comparer, arbitrer, prévisualiser et publier les archives publiques du royaume."><Link className="wiki-text-link" to="/admin-dashboard">← Tableau de bord admin</Link></WikiHeader>
-    <div className="wiki-content wiki-section">{error && <p className="wiki-error" role="alert">{error}</p>}{message && <p className="wiki-success" role="status">{message}</p>}<div className="wiki-workshop-top"><p className="wiki-muted">Version publique : <strong>{state?.current || 'Chargement…'}</strong></p><button disabled={busy} className="wiki-text-link" onClick={() => run(load)}>Actualiser ↻</button></div>
+    <div className="wiki-content wiki-section">{error && <p className="wiki-error" role="alert">{error}</p>}{message && <p className="wiki-success" role="status">{message}</p>}<div className="wiki-workshop-top">{state?.publication && <p className="wiki-muted" role="status">Une publication est en cours. La version publique reste disponible pendant sa préparation.</p>}<p className="wiki-muted">Version publique : <strong>{state?.current || 'Chargement…'}</strong></p><button disabled={busy} className="wiki-text-link" onClick={() => run(load)}>Actualiser ↻</button></div>
       <section className="wiki-section"><p className="wiki-kicker">01 · Préparer</p><h2>Une version à examiner</h2><p className="wiki-prose">Importez un paquet public compilé contenant « registry » et « books ». Les exports bruts de Sheets et leurs colonnes privées sont refusés. Vous pouvez télécharger la version actuelle comme base de travail.</p>
         <div className="wiki-actions"><button disabled={!state || busy} className="wiki-action" onClick={() => run(async () => download(await call(`versions/${encodeURIComponent(state.current)}/`), 'renblood-wiki-public.json'))}>Télécharger la version publique ↓</button></div>
         <form className="wiki-import-form" onSubmit={event => {
           event.preventDefault();
           run(create);
         }}><label>Paquet public JSON<input ref={file} type="file" accept="application/json,.json" required /></label><label>Objet de la mise à jour<input value={reason} onChange={event => setReason(event.target.value)} minLength={3} maxLength={500} required placeholder="Ex. Corrections des fonctions et des alias validées" /></label><label className="wiki-checkbox"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} required />Je confirme que ce paquet contient uniquement du lore public.</label><button className="wiki-action" disabled={busy || !state}>Créer le brouillon et comparer ↗</button></form>
-        {!!state?.drafts.length && <div className="wiki-drafts"><h3>Reprendre un brouillon partagé</h3>{state.drafts.map(item => <button key={item.id} disabled={busy} onClick={() => run(() => openDraft(item.id))}><span>{item.reason}</span><small>{item.status === 'PUBLISHED' ? 'Publié' : 'À examiner'} · {item.changeCount} changements</small></button>)}</div>}
+        {!!state?.drafts.length && <div className="wiki-drafts"><h3>Reprendre un brouillon partagé</h3>{state.drafts.map(item => <button key={item.id} disabled={busy} onClick={() => run(() => openDraft(item.id))}><span>{item.reason}</span><small>{item.status === 'PUBLISHED' ? 'Publié' : item.status === 'PUBLISHING' ? 'Publication en cours' : 'À examiner'} · {item.changeCount} changements</small></button>)}</div>}
       </section>
       {draft && <section className="wiki-section" aria-label="Revue des changements"><p className="wiki-kicker">02 · Arbitrer</p><h2>{draft.reason}</h2><p className="wiki-muted">{reviewed} / {draft.changes.length} examinés · {accepted} acceptés · {dirty ? 'Décisions non enregistrées' : 'Décisions enregistrées'}{draft.status === 'PUBLISHED' ? ' · Brouillon déjà publié' : ''}</p>
-        {draft.baseVersion !== state?.current && <p className="wiki-error">Ce brouillon repose sur une autre version. Préparez un nouvel import depuis la version publique actuelle.</p>}
+        {draft.status === 'PUBLISHING' && <p className="wiki-muted" role="status">Cette publication est en cours de vérification. <button className="wiki-text-link" disabled={busy} onClick={() => run(async () => {
+            await openDraft(draft.id);
+            await load();
+          })}>Vérifier son état ↻</button></p>}{draft.baseVersion !== state?.current && <p className="wiki-error">Ce brouillon repose sur une autre version. Préparez un nouvel import depuis la version publique actuelle.</p>}
         <form className="wiki-filterbar" onSubmit={event => event.preventDefault()}><label className="wiki-filter-search">Filtrer les changements<input value={query} onChange={event => {
               setQuery(event.target.value);
               setLimit(30);
@@ -156,11 +160,10 @@ export default function WikiWorkshop() {
               revision: saved.revision,
               reason: draft.reason
             });
-            await endWikiPreview();
-            await refreshWiki();
+            setMessage(`Version publiée : ${value.version}.`);
+            await endWikiPreview().catch(() => setError('La publication est confirmée. Le registre affiché n’a pas pu être resynchronisé ; actualisez la page.'));
             await load();
             await openDraft(saved.id);
-            setMessage(`Version publiée : ${value.version}.`);
           })}>Publier la version approuvée</button></section>
       </section>}
       <section className="wiki-section"><p className="wiki-kicker">La qualité des archives</p><h2>Les informations à compléter</h2><p className="wiki-muted">Ces manques sont des pistes éditoriales ; aucune donnée n’est inventée pour les combler.</p><div className="wiki-quality-grid">{issues.map(item => <button key={item.id} aria-pressed={quality === item.id} onClick={() => setQuality(quality === item.id ? '' : item.id)}><strong>{item.people.length}</strong><span>{item.label}</span></button>)}</div>{quality && <div className="wiki-quality-people">{issues.find(item => item.id === quality)?.people.slice(0, 40).map(person => <Link key={person.id} to={`/histoires/personnages/${person.id}`}>{person.name} ↗</Link>)}<p className="wiki-muted">40 premières fiches au maximum. Le registre permet de poursuivre les recherches.</p></div>}</section>
@@ -171,11 +174,11 @@ export default function WikiWorkshop() {
               revision: state.revision,
               reason: restoreReason
             });
-            await endWikiPreview();
+            setMessage('La version sélectionnée est restaurée.');
+            await endWikiPreview().catch(() => setError('La restauration est confirmée. Le registre affiché n’a pas pu être resynchronisé ; actualisez la page.'));
             await load();
             setRestore('');
             setRestoreReason('');
-            setMessage('La version sélectionnée est restaurée.');
           });
         }}><label>Version<select required value={restore} onChange={event => setRestore(event.target.value)}><option value="">Choisir une version antérieure</option>{state?.versions.filter(item => item.id !== state.current).map(item => <option key={item.id} value={item.id}>{item.id} · {item.reason}</option>)}</select></label><label>Motif de restauration<input required minLength={3} maxLength={500} value={restoreReason} onChange={event => setRestoreReason(event.target.value)} /></label><button className="wiki-action" disabled={!restore || busy}>Restaurer cette version publique</button></form><ol className="wiki-publication-log">{[...(state?.history || [])].reverse().map((event, index) => <li key={`${event.at}-${index}`}><time>{new Date(event.at).toLocaleString('fr-FR')}</time><strong>{event.action === 'restore' ? 'Restauration' : 'Publication'}</strong><span>{event.reason}</span><small>{event.from} → {event.to}</small></li>)}</ol></section>
     </div></WikiPage>;

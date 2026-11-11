@@ -58,3 +58,15 @@ Les essais de publication ci-dessous se font d'abord en préproduction, avec un 
 | W43 | Publier une revue complète avec confirmation | Version publique basculée, auteur/motif/historique enregistrés ; lecteurs actualisés au rechargement. |
 | W44 | Deux admins éditent le même brouillon ou publient depuis une ancienne base | Conflit explicite ; aucune dernière écriture silencieuse. |
 | W45 | Restaurer la version précédente avec un motif | Contenu antérieur rétabli ; versions immuables et restauration journalisée. |
+
+## Fiabilisation des publications et de l’interface
+
+| Cas | Action | Attendu |
+|---|---|---|
+| W46 | Avec la musique et une recherche ouvertes, charger une version wiki actualisée | Le menu et la recherche restent montés ; les résultats et les fiches reflètent la version chargée. |
+| W47 | Publier un brouillon puis restaurer une version | Confirmation de succès conservée après le rafraîchissement du registre ; un échec d'actualisation ne présente pas une publication confirmée comme annulée. |
+| W48 | Interrompre une publication de recette puis vérifier son état, éventuellement depuis un second compte admin | État explicite, reprise après expiration ; une ancienne requête ne remplace pas la nouvelle revue. Tester en préproduction uniquement. |
+| W49 | Importer un paquet avec dirigeant de lieu/gouvernement absent, siège ou texte de livre en double | Refus avant publication ; aucune modification du registre public. |
+| W50 | Refuser le stockage du navigateur, ouvrir puis quitter un aperçu | Aperçu utilisable dans l'onglet avec indication de reprise indisponible ; sortie vers le dernier registre public connu. |
+
+Les réponses publiques invalides, les réponses d'aperçu tardives après sortie/déconnexion et les entrelacements de publications sont également couverts par les tests automatisés, sans altérer le lore public.

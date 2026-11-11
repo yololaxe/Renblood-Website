@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../../../services/axiosInstance';
-import { registry } from '../../../services/wiki.mjs';
+import { registry, getWikiRevision, subscribeWiki } from '../../../services/wiki.mjs';
 export default function WikiWidget() {
+  useSyncExternalStore(subscribeWiki, getWikiRevision, getWikiRevision);
   const [state, setState] = useState(null),
     [error, setError] = useState('');
   const load = () => {

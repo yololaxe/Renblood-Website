@@ -1,3 +1,4 @@
+import { validateWikiSnapshot } from './wikiSnapshot.mjs';
 import initialRegistry from '../data/wiki/registry.json' with { type: 'json' };
 import initialBooks from '../data/wiki/books.json' with { type: 'json' };
 export let registry = initialRegistry,
@@ -153,7 +154,8 @@ function buildWikiSearchResults() {
   })))])];
 }
 export let wikiSearchResults = buildWikiSearchResults();
-export function applyWikiPackage(value) {
+export function applyWikiPackage(candidate) {
+  const value = validateWikiSnapshot(candidate, builtInWikiPackage);
   if (!value?.registry?.version || !Array.isArray(value.books) || !Array.isArray(value.registry.people) || !value.registry.people.length) throw Error('Registre wiki invalide');
   for (const key of ['families', 'guilds', 'roles', 'concepts', 'locations', 'relations', 'events', 'books', 'seats']) if (!Array.isArray(value.registry[key])) throw Error('Registre wiki incomplet');
   registry = value.registry;
