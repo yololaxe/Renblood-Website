@@ -2,6 +2,11 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'reac
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../services/axiosInstance';
 import { registry, normalize, subscribeWiki, getWikiRevision } from '../../services/wiki.mjs';
+import { useUser } from '../../context/UserContext';
+import useReviewBackup from '../../components/wiki/useReviewBackup';
+import { ReviewRecovery, ReviewConflict } from '../../components/wiki/ReviewRecovery';
+import { sameDecisions, reviewFieldLabel, reviewPreviewPath } from '../../services/wikiReview.mjs';
+import { downloadJson as download } from '../../services/downloadJson.mjs';
 import { wikiQuality } from '../../services/wikiQuality.mjs';
 import { WikiPage, WikiHeader, WikiEmpty } from '../../components/wiki/WikiShell';
 import { beginWikiPreview, endWikiPreview } from '../../components/wiki/WikiRuntime';
@@ -19,17 +24,11 @@ const labels = {
   '$registry': 'Institutions'
 };
 const call = async (path = '', body) => (await axios[body === undefined ? 'get' : 'post'](`/api/wiki/admin/${path}`, body)).data;
-function download(value, name) {
-  const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], {
-    type: 'application/json'
-  }));
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = name;
-  anchor.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 export default function WikiWorkshop() {
+  const {
+    userId
+  } = useUser();
+  const scope = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
   const navigate = useNavigate(),
     file = useRef(null);
   const [state, setState] = useState(null),
@@ -46,7 +45,32 @@ export default function WikiWorkshop() {
     [restore, setRestore] = useState(''),
     [restoreReason, setRestoreReason] = useState(''),
     [publishConfirm, setPublishConfirm] = useState(false),
-    [quality, setQuality] = useState('');
+    [quality, setQuality] = useState(''),
+    [collection, setCollection] = useState(''),
+    [recovery, setRecovery] = useState(null),
+    [conflicts, setConflicts] = useState([]),
+    [focusChange, setFocusChange] = useState(null);
+  const backup = useReviewBackup({
+    draft,
+    decisions,
+    conflicts,
+    owner: userId,
+    scope,
+    pending: !!recovery
+  });
+  const conflictsByKey = useMemo(() => new Map(conflicts.map(item => [item.key, item])), [conflicts]);
+  useEffect(() => setPublishConfirm(false), [decisions, conflicts, draft?.id]);
+  useEffect(() => {
+    if (!focusChange) return;
+    const element = document.getElementById('review-change-' + focusChange);
+    element?.scrollIntoView({
+      block: 'center'
+    });
+    element?.querySelector('select')?.focus({
+      preventScroll: true
+    });
+    setFocusChange(null);
+  }, [focusChange]);
   const load = async () => setState(await call());
   const run = async operation => {
     if (busy) return;
@@ -66,19 +90,50 @@ export default function WikiWorkshop() {
   }, []);
   const wikiRevision = useSyncExternalStore(subscribeWiki, getWikiRevision, getWikiRevision);
   const issues = useMemo(() => wikiQuality(registry), [wikiRevision]);
-  const changes = (draft?.changes || []).filter(change => (!status || (decisions[change.key] || 'pending') === status) && normalize(`${change.label} ${change.id} ${change.field} ${labels[change.collection]}`).includes(normalize(query)));
-  const reviewed = (draft?.changes || []).filter(change => decisions[change.key]).length;
-  const accepted = (draft?.changes || []).filter(change => decisions[change.key] === 'accept').length;
-  const dirty = JSON.stringify(decisions) !== JSON.stringify(draft?.decisions || {});
+  const decisionState = key => conflictsByKey.has(key) ? 'conflict' : decisions[key] || 'pending';
+  const changes = (draft?.changes || []).filter(change => (!collection || change.collection === collection) && (!status || decisionState(change.key) === status || status === 'pending' && decisionState(change.key) === 'conflict') && normalize(`${change.label} ${change.id} ${change.field} ${reviewFieldLabel(change.field)} ${labels[change.collection]}`).includes(normalize(query)));
+  const reviewed = (draft?.changes || []).filter(change => decisions[change.key] && !conflictsByKey.has(change.key)).length;
+  const accepted = (draft?.changes || []).filter(change => decisions[change.key] === 'accept' && !conflictsByKey.has(change.key)).length;
+  const dirty = !sameDecisions(decisions, draft?.decisions || {});
+  const pendingChange = draft?.changes.find(change => !decisions[change.key] || conflictsByKey.has(change.key));
+  const choose = (key, choice) => {
+    setDecisions(current => {
+      const next = {
+        ...current
+      };
+      choice ? next[key] = choice : delete next[key];
+      return next;
+    });
+    setConflicts(current => current.filter(item => item.key !== key));
+  };
+  const keepVisible = () => {
+    const keys = new Set(changes.slice(0, limit).map(change => change.key));
+    setDecisions(current => ({
+      ...current,
+      ...Object.fromEntries([...keys].map(key => [key, 'keep']))
+    }));
+    setConflicts(current => current.filter(item => !keys.has(item.key)));
+  };
   async function openDraft(id) {
+    backup.persist();
     const value = await call(`drafts/${id}/`);
     setDraft(value);
     setDecisions(value.decisions);
+    setConflicts([]);
+    const local = backup.restore(value);
+    if (local && (!sameDecisions(local.decisions, value.decisions) || local.conflicts.length)) setRecovery(local);else {
+      setRecovery(null);
+      backup.discard(value);
+    }
+    setQuery('');
+    setStatus('');
+    setCollection('');
     setPublishConfirm(false);
     setLimit(30);
   }
   async function save() {
     if (!draft) return null;
+    if (recovery || conflicts.length) throw Error('Terminez la reprise et les conflits de revue avant d’enregistrer.');
     if (!dirty) return draft;
     const value = await call(`drafts/${draft.id}/save/`, {
       revision: draft.revision,
@@ -86,9 +141,11 @@ export default function WikiWorkshop() {
     });
     setDraft(value);
     setDecisions(value.decisions);
+    backup.discard(value);
     return value;
   }
   async function create() {
+    backup.persist();
     const selected = file.current?.files[0];
     if (!selected) throw Error('Choisissez le paquet JSON public à comparer.');
     if (selected.size > 2 * 1024 * 1024) throw Error('Le paquet dépasse 2 Mo.');
@@ -106,6 +163,8 @@ export default function WikiWorkshop() {
     });
     setDraft(result);
     setDecisions(result.decisions);
+    setConflicts([]);
+    setRecovery(null);
     setPublishConfirm(false);
     setConfirmed(false);
     await load();
@@ -119,9 +178,21 @@ export default function WikiWorkshop() {
           event.preventDefault();
           run(create);
         }}><label>Paquet public JSON<input ref={file} type="file" accept="application/json,.json" required /></label><label>Objet de la mise à jour<input value={reason} onChange={event => setReason(event.target.value)} minLength={3} maxLength={500} required placeholder="Ex. Corrections des fonctions et des alias validées" /></label><label className="wiki-checkbox"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} required />Je confirme que ce paquet contient uniquement du lore public.</label><button className="wiki-action" disabled={busy || !state}>Créer le brouillon et comparer ↗</button></form>
-        {!!state?.drafts.length && <div className="wiki-drafts"><h3>Reprendre un brouillon partagé</h3>{state.drafts.map(item => <button key={item.id} disabled={busy} onClick={() => run(() => openDraft(item.id))}><span>{item.reason}</span><small>{item.status === 'PUBLISHED' ? 'Publié' : item.status === 'PUBLISHING' ? 'Publication en cours' : 'À examiner'} · {item.changeCount} changements</small></button>)}</div>}
+        {!!state?.drafts.length && <div className="wiki-drafts"><h3>Reprendre un brouillon partagé</h3>{state.drafts.map(item => <button key={item.id} disabled={busy} onClick={() => run(() => openDraft(item.id))}><span>{item.reason}</span><small>{item.status === 'PUBLISHED' ? 'Publié' : item.status === 'PUBLISHING' ? 'Publication en cours' : 'À examiner'} · {item.changeCount} changement{item.changeCount > 1 ? 's' : ''}</small></button>)}</div>}
       </section>
       {draft && <section className="wiki-section" aria-label="Revue des changements"><p className="wiki-kicker">02 · Arbitrer</p><h2>{draft.reason}</h2><p className="wiki-muted">{reviewed} / {draft.changes.length} examinés · {accepted} acceptés · {dirty ? 'Décisions non enregistrées' : 'Décisions enregistrées'}{draft.status === 'PUBLISHED' ? ' · Brouillon déjà publié' : ''}</p>
+        <ReviewRecovery recovery={recovery} disabled={busy} onResume={() => {
+          setDecisions(recovery.decisions);
+          setConflicts(recovery.conflicts);
+          setRecovery(null);
+          setMessage('Revue locale reprise. Les décisions ne sont pas encore envoyées à l’équipe.');
+        }} onDiscard={() => {
+          backup.discard();
+          setRecovery(null);
+          setDecisions(draft.decisions);
+          setConflicts([]);
+        }} />
+        <p className="wiki-muted wiki-review-backup" role="status">{backup.notice || (dirty || conflicts.length ? 'Reprise locale disponible pendant sept jours sur cet appareil. Utilisez « Enregistrer les décisions » pour les partager.' : 'La revue affichée correspond aux décisions partagées.')}{conflicts.length > 0 ? ` ${conflicts.length} conflit(s) à résoudre avant enregistrement.` : ''}</p>
         {draft.status === 'PUBLISHING' && <p className="wiki-muted" role="status">Cette publication est en cours de vérification. <button className="wiki-text-link" disabled={busy} onClick={() => run(async () => {
             await openDraft(draft.id);
             await load();
@@ -132,29 +203,40 @@ export default function WikiWorkshop() {
             }} placeholder="Personnage, identifiant, champ…" /></label><label>Décision<select value={status} onChange={event => {
               setStatus(event.target.value);
               setLimit(30);
-            }}><option value="">Toutes</option><option value="pending">À examiner</option><option value="accept">Acceptées</option><option value="keep">Valeur actuelle conservée</option></select></label></form>
-        <fieldset disabled={busy || draft.status !== 'DRAFT'} className="wiki-review-list">{changes.slice(0, limit).map(change => <article className="wiki-diff" key={change.key}><header><div><span className="wiki-kicker">{labels[change.collection]} · {change.id}</span><h3>{change.label}</h3><span className="wiki-muted">{change.field === '$record' ? change.before ? 'Suppression proposée' : 'Nouvelle entrée' : change.field}</span></div><select aria-label={`Décision pour ${change.label}, ${change.field}`} value={decisions[change.key] || ''} onChange={event => setDecisions(current => {
-                const next = {
-                  ...current
-                };
-                event.target.value ? next[change.key] = event.target.value : delete next[change.key];
-                return next;
-              })}><option value="">À examiner</option><option value="keep">Conserver la valeur actuelle</option><option value="accept">Accepter la proposition</option></select></header><div className="wiki-diff-values"><DiffValue title="Actuel" value={change.before} /><DiffValue title="Proposition" value={change.after} /></div></article>)}</fieldset>
-        {!changes.length && <WikiEmpty title="Aucun changement dans cette sélection">Modifiez les filtres pour continuer la revue.</WikiEmpty>}{changes.length > limit && <button className="wiki-text-link" onClick={() => setLimit(value => value + 30)}>Afficher les changements suivants ↓</button>}
-        <div className="wiki-actions"><button className="wiki-action" disabled={busy || !dirty || draft.status !== 'DRAFT'} onClick={() => run(async () => {
+            }}><option value="">Toutes</option><option value="pending">À examiner</option><option value="conflict">Conflits de revue</option><option value="accept">Acceptées</option><option value="keep">Valeur actuelle conservée</option></select></label><label>Catégorie<select value={collection} onChange={event => {
+              setCollection(event.target.value);
+              setLimit(30);
+            }}><option value="">Toutes les catégories</option>{[...new Set(draft.changes.map(change => change.collection))].map(key => <option key={key} value={key}>{labels[key] || key}</option>)}</select></label></form>
+        <div className="wiki-review-tools"><span role="status">{changes.length} changement(s) dans cette sélection</span><button className="wiki-action" disabled={busy || !dirty || !!recovery || conflicts.length > 0 || draft.status !== 'DRAFT'} onClick={() => run(async () => {
             await save();
             setMessage('Décisions enregistrées et accessibles aux autres administrateurs.');
-          })}>Enregistrer les décisions</button><button className="wiki-action" disabled={busy || draft.status !== 'DRAFT' || draft.baseVersion !== state?.current} onClick={() => run(async () => {
+          })}>Enregistrer la revue</button><button className="wiki-text-link" disabled={busy || !!recovery || !pendingChange || draft.status !== 'DRAFT'} onClick={() => {
+            setQuery('');
+            setCollection('');
+            setStatus('pending');
+            setLimit(30);
+            setFocusChange(pendingChange.key);
+          }}>Suivant à examiner ↓</button><button className="wiki-text-link" disabled={busy || !!recovery || !changes.length || draft.status !== 'DRAFT'} onClick={keepVisible}>{Math.min(changes.length, limit) === 1 ? 'Conserver la valeur actuelle du changement affiché' : `Conserver les valeurs actuelles des ${Math.min(changes.length, limit)} changements affichés`}</button></div>
+        <fieldset disabled={busy || !!recovery || draft.status !== 'DRAFT'} className="wiki-review-list">{changes.slice(0, limit).map(change => <article className={`wiki-diff${conflictsByKey.has(change.key) ? ' has-review-conflict' : ''}`} id={'review-change-' + change.key} key={change.key}><header><div><span className="wiki-kicker">{labels[change.collection]} · {change.id}</span><h3>{change.label}</h3><span className="wiki-muted">{change.field === '$record' ? change.before ? 'Suppression proposée' : 'Nouvelle entrée' : reviewFieldLabel(change.field)}</span></div><select aria-label={`Décision pour ${change.label}, ${change.field}`} value={decisions[change.key] || ''} onChange={event => choose(change.key, event.target.value)}><option value="">À examiner</option><option value="keep">Conserver la valeur actuelle</option><option value="accept">Accepter la proposition</option></select></header><ReviewConflict conflict={conflictsByKey.get(change.key)} onResolve={choice => choose(change.key, choice)} /><div className="wiki-diff-values"><DiffValue title="Actuel" value={change.before} /><DiffValue title="Proposition" value={change.after} /></div></article>)}</fieldset>
+        {!changes.length && <WikiEmpty title="Aucun changement dans cette sélection">Modifiez les filtres pour continuer la revue.</WikiEmpty>}{changes.length > limit && <button className="wiki-text-link" onClick={() => setLimit(value => value + 30)}>Afficher les changements suivants ↓</button>}
+        <div className="wiki-actions"><button className="wiki-action" disabled={busy || !dirty || !!recovery || conflicts.length > 0 || draft.status !== 'DRAFT'} onClick={() => run(async () => {
+            await save();
+            setMessage('Décisions enregistrées et accessibles aux autres administrateurs.');
+          })}>Enregistrer les décisions</button><button className="wiki-action" disabled={busy || !!recovery || conflicts.length > 0 || draft.status !== 'DRAFT' || draft.baseVersion !== state?.current} onClick={() => run(async () => {
             const saved = await save();
             const value = await call(`drafts/${saved.id}/preview/`);
-            navigate(`/histoires/personnages/${value.registry.people[0].id}`);
+            navigate(reviewPreviewPath(saved, value));
             beginWikiPreview(value, saved.id);
-          })}>Prévisualiser les fiches ↗</button><button className="wiki-text-link" disabled={busy} onClick={() => run(async () => {
-            const saved = await save();
-            download(saved, `revue-wiki-${saved.id}.json`);
-          })}>Exporter la revue ↓</button></div>
+          })}>Prévisualiser les fiches ↗</button><button className="wiki-text-link" disabled={busy} onClick={() => download({
+            format: 'renblood-wiki-review-export',
+            version: 1,
+            draft,
+            decisions,
+            conflicts,
+            recovery
+          }, `revue-wiki-${draft.id}.json`)}>Exporter la revue ↓</button></div>
         <p className="wiki-muted">L’aperçu applique les propositions acceptées ; les changements encore à examiner gardent leur valeur actuelle.</p>
-        <section className="wiki-publish-box"><p className="wiki-kicker">03 · Publier</p><h3>Rendre la version approuvée accessible</h3><p>La publication concerne tous les lecteurs de cet environnement. Chaque changement doit avoir une décision. Une publication concurrente bloque l’opération et demande une nouvelle revue.</p><label className="wiki-checkbox"><input type="checkbox" checked={publishConfirm} onChange={event => setPublishConfirm(event.target.checked)} />J’ai contrôlé le contenu public et souhaite publier les {accepted} changements acceptés.</label><button className="wiki-action" disabled={busy || !publishConfirm || reviewed !== draft.changes.length || !accepted || draft.status !== 'DRAFT' || draft.baseVersion !== state?.current} onClick={() => run(async () => {
+        <section className="wiki-publish-box"><p className="wiki-kicker">03 · Publier</p><h3>Rendre la version approuvée accessible</h3><p>La publication concerne tous les lecteurs de cet environnement. Chaque changement doit avoir une décision. Une publication concurrente bloque l’opération et demande une nouvelle revue.</p><label className="wiki-checkbox"><input type="checkbox" checked={publishConfirm} onChange={event => setPublishConfirm(event.target.checked)} />J’ai contrôlé le contenu public et souhaite publier les {accepted} changements acceptés.</label><button className="wiki-action" disabled={busy || !!recovery || conflicts.length > 0 || !!state?.publication || !publishConfirm || reviewed !== draft.changes.length || !accepted || draft.status !== 'DRAFT' || draft.baseVersion !== state?.current} onClick={() => run(async () => {
             const saved = await save();
             const value = await call(`drafts/${saved.id}/publish/`, {
               revision: saved.revision,

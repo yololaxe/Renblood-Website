@@ -70,3 +70,20 @@ Les essais de publication ci-dessous se font d'abord en préproduction, avec un 
 | W50 | Refuser le stockage du navigateur, ouvrir puis quitter un aperçu | Aperçu utilisable dans l'onglet avec indication de reprise indisponible ; sortie vers le dernier registre public connu. |
 
 Les réponses publiques invalides, les réponses d'aperçu tardives après sortie/déconnexion et les entrelacements de publications sont également couverts par les tests automatisés, sans altérer le lore public.
+
+## Reprise des revues et carnets portables
+
+| Cas | Action | Attendu |
+|---|---|---|
+| W51 | Choisir des décisions sans les envoyer, fermer puis rouvrir le brouillon | Copie locale proposée pour ce compte et cet environnement ; choix partagés inchangés avant enregistrement. |
+| W52 | Deux admins prennent des décisions opposées sur le même changement, puis reprendre la copie locale | Comparaison explicite ; conflit non envoyé tant qu'un choix n'est pas fait. Les choix indépendants du collègue sont conservés. |
+| W53 | Importer un paquet de plus de 30 changements, filtrer, conserver les lignes affichées et aller au suivant | Seules les lignes affichées sont conservées ; aucun autre changement n'est accepté automatiquement. |
+| W54 | Exporter une revue non enregistrée | Fichier contenant les décisions locales et conflits ; aucune sauvegarde partagée déclenchée par l'export. |
+| W55 | Refuser la sauvegarde locale pendant une revue puis enregistrer les décisions | Indication explicite ; enregistrement partagé toujours utilisable. |
+| W56 | Exporter un carnet avec notes, puis importer le fichier sur un autre navigateur | Aperçu avant ajout ; liens et accents des notes conservés. |
+| W57 | Importer un carnet comportant un repère déjà présent avec une autre note | Note actuelle conservée ; différence signalée avant ajout des nouveaux repères. |
+| W58 | Importer un fichier invalide, doublonné, ou dépassant les 200 repères après fusion | Refus sans modification du carnet actuel ; aucune note écartée pour faire de la place. |
+| W59 | Saisir une note dans un onglet et modifier sa version enregistrée depuis un second | Brouillon conservé ; comparaison et choix explicite avant remplacement. |
+| W60 | Reprendre une revue et ouvrir l'aperçu d'une modification acceptée | Première fiche modifiée existante ouverte ; libellés de champs en français. Une fiche supprimée renvoie vers un registre utilisable. |
+
+Le carnet exporté contient les notes enregistrées ; le texte encore marqué « Note non enregistrée » n'en fait pas partie. La recette compte 60 cas. Les scénarios de publication de données réelles restent à effectuer par l'équipe en préproduction.

@@ -46,3 +46,17 @@ Les changements de version remontent les pages publiques du wiki et actualisent 
 La publication réserve une révision d'état et un identifiant d'opération unique avant la bascule publique. La libération d'une réservation expirée incrémente cette révision : une ancienne requête ne peut plus poursuivre sa bascule, même si le même contenu a été restauré entre-temps. La finalisation d'un brouillon vérifie aussi l'identifiant de l'opération ; elle n'écrase pas une revue reprise par un autre administrateur. Les opérations interrompues se rapprochent de l'historique public avant une reprise. Seules les versions effectivement publiées sont proposées à la restauration.
 
 L'import contrôle aussi les références de dirigeants des lieux, les membres du gouvernement, les identifiants de sièges et de textes de livres, et les coordonnées des lieux. Les décisions éditoriales et le contenu de référence demeurent inchangés.
+
+## Reprise locale, longues revues et transferts de carnets
+
+Une revue non envoyée dispose d'une copie locale, écrite après 600 ms sans changement et lors d'une sortie de page. Elle contient uniquement les décisions et les métadonnées de reprise, sans recopier le paquet de lore. La reprise est disponible sept jours et liée au compte Firebase, au backend, au brouillon et à sa base publique. Elle ne remplace pas « Enregistrer les décisions », qui partage la revue avec l'équipe.
+
+À la réouverture, une copie locale est proposée avant de permettre l'édition. Si la revue partagée a changé, les choix indépendants sont réunis dans une proposition ; les décisions opposées restent des conflits explicites. Enregistrement, aperçu et publication sont bloqués tant que ces conflits ne sont pas résolus. Les conflits non résolus restent repris avec la copie locale. La dernière revue partagée peut être choisie volontairement. Un stockage refusé est signalé et laisse les actions serveur disponibles.
+
+Les filtres de catégorie et de décision, le bouton « Suivant à examiner » et la conservation des seules lignes affichées facilitent les longues revues. Aucune acceptation globale automatique n'est ajoutée. Une modification de choix remet à zéro la confirmation de publication. L'export d'une revue n'enregistre plus de décisions au serveur. L'aperçu commence sur une fiche correspondant à une modification acceptée, lorsqu'elle existe dans la version prévisualisée.
+
+« Mes repères » permet d'exporter un fichier JSON local contenant repères et notes enregistrées. L'import accepte un carnet Renblood version 1 de 1 Mo et 200 entrées maximum, présente les ajouts et garde les notes déjà présentes. Les liens invalides, doublons internes et dépassements de capacité sont refusés ; aucune entrée n'est supprimée pour libérer de la place. Aucun contenu du carnet n'est envoyé au backend.
+
+Un seul écouteur de stockage par onglet notifie les composants du carnet. Une erreur de lecture garde le dernier affichage valide et bloque l'écrasement à l'aveugle. Si une note enregistrée change dans un autre onglet pendant la saisie, le texte en cours reste affiché et un choix explicite permet de garder la version enregistrée ou de la remplacer.
+
+L'API publique vérifie maintenant l'ETag avant d'extraire le paquet complet. Une réponse 304 ne lit que la version courante ; pour une réponse 200, le contenu lu correspond exactement à la version utilisée dans son ETag, même si une publication concurrente survient.
