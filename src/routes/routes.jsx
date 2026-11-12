@@ -6,6 +6,7 @@ const Finance = lazy(() => import("../pages/Finance.jsx"));
 const Home = lazy(() => import("../pages/Home.jsx"));
 const HomeTest = lazy(() => import("../pages/HomeTest.jsx"));
 const Players = lazy(() => import("../pages/Players.jsx"));
+const Cadastre = lazy(() => import("../pages/Cadastre.jsx"));
 const Map = lazy(() => import("../pages/Map.jsx"));
 const Onboarding = lazy(() => import("../pages/Onboarding.jsx"));
 const ProfileSettings = lazy(() => import("../pages/ProfileSettings.jsx"));
@@ -94,7 +95,7 @@ const PlayerOwnedCountersPage = lazy(() => import("../pages/markets/PlayerMarket
 const PlayerCounterHistoryPage = lazy(() => import("../pages/markets/PlayerMarketPages.jsx").then(m => ({
   default: m.PlayerCounterHistoryPage
 })));
-const routes = [{
+const routes = [{ path: "/cadastre", element: <Cadastre />, private: true }, { path: "/admin/cadastre", element: <Cadastre />, private: true, requiredRole: "Admin" }, {
   path: "/histoires/chronologie",
   element: <WikiChronology />
 }, {

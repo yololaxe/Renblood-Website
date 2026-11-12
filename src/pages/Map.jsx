@@ -94,7 +94,7 @@ export default function Map() {
   return <main className="realm-page atlas-page">
     <RealmHeader eyebrow="L’atlas / Territoires" title="Le royaume, à votre portée" description="Suivez les frontières, retrouvez une cité et découvrez ceux qui la font vivre." />
     <section className="atlas-workspace" aria-label="Atlas interactif" onKeyDown={keys}>
-      <div className="atlas-topline"><p><span /> ATLAS DE RENBLOOD <span className="atlas-edition">/ TERRITOIRES & CITÉS</span></p><div className="atlas-modes" aria-label="Fond de carte">{[[false,"Illustrée"],[true,"Minecraft"]].map(([value,label])=><button key={label} aria-pressed={minecraft===value} onClick={()=>{if(minecraft!==value){setLoaded(false);setImageError(false);setMinecraft(value);}}}>{label}</button>)}</div></div>
+      <div className="atlas-topline"><Link className="realm-action" to="/cadastre">Cadastre & propriétés ↗</Link><p><span /> ATLAS DE RENBLOOD <span className="atlas-edition">/ TERRITOIRES & CITÉS</span></p><div className="atlas-modes" aria-label="Fond de carte">{[[false,"Illustrée"],[true,"Minecraft"]].map(([value,label])=><button key={label} aria-pressed={minecraft===value} onClick={()=>{if(minecraft!==value){setLoaded(false);setImageError(false);setMinecraft(value);}}}>{label}</button>)}</div></div>
       <div className="atlas-layout">
         <div className="atlas-stage-wrap">
           <div ref={canvas} className={`atlas-canvas ${dragging?"is-dragging":""}`} style={{touchAction:touchExplore?"none":"pan-y"}} tabIndex={0} role="region" aria-label="Carte du royaume. Boutons pour zoomer, flèches pour déplacer." onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} onLostPointerCapture={pointerUp}>

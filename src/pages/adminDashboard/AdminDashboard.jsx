@@ -26,7 +26,7 @@ export default function AdminDashboard() {
       });
     }
   }, [userRank, navigate]);
-  const quickActions = [{
+  const quickActions = [{ label: "Cadastre & terrains", icon: <FaGlobe />, path: "/admin/cadastre", color: "bg-amber-800 hover:bg-amber-700" }, {
     label: "Inscriptions & identités",
     icon: <FaUserPlus />,
     path: "/admin/registration",
