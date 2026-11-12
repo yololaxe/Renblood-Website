@@ -51,6 +51,7 @@ const AdminDashboard = lazy(() => import("../pages/adminDashboard/AdminDashboard
 const SessionPlayersFuturesPage = lazy(() => import("../pages/adminDashboard/SessionPlayers.jsx"));
 const MoneyReport = lazy(() => import("../pages/adminDashboard/reporting/MoneyReport.jsx"));
 const QuestEditor = lazy(() => import("../pages/adminDashboard/QuestEditor.jsx"));
+const NpcShopsPage = lazy(() => import("../pages/markets/NpcShopsPage.jsx"));
 const AdminMarketDashboard = lazy(() => import("../pages/markets/AdminMarketPages.jsx").then(m => ({
   default: m.AdminMarketDashboard
 })));
@@ -279,6 +280,11 @@ const routes = [{
 }, {
   path: "/admin/quests",
   element: <QuestEditor />,
+  private: true,
+  requiredRole: "Admin"
+}, {
+  path: "/admin/npc-shops",
+  element: <NpcShopsPage />,
   private: true,
   requiredRole: "Admin"
 }, {
