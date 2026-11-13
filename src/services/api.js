@@ -867,7 +867,7 @@ export const createNpc = async (npcData) => {
     return data;
   } catch (error) {
     console.error("❌ createNpc :", error.response?.data || error.message);
-    return null;
+    throw error;
   }
 };
 
@@ -878,7 +878,7 @@ export const updateNpc = async (npcId, updates) => {
     return data;
   } catch (error) {
     console.error("❌ updateNpc :", error.response?.data || error.message);
-    return null;
+    throw error;
   }
 };
 
@@ -889,7 +889,7 @@ export const deleteNpc = async (npcId) => {
     return data;
   } catch (error) {
     console.error("❌ deleteNpc :", error.response?.data || error.message);
-    return null;
+    throw error;
   }
 };
 

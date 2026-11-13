@@ -26,7 +26,7 @@ export default function AdminDashboard() {
       });
     }
   }, [userRank, navigate]);
-  const quickActions = [{ label: "Cadastre & terrains", icon: <FaGlobe />, path: "/admin/cadastre", color: "bg-amber-800 hover:bg-amber-700" }, {
+  const quickActions = [{label:"Personnages & profils de jeu",icon:<FaUsers/>,path:"/admin/characters",color:"bg-amber-800 hover:bg-amber-700"},{ label: "Cadastre & terrains", icon: <FaGlobe />, path: "/admin/cadastre", color: "bg-amber-800 hover:bg-amber-700" }, {
     label: "Inscriptions & identités",
     icon: <FaUserPlus />,
     path: "/admin/registration",
@@ -52,7 +52,7 @@ export default function AdminDashboard() {
     path: "/admin/markets",
     color: "bg-amber-600 hover:bg-amber-500"
   }];
-  const widgets = [{
+  const widgets = [{id:"characters",title:"Personnages, PNJ & joueurs",component:<div><p className="text-stone-400 mb-4">Relier le lore au jeu, éditer une fiche, ajouter un proche et attribuer un personnage à un compte.</p><button onClick={()=>navigate("/admin/characters")} className="wiki-action">Ouvrir le répertoire ↗</button></div>,colSpan:"lg:col-span-1"},{
     id: "wiki",
     title: "Atelier du wiki",
     component: <WikiWidget />,

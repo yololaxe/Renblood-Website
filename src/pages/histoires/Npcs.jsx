@@ -1,4 +1,6 @@
+import { Link, useSearchParams } from "react-router-dom";
 import RealmHeader from "../../components/RealmHeader";
+import { deletionTarget, npcError } from "../../services/npcActions.mjs";
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getNpcsList, createNpc, updateNpc, deleteNpc } from "../../services/api";
@@ -47,9 +49,13 @@ const getRegions = () => {
 
 export default function Npcs() {
   const { userId, userRank } = useUser();
+  const [searchParams]=useSearchParams();
   const [npcs, setNpcs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedNpc, setSelectedNpc] = useState(null);
+  const [npcNotice, setNpcNotice] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const mutationInFlight=useRef(false);
   
   // États pour l'édition/création
   const [isEditing, setIsEditing] = useState(false);
@@ -71,7 +77,7 @@ export default function Npcs() {
     setLoading(true);
     try {
       const data = await getNpcsList();
-      setNpcs(data || []);
+      setNpcs((data || []).map(n=>({...n,enabled:n.configured_enabled??n.enabled})));
     } catch (error) {
       console.error("Erreur chargement NPCs:", error);
     } finally {
@@ -84,11 +90,13 @@ export default function Npcs() {
   }, []);
 
   const isAdmin = userRank === "Admin";
+  useEffect(()=>{const id=searchParams.get("npc");const npc=npcs.find(n=>n.npc_id===id);if(npc&&isAdmin){setFormData(npc);setIsEditing(true);}},[searchParams,npcs,isAdmin]);
   const regionsList = getRegions();
 
   // --- Filtrage et Tri ---
   const filteredAndSortedNpcs = useMemo(() => {
     let result = npcs.filter(npc => {
+      if(npc.archived&&!isAdmin)return false;
       const hasMet = isAdmin || (npc.met_by && npc.met_by.includes(userId));
       
       // Filtre par statut
@@ -199,28 +207,25 @@ export default function Npcs() {
       setIsEditing(false);
       fetchNpcs();
     } catch (error) {
-      alert("Erreur lors de l'enregistrement");
+      setNpcNotice({kind:"error",message:npcError(error,"Enregistrement impossible. Les modifications sont conservées dans le formulaire.")});
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (npc) => {
+    if(mutationInFlight.current)return;
     try {
-      const npcId = formData.npc_id;
-      const linkedQuests = formData.quest_links || [];
-      const linkedMessage = linkedQuests.length > 0
-        ? `\n\nCe PNJ est lié à ${linkedQuests.length} quête(s). Le backend peut refuser la suppression tant que ces liens existent.`
-        : "";
-      if (!window.confirm(`Supprimer ce NPC ?${linkedMessage}`)) return;
-
-      await deleteNpc(npcId);
-      fetchNpcs();
-      setIsEditing(false);
-      if (selectedNpc?.npc_id === npcId) setSelectedNpc(null);
-      
-    } catch (error) {
-      console.error(error);
-      alert("Erreur lors de la suppression ou du remplacement.");
-    }
+      const target=deletionTarget(npc);
+      const linked=target.linkedQuests?`\nCe PNJ est lié à ${target.linkedQuests} quête(s). Ses références doivent être vérifiées.`:"";
+      if(!window.confirm(`Supprimer ${target.name} (${target.id}) ?${linked}`))return;
+      mutationInFlight.current=true;setDeletingId(target.id);setNpcNotice(null);
+      const receipt=await deleteNpc(target.id);
+      if(!receipt)throw new Error("La suppression n’a pas été confirmée par le serveur.");
+      setNpcs(current=>current.filter(row=>row.npc_id!==target.id));
+      setIsEditing(false);if(selectedNpc?.npc_id===target.id)setSelectedNpc(null);
+      setNpcNotice({kind:"success",message:`${target.name} a été supprimé. La synchronisation du jeu prend effet au prochain échange avec le serveur.`});
+    } catch(error) {
+      setNpcNotice({kind:"error",message:npcError(error,"Suppression impossible. Le PNJ est conservé.")});
+    } finally {mutationInFlight.current=false;setDeletingId(null);}
   };
 
   if (loading) {
@@ -234,8 +239,10 @@ export default function Npcs() {
   return (
     <div className="min-h-screen bg-[#11110f] text-stone-200 pb-20">
       
+      {npcNotice&&<div role={npcNotice.kind==="error"?"alert":"status"} className={`mx-auto max-w-[1680px] px-5 py-3 text-sm ${npcNotice.kind==="error"?"text-red-300":"text-emerald-300"}`}>{npcNotice.message}<button type="button" className="ml-3 underline" onClick={()=>setNpcNotice(null)}>Fermer</button></div>}
       {/* Hero Header */}
       <RealmHeader eyebrow="Les rencontres / Personnages" title="Personnages Non-Joueurs" description="Rencontrez les habitants de Renblood. Certains vous guideront, d'autres vous vendront des biens précieux.">
+        {isAdmin && <Link className="realm-action" to="/admin/characters">Lore & profils de jeu ↗</Link>}
         {isAdmin && <button onClick={handleCreateClick} className="realm-action"><FaPlus /> Créer un NPC</button>}
       </RealmHeader>
 
@@ -334,7 +341,7 @@ export default function Npcs() {
 
                   {/* Admin Actions Overlay */}
                   {isAdmin && (
-                    <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-2 right-2 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                       <button 
                         onClick={(e) => { e.stopPropagation(); handleEditClick(npc); }}
                         className="p-2 bg-amber-800 hover:bg-amber-700 text-white rounded-full shadow-none"
@@ -344,10 +351,9 @@ export default function Npcs() {
                       <button 
                         onClick={(e) => { 
                           e.stopPropagation(); 
-                          setFormData(npc); // Set data before deleting so handleDelete knows what to check
-                          handleDelete(); 
+                          handleDelete(npc);
                         }}
-                        className="p-2 bg-red-600 hover:bg-red-500 text-white rounded-full shadow-none"
+                        aria-label={`Supprimer ${npc.name}`} disabled={!!deletingId} className="p-2 bg-red-600 hover:bg-red-500 text-white rounded-full shadow-none disabled:opacity-50"
                       >
                         <FaTrash size={12} />
                       </button>
@@ -426,6 +432,8 @@ export default function Npcs() {
               <div className="p-8 md:w-3/5 flex flex-col">
                 <div className="mb-6">
                   <h2 className="text-3xl font-bold text-white mb-1">{selectedNpc.name}</h2>
+                  {selectedNpc.character_id&&<Link className="text-amber-300 underline" to={`/histoires/personnages/${selectedNpc.character_id}`}>Fiche de lore · {selectedNpc.character_name} ↗</Link>}
+                  {isAdmin&&<Link className="block text-amber-300 underline text-sm" to={`/admin/characters?npc=${selectedNpc.npc_id}`}>Gérer ses liens / archiver ↗</Link>}
                   <p className="text-purple-400 flex items-center gap-2 text-sm font-medium">
                     <FaMapMarkerAlt /> {selectedNpc.region || "Royaume de Renblood"}
                   </p>
@@ -653,7 +661,7 @@ export default function Npcs() {
               </div>
 
               <div className="p-6 border-t border-stone-700 bg-[#11110f] flex justify-between">
-                <button onClick={handleDelete} className="flex items-center gap-2 text-red-500 hover:text-red-400 font-bold">
+                <button onClick={() => handleDelete(formData)} disabled={!!deletingId} className="flex items-center gap-2 text-red-500 hover:text-red-400 font-bold">
                     <FaTrash /> Supprimer
                 </button>
                 <div className="flex gap-3 ml-auto">

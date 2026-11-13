@@ -1,5 +1,6 @@
 // src/routes/routes.js
 import React, { lazy } from "react";
+const CharacterDirectory = lazy(() => import("../pages/admin/CharacterDirectory.jsx"));
 const SupportReceipt = lazy(() => import("../pages/admin/SupportReceipt.jsx"));
 const EconomyDesk = lazy(() => import("../pages/admin/EconomyDesk.jsx"));
 const Finance = lazy(() => import("../pages/Finance.jsx"));
@@ -95,7 +96,7 @@ const PlayerOwnedCountersPage = lazy(() => import("../pages/markets/PlayerMarket
 const PlayerCounterHistoryPage = lazy(() => import("../pages/markets/PlayerMarketPages.jsx").then(m => ({
   default: m.PlayerCounterHistoryPage
 })));
-const routes = [{ path: "/cadastre", element: <Cadastre />, private: true }, { path: "/admin/cadastre", element: <Cadastre />, private: true, requiredRole: "Admin" }, {
+const routes = [{path:"/admin/characters",element:<CharacterDirectory/>,private:true,requiredRole:"Admin"},{ path: "/cadastre", element: <Cadastre />, private: true }, { path: "/admin/cadastre", element: <Cadastre />, private: true, requiredRole: "Admin" }, {
   path: "/histoires/chronologie",
   element: <WikiChronology />
 }, {

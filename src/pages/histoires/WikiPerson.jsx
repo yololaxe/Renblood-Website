@@ -1,3 +1,4 @@
+import { useUser } from "../../context/UserContext";
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { normalize, rolesById, registry, peopleById, familiesById, relatives, personPath, lifespan, vitalLabel, findLocation } from '../../services/wiki.mjs';
 import { WikiPage, WikiHeader, WikiMissing, WikiNav } from '../../components/wiki/WikiShell';
@@ -5,6 +6,7 @@ import { WikiLink, LinkedText } from '../../components/wiki/WikiLink';
 import { PersonPortrait, PersonRow } from '../../components/wiki/PersonSummary';
 import FamilyGraph from '../../components/wiki/FamilyGraph';
 export default function WikiPerson() {
+  const {userRank}=useUser();
   const {
       personId
     } = useParams(),
@@ -18,6 +20,7 @@ export default function WikiPerson() {
   const place = findLocation(person.location),
     events = registry.events.filter(e => e.personId === personId);
   return <WikiPage><WikiHeader section="Personnages" title={person.name} intro={person.title} aside={<PersonPortrait person={person} large />}>
+    {userRank==="Admin"&&<Link className="wiki-action" to={`/admin/characters?personne=${person.id}`}>Modifier la fiche · liens familiaux · profil de jeu ↗</Link>}
     <div className="wiki-person-meta">{person.lineage === 'sand' && <WikiLink kind="concept" id="sand">Patronyme Sand</WikiLink>}{family && <WikiLink kind="family" id={family.id}>{family.name}</WikiLink>}<span>{lifespan(person) || vitalLabel(person.vital)}</span></div>
   </WikiHeader><div className="wiki-content"><WikiNav />
     <div className="wiki-profile-layout"><div className="wiki-profile-main">
