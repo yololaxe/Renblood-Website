@@ -1,13 +1,13 @@
 const journalEditions = [
   {
     id: "conseil-an-336",
-    title: "Zeubillage n'est plus : vive Shaleton !",
+    title: "Shaleton entre dans une nouvelle ère",
     publication: "Édition spéciale - Conseil de l'an 336",
     author: "Paul Mortadelle",
     intro: [
       "Habitantes, habitants,",
       "Le Conseil de l'an 336 restera sans doute dans les mémoires. Après débats, rires, soupirs et quelques regards lancés vers les trois derniers nostalgiques du vieux nom, notre village quitte officiellement son ancienne appellation.",
-      "Zeubillage devient Shaleton.",
+      "Le village porte désormais le nom de Shaleton.",
       "Il faut dire que l'ancien nom faisait sourire les voyageurs, mais beaucoup moins les marchands, les familles ambitieuses et ceux qui rêvent de voir un jour notre communauté reconnue comme une vraie ville du Royaume de Renblood. Le Conseil l'a compris : pour peser sur les cartes du royaume, il faut un nom qui tienne droit dans les registres.",
       "Shaleton est donc né.",
     ],

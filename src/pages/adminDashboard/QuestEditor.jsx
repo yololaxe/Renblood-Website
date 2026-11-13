@@ -1,3 +1,4 @@
+import { npcOptions, selectedNpcOption } from "../../services/npcSelection.mjs";
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import Tree from "react-d3-tree";
 import { motion, AnimatePresence } from "framer-motion";
@@ -222,7 +223,8 @@ const NpcSelector = ({ value, onChange, npcs, label = "PNJ Donneur", allowDummy 
     setDummyName(nextIsDummy ? value.replace("dummy-", "") : "");
   }, [value, allowDummy]);
 
-  const filteredNpcs = npcs.filter(npc => 
+  const options = useMemo(() => npcOptions(npcs), [npcs]);
+  const filteredNpcs = options.filter(npc =>
     npc.name.toLowerCase().includes(search.toLowerCase()) || 
     (npc.region && npc.region.toLowerCase().includes(search.toLowerCase()))
   );
@@ -251,9 +253,9 @@ const NpcSelector = ({ value, onChange, npcs, label = "PNJ Donneur", allowDummy 
   
   const selectedNpcName = useMemo(() => {
     if (!value || value.startsWith("dummy-")) return value;
-    const npc = npcs.find(n => n.npc_id === value);
+    const npc = selectedNpcOption(options, value);
     return npc ? npc.name : value;
-  }, [value, npcs]);
+  }, [value, options]);
 
   return (
     <div className="relative">

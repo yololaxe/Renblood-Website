@@ -65,7 +65,7 @@ export default function Journal() {
               <div className="px-6 py-8 md:px-12 md:py-12">
                 <div className="mb-10 space-y-4 border-b border-stone-500 pb-8 font-serif text-lg leading-8">
                   {edition.intro.map((paragraph, index) => (
-                    <p key={index} className={paragraph === "Zeubillage devient Shaleton." ? "text-center text-2xl font-black" : ""}>
+                    <p key={index} className={paragraph === "Le village porte désormais le nom de Shaleton." ? "text-center text-2xl font-black" : ""}>
                       {paragraph}
                     </p>
                   ))}
