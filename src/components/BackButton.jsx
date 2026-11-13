@@ -32,8 +32,8 @@ const BackButton = () => {
     scale: 1.1
   }} whileTap={{
     scale: 0.9
-  }} className="fixed top-24 left-6 z-40 p-3 bg-gray-800/80 backdrop-blur-sm text-white rounded-full shadow-lg border border-gray-700 hover:bg-gray-700 transition-all group" aria-label="Retour">
-      <FaArrowLeft className="text-lg group-hover:-translate-x-1 transition-transform" />
+  }} className="site-back-button ml-5 my-2 inline-flex min-h-9 items-center gap-2 self-start px-2 text-xs text-stone-400 transition-colors hover:text-amber-300 sm:ml-8 lg:ml-12" aria-label="Retour">
+      <FaArrowLeft aria-hidden="true" className="text-xs" /><span>Retour</span>
     </motion.button>;
 };
 export default BackButton;

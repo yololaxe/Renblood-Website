@@ -233,38 +233,14 @@ function GuideLink({
 export default function Information() {
   const [searchOpen, setSearchOpen] = useState(false);
   return <main className="min-h-screen overflow-x-hidden bg-[#11110f] text-stone-100">
-      <header className="relative border-b border-stone-700/70">
-        <div className="mx-auto grid w-full max-w-[1680px] grid-cols-1 items-center gap-8 px-5 pb-10 pt-12 sm:px-8 md:pb-14 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12 lg:px-12 lg:pb-16 lg:pt-16">
-          <div className="relative z-10">
-            <p className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-amber-300 sm:text-sm">
-              <span className="h-px w-8 bg-amber-300" /> Guide du voyageur <span className="text-stone-500">/ 01—06</span>
-            </p>
-            <h1 className="max-w-4xl text-[clamp(2.25rem,8vw,7.5rem)] font-black leading-[0.88] tracking-[-0.065em] text-stone-50 editorial-title">
-              Prendre ses repères<span className="text-amber-300">.</span>
-            </h1>
-            <p className="mt-6 max-w-2xl text-base leading-7 text-stone-300 sm:text-lg sm:leading-8">
-              Les règles, les lieux et les personnes qui font vivre Renblood. Choisis un sujet pour ouvrir directement le bon registre.
-            </p>
-            <button type="button" onClick={() => setSearchOpen(true)} className="mt-8 flex min-h-14 w-full max-w-2xl items-center gap-4 border-y border-stone-600 py-3 text-left text-stone-300 transition-colors hover:border-amber-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300" aria-label="Rechercher dans le guide">
-              <FaSearch aria-hidden="true" className="shrink-0 text-amber-300" />
-              <span className="min-w-0 flex-1 truncate">Rechercher une règle, un métier, un joueur…</span>
-              <span className="hidden shrink-0 text-xs uppercase tracking-wider text-stone-500 sm:inline">Ctrl K</span>
-              <FaArrowRight aria-hidden="true" className="shrink-0 text-sm text-stone-500" />
-            </button>
-          </div>
-
-          <figure className="relative min-h-64 overflow-hidden border border-stone-700 bg-stone-900 sm:min-h-80 lg:min-h-[430px]">
-            <img src="/accueil/carte-renblood-1154.jpg" srcSet="/accueil/carte-renblood-640.jpg 640w, /accueil/carte-renblood-1154.jpg 1154w" sizes="(min-width: 1680px) 760px, (min-width: 1024px) 48vw, 100vw" decoding="async" alt="Carte illustrée du royaume de Renblood" className="absolute inset-0 h-full w-full object-cover object-center opacity-75" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#11110f]/90 via-transparent to-black/10" />
-            <figcaption className="absolute bottom-0 left-0 right-0 flex flex-col items-start gap-2 p-5 sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:p-7">
-              <span>
-                <span className="block text-xs font-bold uppercase tracking-[0.2em] text-amber-200">Le royaume</span>
-                <span className="mt-1 block text-2xl font-bold text-white sm:text-3xl">Un monde à parcourir</span>
-              </span>
-              <span className="text-sm text-stone-300">Carte · territoires · cités</span>
-            </figcaption>
-            <span aria-hidden="true" className="absolute right-4 top-4 border border-white/35 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">Renblood</span>
-          </figure>
+      <header className="border-b border-stone-700/70">
+        <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
+          <h1 className="font-semibold text-stone-50">Guide</h1>
+          <button type="button" onClick={() => setSearchOpen(true)} className="flex min-h-11 w-full items-center gap-3 border border-stone-600 px-4 py-2 text-left text-sm text-stone-300 transition-colors hover:border-amber-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300 sm:w-auto sm:min-w-80" aria-label="Rechercher dans le guide">
+            <FaSearch aria-hidden="true" className="shrink-0 text-amber-300" />
+            <span className="min-w-0 flex-1 truncate">Une règle, un métier, un joueur…</span>
+            <span className="hidden shrink-0 text-xs text-stone-500 sm:inline">Ctrl K</span>
+          </button>
         </div>
       </header>
 

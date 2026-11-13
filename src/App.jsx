@@ -11,6 +11,7 @@ import PageTransition from "./components/PageTransition";
 import BackButton from "./components/BackButton";
 import LoadingState from "./components/LoadingState";
 import "./index.css";
+import "./compact-headings.css";
 import { subscribeWiki, getWikiRevision } from "./services/wiki.mjs";
 import WikiRuntime from "./components/wiki/WikiRuntime";
 import AdProvider from "./components/ads/AdProvider";
@@ -40,8 +41,10 @@ const AnimatedRoutes = () => {
     </AnimatePresence>;
 };
 const App = () => {
+  const { pathname } = useLocation();
+  const compactHeadings = !["/", "/home", "/home-test"].includes(pathname);
   return <MotionConfig reducedMotion="user"><WikiRuntime>
-      <div className="flex flex-col min-h-screen bg-[#11110f] text-stone-200">
+      <div className={`${compactHeadings ? "site-compact-headings " : ""}flex flex-col min-h-screen bg-[#11110f] text-stone-200`}>
       {/* 👇 NEW: on charge le script AdSense une seule fois pour toute l’app */}
       <AdProvider />
 

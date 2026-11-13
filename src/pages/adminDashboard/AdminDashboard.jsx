@@ -86,7 +86,7 @@ export default function AdminDashboard() {
   return <div className="min-h-screen bg-[#11110f] text-stone-200 pb-20">
       
       {/* --- HERO HEADER --- */}
-      <div className="relative bg-[#1b1b17] border-b border-stone-700 py-12 px-6 mb-8 overflow-hidden">
+      <div className="relative bg-[#1b1b17] border-b border-stone-700 py-5 px-6 mb-5 overflow-hidden">
         <div className="max-w-[1680px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
           <div>
             <motion.h1 initial={{
@@ -96,9 +96,9 @@ export default function AdminDashboard() {
             opacity: 1,
             x: 0
           }} className="text-4xl font-extrabold      mb-2 editorial-title">
-              Panneau d'Administration
+              Administration
             </motion.h1>
-            <p className="text-stone-400">Bienvenue, Administrateur. Gérez le royaume de Renblood.</p>
+
           </div>
 
           {/* Actions Rapides */}

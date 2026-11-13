@@ -1,0 +1,19 @@
+/* Shared page policy: short, functional headings instead of large editorial banners. */
+.site-compact-headings h1{font-size:clamp(1.25rem,2.2vw,1.75rem)!important;line-height:1.25!important;letter-spacing:-.025em!important;max-width:100%}
+.site-compact-headings .realm-heading{padding-block:1rem!important}
+.site-compact-headings .realm-heading--compact{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.site-compact-headings .realm-heading--compact h1{font-weight:650;margin:0}
+.site-compact-headings .realm-heading--compact .realm-header-actions{margin:0;gap:.5rem}
+.site-compact-headings .wiki-header>.wiki-content{padding-block:1rem!important}
+.site-compact-headings .wiki-header .wiki-heading{grid-template-columns:minmax(0,1fr) auto;gap:1rem;margin-top:.75rem}
+.site-compact-headings .wiki-header .wiki-intro{font-size:.85rem;line-height:1.55;margin-top:.5rem;max-width:85ch}
+.site-compact-headings .wiki-header .wiki-heading-aside img{max-height:100px;width:auto;object-fit:contain}
+.site-compact-headings .wiki-reading-heading{padding-block:1rem!important}
+.site-compact-headings .compact-page-heading{margin-bottom:1.25rem!important;text-align:left}
+.site-compact-headings .compact-page-heading>svg{display:none}
+.site-compact-headings .compact-page-heading>p{margin-top:.4rem;font-size:.8rem}
+
+.site-compact-headings .wiki-header{padding-block:0!important}
+.site-compact-headings .wiki-header .wiki-heading{padding-block:0!important}
+@media(max-width:760px){.site-compact-headings .realm-heading--compact{align-items:flex-start;flex-direction:column;gap:.65rem}.site-compact-headings .wiki-header .wiki-heading{grid-template-columns:1fr}}
+.site-compact-headings .wiki-breadcrumb{margin-bottom:.75rem}

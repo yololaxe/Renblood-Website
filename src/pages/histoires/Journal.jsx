@@ -8,12 +8,12 @@ export default function Journal() {
   const edition = journalEditions.find((item) => item.id === selectedId);
 
   return (
-    <div className="min-h-screen bg-stone-950 px-4 py-12 text-stone-900">
+    <div className="min-h-screen bg-stone-950 px-4 py-6 text-stone-900">
       <div className="mx-auto max-w-7xl">
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-10 text-center text-stone-100"
+          className="compact-page-heading mb-5 text-stone-100"
         >
           <FaNewspaper className="mx-auto mb-4 text-5xl text-amber-500" />
           <h1 className="font-serif text-5xl font-black md:text-7xl editorial-title">Le Journal de Shaleton</h1>
