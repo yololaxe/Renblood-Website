@@ -54,3 +54,6 @@ adminsdk.json
 renblood-backups/
 preprod-validation/
 __onboarding_preview__/
+
+# Source export retained locally; optimized map tiles are versioned instead.
+/artwork/maps/big_map_2026.png
