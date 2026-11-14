@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import RealmHeader from "../../components/RealmHeader";
 import { deletionTarget, npcError } from "../../services/npcActions.mjs";
+import { npcDirectory, selectedNpcOption } from "../../services/npcSelection.mjs";
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getNpcsList, createNpc, updateNpc, deleteNpc } from "../../services/api";
@@ -27,6 +28,8 @@ const questRoleLabels = {
   OBJECTIVE: "Objectif"
 };
 
+const npcTypeLabels = { QUEST: "Quêtes", DECO: "Décor", SHOPKEEPER: "Marchand" };
+
 const SKIN_MODES = {
   PLAYER: "PLAYER",
   REFERENCE: "REFERENCE"
@@ -34,7 +37,7 @@ const SKIN_MODES = {
 
 const getQuestLinkRoles = (link) => link.roles || (link.role ? [link.role] : []);
 const getQuestLinkLabel = (link) => link.questName || link.quest_name || link.name || link.questId || link.quest_id;
-const getNpcPayload = ({ quest_ids, quest_giver, quest_validator, quests, quest_links, ...npc }) => npc;
+const getNpcPayload = ({ quest_ids, quest_giver, quest_validator, quests, quest_links, profile_ids, profile_types, ...npc }) => npc;
 const isLikelySkinReference = (skin = "") => /[:/\\.]|textures\.minecraft\.net/i.test(skin);
 
 // Liste des régions/villes depuis comtes.js
@@ -92,10 +95,16 @@ export default function Npcs() {
   const isAdmin = userRank === "Admin";
   useEffect(()=>{const id=searchParams.get("npc");const npc=npcs.find(n=>n.npc_id===id);if(npc&&isAdmin){setFormData(npc);setIsEditing(true);}},[searchParams,npcs,isAdmin]);
   const regionsList = getRegions();
+  const directory = useMemo(() => npcDirectory(npcs, { includeArchived: isAdmin }), [npcs, isAdmin]);
+  useEffect(() => {
+    setSelectedNpc(current => current ? selectedNpcOption(directory, current.npc_id)
+      || directory.find(n => current.character_id && n.character_id === current.character_id) || null : null);
+  }, [directory]);
+  const selectedProfiles = selectedNpc ? npcs.filter(n => selectedNpc.profile_ids?.includes(n.npc_id) || n.npc_id === selectedNpc.npc_id) : [];
 
   // --- Filtrage et Tri ---
   const filteredAndSortedNpcs = useMemo(() => {
-    let result = npcs.filter(npc => {
+    let result = directory.filter(npc => {
       if(npc.archived&&!isAdmin)return false;
       const hasMet = isAdmin || (npc.met_by && npc.met_by.includes(userId));
       
@@ -124,10 +133,11 @@ export default function Npcs() {
     });
 
     return result;
-  }, [npcs, filterRegion, filterStatus, sortBy, isAdmin, userId]);
+  }, [directory, filterRegion, filterStatus, sortBy, isAdmin, userId]);
 
   // --- Gestion du Formulaire ---
-  const handleEditClick = (npc) => {
+  const handleEditClick = (displayNpc) => {
+    const npc = npcs.find(n => n.npc_id === displayNpc.npc_id) || displayNpc;
     setFormData({
       ...DEFAULT_NPC,
       ...npc,
@@ -211,7 +221,8 @@ export default function Npcs() {
     }
   };
 
-  const handleDelete = async (npc) => {
+  const handleDelete = async (displayNpc) => {
+    const npc = npcs.find(n => n.npc_id === displayNpc.npc_id) || displayNpc;
     if(mutationInFlight.current)return;
     try {
       const target=deletionTarget(npc);
@@ -343,7 +354,8 @@ export default function Npcs() {
                   {isAdmin && (
                     <div className="absolute top-2 right-2 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                       <button 
-                        onClick={(e) => { e.stopPropagation(); handleEditClick(npc); }}
+                        onClick={(e) => { e.stopPropagation(); npc.profile_ids.length > 1 ? setSelectedNpc(npc) : handleEditClick(npc); }}
+                        aria-label={npc.profile_ids.length > 1 ? `Gérer les profils de ${npc.name}` : `Modifier ${npc.name}`}
                         className="p-2 bg-amber-800 hover:bg-amber-700 text-white rounded-full shadow-none"
                       >
                         <FaEdit size={12} />
@@ -351,9 +363,9 @@ export default function Npcs() {
                       <button 
                         onClick={(e) => { 
                           e.stopPropagation(); 
-                          handleDelete(npc);
+                          npc.profile_ids.length > 1 ? setSelectedNpc(npc) : handleDelete(npc);
                         }}
-                        aria-label={`Supprimer ${npc.name}`} disabled={!!deletingId} className="p-2 bg-red-600 hover:bg-red-500 text-white rounded-full shadow-none disabled:opacity-50"
+                        aria-label={npc.profile_ids.length > 1 ? `Choisir un profil de ${npc.name} à supprimer` : `Supprimer ${npc.name}`} disabled={!!deletingId} className="p-2 bg-red-600 hover:bg-red-500 text-white rounded-full shadow-none disabled:opacity-50"
                       >
                         <FaTrash size={12} />
                       </button>
@@ -369,11 +381,12 @@ export default function Npcs() {
                         "{npc.description || "Pas de description."}"
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {npc.type && (
-                          <span className="px-2 py-1 bg-stone-800 rounded text-xs font-bold text-stone-300 border border-stone-600">
-                            {npc.type}
+                        {npc.profile_types.map(type => (
+                          <span key={type} className="px-2 py-1 bg-stone-800 rounded text-xs font-bold text-stone-300 border border-stone-600">
+                            {npcTypeLabels[type] || type}
                           </span>
-                        )}
+                        ))}
+                        {npc.archived && <span className="text-xs text-stone-500">Archivé</span>}
                         {npc.quest_links?.length > 0 && (
                           <span className="px-2 py-1 bg-yellow-900/30 text-amber-300 rounded text-xs font-bold border border-yellow-600/30">
                             {npc.quest_links.length} quête(s)
@@ -404,7 +417,7 @@ export default function Npcs() {
             onClick={() => setSelectedNpc(null)}
           >
             <motion.div
-              className="bg-[#1b1b17] w-full max-w-2xl rounded-sm shadow-none border border-stone-600 overflow-hidden relative flex flex-col md:flex-row"
+              className="bg-[#1b1b17] w-full max-w-2xl max-h-[90dvh] rounded-sm shadow-none border border-stone-600 overflow-y-auto relative flex flex-col md:flex-row"
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
@@ -483,12 +496,29 @@ export default function Npcs() {
                   </div>
                 )}
 
-                <div className="mt-auto pt-6 flex gap-2">
-                  {selectedNpc.type && (
-                    <span className="px-3 py-1 bg-stone-800 rounded-full text-xs font-bold text-white border border-stone-600">
-                      {selectedNpc.type}
+                {isAdmin && selectedProfiles.length > 1 && (
+                  <div className="mt-6 border-t border-stone-700 pt-4">
+                    <h3 className="text-xs font-bold text-stone-400 uppercase mb-2">Profils de jeu</h3>
+                    <p className="text-xs text-stone-500 mb-3">Une seule personne, plusieurs rôles. Choisis le profil à modifier ; ses références de quêtes et d’apparitions restent distinctes.</p>
+                    <div className="space-y-3">
+                      {selectedProfiles.map(profile => (
+                        <div key={profile.npc_id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                          <span className="text-stone-300">{npcTypeLabels[profile.type] || profile.type}{profile.archived ? " · Archivé" : ""}</span>
+                          <div className="flex flex-wrap gap-3">
+                            <button type="button" className="text-amber-300 underline underline-offset-4" onClick={() => handleEditClick(profile)}>Modifier</button>
+                            <button type="button" disabled={!!deletingId} className="text-red-300 underline underline-offset-4 disabled:opacity-50" onClick={() => handleDelete(profile)}>Supprimer ce profil</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="mt-auto pt-6 flex flex-wrap gap-2">
+                  {selectedNpc.profile_types.map(type => (
+                    <span key={type} className="px-3 py-1 bg-stone-800 rounded-full text-xs font-bold text-white border border-stone-600">
+                      {npcTypeLabels[type] || type}
                     </span>
-                  )}
+                  ))}
                   {[...new Set((selectedNpc.quest_links || []).flatMap(getQuestLinkRoles))].map(role => (
                     <span key={role} className="px-3 py-1 bg-yellow-600/20 text-amber-300 rounded-full text-xs font-bold border border-yellow-600/40">
                       {questRoleLabels[role] || role}

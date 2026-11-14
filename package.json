@@ -12,9 +12,10 @@
     "deploy:staging": "npm run build:staging && firebase deploy --only hosting:staging --project renblood-website",
     "test:onboarding": "node --test src/services/profileDraft.test.mjs",
     "test:wiki": "node --test src/services/wiki.test.mjs scripts/wiki/compile.test.mjs src/services/wikiExplore.test.mjs src/services/wikiSession.test.mjs src/services/wikiWorkflow.test.mjs",
-    "prebuild:staging": "npm run test:wiki && npm run test:cadastre",
-    "prebuild:prod": "npm run test:wiki && npm run test:cadastre",
-    "test:cadastre": "node --test src/services/cadastre.test.mjs src/services/landTerrain.test.mjs"
+    "prebuild:staging": "npm run test:wiki && npm run test:cadastre && npm run test:npcs",
+    "prebuild:prod": "npm run test:wiki && npm run test:cadastre && npm run test:npcs",
+    "test:cadastre": "node --test src/services/cadastre.test.mjs src/services/landTerrain.test.mjs",
+    "test:npcs": "node --test src/services/npcSelection.test.mjs"
   },
   "dependencies": {
     "axios": "^1.7.9",
