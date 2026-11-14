@@ -96,7 +96,8 @@ const PlayerOwnedCountersPage = lazy(() => import("../pages/markets/PlayerMarket
 const PlayerCounterHistoryPage = lazy(() => import("../pages/markets/PlayerMarketPages.jsx").then(m => ({
   default: m.PlayerCounterHistoryPage
 })));
-const routes = [{path:"/admin/characters",element:<CharacterDirectory/>,private:true,requiredRole:"Admin"},{ path: "/cadastre", element: <Cadastre />, private: true }, { path: "/admin/cadastre", element: <Cadastre />, private: true, requiredRole: "Admin" }, {
+const MerchantNotebook = lazy(() => import("../pages/markets/MerchantNotebook.jsx"));
+const routes = [{path:"/marchand",element:<MerchantNotebook/>,private:true},{path:"/admin/marchand",element:<MerchantNotebook/>,private:true,requiredRole:"Admin"},{path:"/admin/characters",element:<CharacterDirectory/>,private:true,requiredRole:"Admin"},{ path: "/cadastre", element: <Cadastre />, private: true }, { path: "/admin/cadastre", element: <Cadastre />, private: true, requiredRole: "Admin" }, {
   path: "/histoires/chronologie",
   element: <WikiChronology />
 }, {

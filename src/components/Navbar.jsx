@@ -13,6 +13,7 @@ const navItems = [
   { to: "/histoire", label: "Guide" },
   { to: "/players", label: "Joueurs" },
   { to: "/map", label: "Carte" },
+  { to: "/marchand", label: "Marchand", requiresAuth: true },
   { to: "/finances", label: "Finances", requiresAuth: true },
   { to: "/talents", label: "Talents", requiresAuth: true },
   { to: "/sessions", label: "Sessions", requiresAuth: true },

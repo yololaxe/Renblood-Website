@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FaBalanceScale, FaExchangeAlt, FaStore } from "react-icons/fa";
 import { motion } from "framer-motion";
-const shortcuts = [{
+const shortcuts = [{label:"Métier marchand",description:"Villes, besoins, fournisseurs et points de livraison",icon:<FaStore/>,path:"/admin/marchand"},{
   label: "Boutiques PNJ",
   description: "Villes, catalogues et prix des marchands",
   icon: <FaStore />,
